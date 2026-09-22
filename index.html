@@ -502,20 +502,21 @@
                 </div>
 
                 <div class="card">
-                    <!-- Every control starts disabled in the markup and is switched on
-                         by /api/auth/providers once the page knows which sign-in
-                         methods are live, so a not-yet-wired button is never live for
-                         the first half-second. -->
+                    <!-- Email + password here is a lead-capture form, not real sign-in:
+                         no account is checked and nothing typed is sent anywhere. It
+                         always tells the visitor they're not yet a registered client
+                         and hands them the deck. Google/Apple below are real and stay
+                         provider-gated via /api/auth/providers. -->
                     <form id="sign-in-form" novalidate onsubmit="return handleSignIn(event)">
                         <div class="form-group">
                             <label for="sign-in-email">Email</label>
-                            <input type="email" id="sign-in-email" name="email" autocomplete="email" placeholder="name@example.com" required disabled>
+                            <input type="email" id="sign-in-email" name="email" autocomplete="email" placeholder="name@example.com" required>
                         </div>
                         <div class="form-group">
                             <label for="sign-in-password">Password</label>
-                            <input type="password" id="sign-in-password" name="password" autocomplete="current-password" placeholder="••••••••" required disabled>
+                            <input type="password" id="sign-in-password" name="password" autocomplete="current-password" placeholder="••••••••" required>
                         </div>
-                        <button type="submit" class="btn-primary" data-email-control disabled>Sign In</button>
+                        <button type="submit" class="btn-primary" data-email-control>Sign In</button>
                         <p class="form-note" id="sign-in-note" role="status" aria-live="polite"></p>
                         <div class="divider">or</div>
                         <div class="providers">
@@ -534,17 +535,17 @@
                     <form id="sign-up-form" novalidate onsubmit="return handleSignUp(event)">
                         <div class="form-group">
                             <label for="sign-up-name">Full Name</label>
-                            <input type="text" id="sign-up-name" name="name" autocomplete="name" placeholder="John Doe" required disabled>
+                            <input type="text" id="sign-up-name" name="name" autocomplete="name" placeholder="John Doe" required>
                         </div>
                         <div class="form-group">
                             <label for="sign-up-email">Email</label>
-                            <input type="email" id="sign-up-email" name="email" autocomplete="email" placeholder="name@example.com" required disabled>
+                            <input type="email" id="sign-up-email" name="email" autocomplete="email" placeholder="name@example.com" required>
                         </div>
                         <div class="form-group">
                             <label for="sign-up-password">Password</label>
-                            <input type="password" id="sign-up-password" name="password" autocomplete="new-password" placeholder="12 characters or more" minlength="12" required disabled>
+                            <input type="password" id="sign-up-password" name="password" autocomplete="new-password" placeholder="12 characters or more" minlength="12" required>
                         </div>
-                        <button type="submit" class="btn-primary" data-email-control disabled>Create Account</button>
+                        <button type="submit" class="btn-primary" data-email-control>Create Account</button>
                         <p class="form-note" id="sign-up-note" role="status" aria-live="polite"></p>
                         <div class="divider">or</div>
                         <div class="providers">
@@ -806,7 +807,7 @@
         // button that does nothing. The handlers below are the real ones —
         // they already speak to the addresses the sign-in work will add —
         // so turning a provider on is a Settings change, not a page edit.
-        const PROVIDERS = { google: false, apple: false, email: false };
+        const PROVIDERS = { google: false, apple: false };
 
         async function loadProviders() {
             try {
@@ -826,15 +827,13 @@
                 const label = btn.getAttribute('aria-label');
                 btn.title = live ? label : `${label} — opens soon`;
             });
-            document.querySelectorAll('#sign-in-form input, #sign-up-form input, [data-email-control]').forEach(el => {
-                el.disabled = !PROVIDERS.email;
-            });
+            // Email/password fields are never provider-gated — see the
+            // lead-capture note above the sign-in form.
             const soon = [];
             if (!PROVIDERS.google) soon.push('Google');
             if (!PROVIDERS.apple) soon.push('Apple');
-            if (!PROVIDERS.email) soon.push('email');
-            let note = soon.length === 3 ? 'Sign-in opens soon.'
-                     : soon.length ? `${soon.join(', ').replace(/, ([^,]*)$/, ' and $1')} sign-in opens soon.`
+            let note = soon.length === 2 ? 'Google and Apple sign-in open soon.'
+                     : soon.length ? `${soon[0]} sign-in opens soon.`
                      : '';
             note = note.charAt(0).toUpperCase() + note.slice(1);
             // A refusal message from a sign-in that just failed outranks
@@ -882,47 +881,36 @@
         function handleGoogleSignIn() { if (PROVIDERS.google) window.location.assign('/api/auth/google/start'); }
         function handleAppleSignIn()  { if (PROVIDERS.apple)  window.location.assign('/api/auth/apple/start'); }
 
-        // Email: one POST, a cookie on success, and the dashboard. The
-        // password never touches storage here. X-Requested-With is the
-        // server's write guard — a request without it is refused.
-        async function submitEmail(path, body, noteId, form) {
-            const button = form.querySelector('[data-email-control]');
-            button.disabled = true;
-            setNote(noteId, 'One moment…');
-            try {
-                const r = await fetch(path, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    body: JSON.stringify(body),
-                });
-                const d = await r.json().catch(() => ({}));
-                if (r.ok && d.success) { window.location.replace('/app'); return; }
-                setNote(noteId, d.error || 'That did not work. Please try again.', 'error');
-            } catch (e) {
-                setNote(noteId, 'Could not reach the server. Please try again.', 'error');
-            }
-            button.disabled = false;
+        // Email + password is a lead-capture form, not real sign-in: nothing
+        // typed here is sent anywhere or stored. Every submission gets the
+        // same answer and a copy of the deck, which carries how to actually
+        // get in touch.
+        function notRegisteredYet(noteId) {
+            setNote(noteId, "You're not a registered client yet — download the deck below, it has everything you need to get started.");
+            const a = document.createElement('a');
+            a.href = '/deck.pdf';
+            a.download = 'OHLCV LABS.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         }
 
         function handleSignIn(e) {
             e.preventDefault();
-            if (!PROVIDERS.email) return false;
             const email = document.getElementById('sign-in-email').value.trim();
             const password = document.getElementById('sign-in-password').value;
             if (!email || !password) { setNote('sign-in-note', 'Email and password, please.', 'error'); return false; }
-            submitEmail('/api/auth/email/login', { email, password }, 'sign-in-note', e.target);
+            notRegisteredYet('sign-in-note');
             return false;
         }
 
         function handleSignUp(e) {
             e.preventDefault();
-            if (!PROVIDERS.email) return false;
             const name = document.getElementById('sign-up-name').value.trim();
             const email = document.getElementById('sign-up-email').value.trim();
             const password = document.getElementById('sign-up-password').value;
             if (!name || !email || !password) { setNote('sign-up-note', 'All three fields, please.', 'error'); return false; }
-            if (password.length < 12) { setNote('sign-up-note', 'Passwords are 12 characters or more.', 'error'); return false; }
-            submitEmail('/api/auth/email/signup', { name, email, password }, 'sign-up-note', e.target);
+            notRegisteredYet('sign-up-note');
             return false;
         }
 
