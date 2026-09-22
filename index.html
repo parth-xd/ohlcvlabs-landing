@@ -463,14 +463,31 @@
                visible gap under the header even with padding already
                trimmed — the card just sat mid-screen instead of hugging
                the header. Top-aligning fixes it regardless of screen height. */
-            .container { padding: 20px 20px 40px; align-items: flex-start; }
+            .container { padding: 16px 20px 24px; align-items: flex-start; }
             .content { max-width: 100%; }
-            .logo { margin-bottom: 22px; }
-            .header h1 { font-size: 36px; margin-bottom: 12px; }
-            .header p { margin-bottom: 24px; }
-            .card { padding: 22px; }
-            .form-group { margin-bottom: 16px; }
+            .logo { margin-bottom: 16px; }
+            .header h1 { font-size: 32px; margin-bottom: 10px; }
+            .header p { margin-bottom: 18px; }
+            .card { padding: 18px; }
+            .form-group { margin-bottom: 12px; }
+            .divider { margin: 12px 0; }
+            .form-toggle { margin-top: 14px; }
             .nav-logo { font-size: 12px; }
+        }
+
+        /* Body scrolling on a short viewport (small phones, or a taller one
+           with Safari's toolbars fully expanded — very common right after
+           load) is a symptom, not the disease: the fixed header/footer stay
+           put, so anything that scrolls the whole page slides content behind
+           them. The sizing above keeps the card fitting in the common case;
+           this is the backstop for whatever still doesn't. */
+        @media (max-width: 480px) and (max-height: 700px) {
+            .card { padding: 12px; }
+            .form-group { margin-bottom: 8px; }
+            .logo { margin-bottom: 10px; }
+            .header h1 { font-size: 26px; margin-bottom: 6px; }
+            .divider { margin: 6px 0; }
+            .form-toggle { margin-top: 8px; }
         }
         /* ── Flying bird ──────────────────────────────────────────────────
            A background layer: fixed, z-index 1, so it sits above the canvas
@@ -906,25 +923,23 @@
         // same answer and a copy of the deck, which carries how to actually
         // get in touch.
         function notRegisteredYet(noteId) {
+            // No auto-triggered click here on purpose: on iOS Safari,
+            // clicking a PDF link — even synthetically — commonly opens it
+            // straight away instead of silently downloading, which hid this
+            // message before anyone could read it. The link below is a real,
+            // user-initiated tap instead, so the message is seen first no
+            // matter what the browser then does with the PDF.
+            //
             // Text is static, never user input, so building it via innerHTML
-            // (to include a real, clickable link) is safe here — unlike
-            // setNote(), which stays textContent-only for messages that can
-            // carry a server response.
+            // (to include the link) is safe here — unlike setNote(), which
+            // stays textContent-only for messages that can carry a server
+            // response.
             const note = document.getElementById(noteId);
             if (note) {
                 note.innerHTML = "You're not a registered client yet. The deck has everything you need to get started.<br>"
                     + '<a class="deck-link" href="/deck.pdf" download="OHLCV LABS.pdf" aria-label="Download the deck" title="Download the deck">&darr; Download the deck</a>';
                 delete note.dataset.tone;
             }
-            // Starts automatically; the link above is there in case a popup/
-            // download blocker ate the automatic one, or the visitor just
-            // wants to trigger it again.
-            const a = document.createElement('a');
-            a.href = '/deck.pdf';
-            a.download = 'OHLCV LABS.pdf';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
         }
 
         function handleSignIn(e) {
