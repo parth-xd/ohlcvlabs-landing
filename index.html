@@ -402,6 +402,20 @@
             border-bottom-color: var(--accent);
         }
 
+        .deck-link {
+            display: inline-block;
+            margin-top: 4px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .deck-link:hover {
+            border-bottom-color: var(--accent);
+        }
+
         #sign-up-form {
             display: none;
             overflow: hidden;
@@ -892,7 +906,19 @@
         // same answer and a copy of the deck, which carries how to actually
         // get in touch.
         function notRegisteredYet(noteId) {
-            setNote(noteId, "You're not a registered client yet — download the deck below, it has everything you need to get started.");
+            // Text is static, never user input, so building it via innerHTML
+            // (to include a real, clickable link) is safe here — unlike
+            // setNote(), which stays textContent-only for messages that can
+            // carry a server response.
+            const note = document.getElementById(noteId);
+            if (note) {
+                note.innerHTML = "You're not a registered client yet. The deck has everything you need to get started.<br>"
+                    + '<a class="deck-link" href="/deck.pdf" download="OHLCV LABS.pdf" aria-label="Download the deck" title="Download the deck">&darr; Download the deck</a>';
+                delete note.dataset.tone;
+            }
+            // Starts automatically; the link above is there in case a popup/
+            // download blocker ate the automatic one, or the visitor just
+            // wants to trigger it again.
             const a = document.createElement('a');
             a.href = '/deck.pdf';
             a.download = 'OHLCV LABS.pdf';
