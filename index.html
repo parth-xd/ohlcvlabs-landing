@@ -444,12 +444,18 @@
         @media (max-width: 480px) {
             .header-nav { padding: 18px 20px; }
 
-            .container { padding: 20px 20px 40px; }
+            /* flex-start, not center: centering split leftover vertical
+               space above and below the card, which on a tall phone put a
+               visible gap under the header even with padding already
+               trimmed — the card just sat mid-screen instead of hugging
+               the header. Top-aligning fixes it regardless of screen height. */
+            .container { padding: 20px 20px 40px; align-items: flex-start; }
             .content { max-width: 100%; }
-            .header h1 { font-size: 42px; margin-bottom: 14px; }
-            .header p { margin-bottom: 32px; }
-            .card { padding: 28px; }
-            .form-group { margin-bottom: 22px; }
+            .logo { margin-bottom: 22px; }
+            .header h1 { font-size: 36px; margin-bottom: 12px; }
+            .header p { margin-bottom: 24px; }
+            .card { padding: 22px; }
+            .form-group { margin-bottom: 16px; }
             .nav-logo { font-size: 12px; }
         }
         /* ── Flying bird ──────────────────────────────────────────────────
