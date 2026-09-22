@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e9e7e2">
+    <!-- Private for now: search engines are told to stay out until the site
+         is meant to be found. Remove when it is. -->
+    <meta name="robots" content="noindex">
+    <title>OHLCV</title>
+    <style>
+        /* Same paper and ink as the PIN screen (#pin-lock in index.html), so
+           the two read as one object. --accent is set per load from the same
+           navy / olive / wine triple the PIN intro cycles through. */
+        :root {
+            --ground: #e9e7e2;
+            --ink:    #1e1d20;
+            --mute:   #858680;
+            --rule:   #b6b3ab;
+            --accent: #5c2230;
+            --accent-rgb: 92, 34, 48;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: var(--ground);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: rgba(var(--accent-rgb), 0.85);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            will-change: transform;
+            opacity: 0;
+            display: none;
+            box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.35);
+            mix-blend-mode: multiply;
+            transition: width 0.15s ease, height 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        /* The custom cursor is for mouse / trackpad pointers only. The
+           decision is made ONCE in JS (initCursor), which adds .cursor-on —
+           deliberately a body class, not a live @media query, so it is
+           STICKY: a hybrid device that reports touch mid-session (a
+           touchscreen laptop, an iPad with a trackpad) cannot pull the cursor
+           away once it has been switched on. On a touch-only device the class
+           is never added, so the dot stays hidden and its loop never runs —
+           no stray dot in a corner, no idle animation draining a phone. */
+        body.cursor-on { cursor: none; }
+        body.cursor-on .cursor { display: block; }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding-top: var(--nav-h, 53px);
+            padding-bottom: var(--footer-h, 92px);
+        }
+
+        /* Header Navigation */
+        /* Header and footer are fixed translucent glass: they never move,
+           whatever the page does underneath. The page reserves their height
+           (--nav-h / --footer-h, measured by fitChrome() below) as padding,
+           so nothing can be hidden behind them at either end of a scroll.
+           Same frosted treatment as the dashboard's lock screen. */
+        .header-nav,
+        .footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            z-index: 5;
+            /* Translucent enough that the bird passing behind (z-index 1) is
+               glimpsed through the glass, not swallowed. The old 0.62 tint +
+               18px blur hid it entirely; a lighter tint and softer blur let a
+               soft dark shape read through while the header/footer text stays
+               legible on the off-white ground. */
+            background: rgba(233, 231, 226, 0.48);
+            -webkit-backdrop-filter: saturate(160%) blur(9px);
+            backdrop-filter: saturate(160%) blur(9px);
+        }
+        .header-nav { top: 0; }
+        .footer { bottom: 0; border-top: 2px solid #000; }
+
+        .header-nav {
+            padding: 18px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #000;
+        }
+
+        .nav-logo {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--ink);
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 36px 20px 32px;
+        }
+
+        .content {
+            max-width: 494px;   /* ~5% narrower — the card was taking a decent chunk */
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--ink);
+            margin-bottom: 32px;
+            opacity: 0.65;
+        }
+
+        .header h1 {
+            font-size: clamp(48px, 6vw, 64px);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 28px;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+            opacity: 1;
+        }
+
+        .header h1 span {
+            color: var(--accent);
+            position: relative;
+        }
+
+        .header h1 span::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .header h1:hover span::after {
+            transform: scaleX(1);
+        }
+
+        .header p {
+            font-size: clamp(14px, 1.5vw, 16px);
+            font-weight: 400;
+            color: var(--mute);
+            line-height: 1.6;
+            margin-bottom: 28px;
+            letter-spacing: 0.2px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.35);
+            border: 2px solid #000;
+            padding: 27px 30px;
+            overflow: hidden;
+            /* Squircle: corner-shape makes a true superellipse where supported
+               (Chromium 139+); border-radius alone is the rounded-rect fallback
+               everywhere else. Both are set so the black border follows it. */
+            border-radius: 32px;
+            corner-shape: squircle;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--mute);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 13px;
+            background: transparent;
+            border: 2px solid #000;
+            border-radius: 14px;
+            corner-shape: squircle;
+            color: var(--ink);
+            font-size: 15px;
+            transition: border-color 0.4s ease, color 0.3s ease;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+        }
+
+        input::placeholder {
+            color: var(--rule);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            color: var(--ink);
+        }
+
+        button {
+            font-family: inherit;
+            font-weight: 600;
+            border: 1px solid #000;
+            border-radius: 14px;
+            corner-shape: squircle;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 11px;
+            padding: 13px 0;
+            width: 100%;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 13px;
+            background: transparent;
+            color: var(--ink);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            color: var(--accent);
+            border: 2px solid #000;
+        }
+
+        .btn-primary:hover {
+            color: var(--accent);
+            border-color: #000;
+            letter-spacing: 1.8px;
+        }
+
+        .btn-secondary {
+            color: var(--mute);
+            border: 1px solid #000;
+        }
+
+        .btn-secondary:hover {
+            color: var(--ink);
+            border-color: var(--accent);
+            letter-spacing: 1.7px;
+        }
+
+        /* Google and Apple side by side, each in the same rule-and-caps voice
+           as the rest of the card; the mark is the provider's own glyph in
+           the page's ink, never the provider's brand colours. */
+        .providers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .btn-provider {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        .provider-mark { width: 18px; height: 18px; fill: #000; flex-shrink: 0; }
+        @media (max-width: 360px) {
+            .providers { grid-template-columns: 1fr; gap: 0; }
+            .btn-provider { margin-bottom: 14px; }
+        }
+
+        /* Footer: the wordmark and the clock from the original, in the page's
+           ink. Everything else the old footer held (dead links, a fake address)
+           stays out. margin-top:auto keeps it at the foot on tall screens. */
+        .footer {
+            padding: 18px 48px 16px;
+            border-top: 1px solid rgba(var(--accent-rgb), 0.12);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+            overflow: hidden;
+        }
+        .footer-brand {
+            position: relative;
+            left: -0.04em;
+            font-size: clamp(40px, 5.2vw, 68px);
+            line-height: 0.84;
+            font-weight: 800;
+            letter-spacing: -0.06em;
+            text-transform: uppercase;
+            color: var(--ink);
+            white-space: nowrap;
+            user-select: none;
+            transform-origin: left center;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), letter-spacing 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .footer:hover .footer-brand {
+            transform: scaleX(1.01) translateY(-1px);
+            letter-spacing: -0.035em;
+        }
+        /* The tight tracking above swallows an ordinary space between the two
+           words; this is a fixed gap that tracking cannot eat. */
+        .footer-brand-gap { display: inline-block; width: 0.28em; }
+        .footer-clock {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            font-size: 9px;
+            line-height: 1.5;
+            text-transform: uppercase;
+            letter-spacing: 1.6px;
+            color: var(--mute);
+            font-variant-numeric: tabular-nums;
+        }
+        .footer-clock time { font-size: 13px; letter-spacing: 1px; color: var(--ink); }
+        @media (max-width: 480px) {
+            .footer { padding: 14px 20px 12px; }
+            .footer-brand { font-size: clamp(36px, 11vw, 52px); }
+        }
+
+        .divider {
+            text-align: center;
+            color: var(--rule);
+            margin: 17px 0;
+            font-size: 11px;
+            position: relative;
+            letter-spacing: 0.5px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: rgba(var(--accent-rgb), 0.12);
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .form-toggle {
+            text-align: center;
+            font-size: 11px;
+            color: var(--mute);
+            margin-top: 22px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-toggle a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .form-toggle a:hover {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        #sign-up-form {
+            display: none;
+            overflow: hidden;
+        }
+
+        /* A control whose server side is not switched on yet stays visible —
+           the page should look finished — but reads as not-yet, and does not
+           pretend to react on hover. Inputs the same. */
+        button:disabled, input:disabled {
+            opacity: 0.42;
+            cursor: default;
+        }
+        button:disabled:hover {
+            letter-spacing: 1.5px;
+            color: inherit;
+            border-bottom-color: var(--rule);
+        }
+        .btn-primary:disabled, .btn-primary:disabled:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+        /* One line per form for whatever the visitor needs to know right
+           now: "opens soon", a wrong password, a refused email. Reserved
+           height so the card does not jump when it fills. */
+        .form-note {
+            min-height: 16px;
+            margin: -4px 0 12px;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            color: var(--mute);
+        }
+        .form-note[data-tone="error"] { color: var(--accent); }
+
+        /* Footer */
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 0.4; }
+        }
+
+        @media (max-width: 480px) {
+            .header-nav { padding: 18px 20px; }
+
+            .container { padding: 48px 20px 40px; }
+            .content { max-width: 100%; }
+            .header h1 { font-size: 42px; margin-bottom: 14px; }
+            .header p { margin-bottom: 32px; }
+            .card { padding: 28px; }
+            .form-group { margin-bottom: 22px; }
+            .nav-logo { font-size: 12px; }
+        }
+        /* ── Flying bird ──────────────────────────────────────────────────
+           A background layer: fixed, z-index 1, so it sits above the canvas
+           grid (z-index 0) but BELOW .page-wrapper (z-index 2) — which holds
+           the hero, the card and the header/footer — so the bird always
+           passes behind the login card and slides behind the glass chrome.
+           pointer-events:none: it can never intercept a click or the cursor. */
+        .sky-bird {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            /* Proportional, not fixed: the bird holds the same fraction of the
+               screen on every device. Anchored to 38px on a ~1440px laptop
+               (38/1440 ≈ 2.64vw, a ~38:1 screen-to-bird ratio), so a 390px
+               phone gets ~10px — the same visual weight, not a fixed 38px that
+               would look oversized on a phone. Floor/cap keep it sane at the
+               extremes. */
+            width: clamp(9px, 2.64vw, 52px);
+            height: auto;
+            opacity: 0;
+            pointer-events: none;
+            will-change: transform;
+            overflow: visible;
+        }
+        @media (prefers-reduced-motion: reduce) { .sky-bird { display: none; } }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</head>
+<body>
+    <canvas id="animated-bg"></canvas>
+    <svg class="sky-bird" id="skyBird" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path id="skyBirdWing" fill="none" stroke="#17161a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse cx="30" cy="20" rx="3" ry="2.1" fill="#17161a"/>
+    </svg>
+    <div class="cursor" id="cursor"></div>
+
+    <div class="page-wrapper">
+        <header class="header-nav">
+            <div class="nav-logo">OHLCV</div>
+        </header>
+
+        <div class="container">
+            <div class="content">
+                <div class="logo">Authentication</div>
+                <div class="header">
+                    <h1>Trade <span>Smarter</span></h1>
+                </div>
+
+                <div class="card">
+                    <!-- Every control starts disabled in the markup and is switched on
+                         by /api/auth/providers once the page knows which sign-in
+                         methods are live, so a not-yet-wired button is never live for
+                         the first half-second. -->
+                    <form id="sign-in-form" novalidate onsubmit="return handleSignIn(event)">
+                        <div class="form-group">
+                            <label for="sign-in-email">Email</label>
+                            <input type="email" id="sign-in-email" name="email" autocomplete="email" placeholder="name@example.com" required disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="sign-in-password">Password</label>
+                            <input type="password" id="sign-in-password" name="password" autocomplete="current-password" placeholder="••••••••" required disabled>
+                        </div>
+                        <button type="submit" class="btn-primary" data-email-control disabled>Sign In</button>
+                        <p class="form-note" id="sign-in-note" role="status" aria-live="polite"></p>
+                        <div class="divider">or</div>
+                        <div class="providers">
+                            <button type="button" class="btn-secondary btn-provider" data-provider="google" onclick="handleGoogleSignIn()" aria-label="Continue with Google" title="Continue with Google" disabled>
+                                <svg class="provider-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 12.23c0-.68-.06-1.36-.18-2.02H12v3.83h5.4a4.6 4.6 0 0 1-2 3.03v2.5h3.22c1.89-1.74 2.98-4.3 2.98-7.34z"/><path d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.22-2.5c-.9.6-2.04.96-3.4.96-2.6 0-4.8-1.76-5.6-4.12H3.07v2.58A10 10 0 0 0 12 22z"/><path d="M6.4 13.91A6 6 0 0 1 6.09 12c0-.66.11-1.31.31-1.91V7.51H3.07A10 10 0 0 0 2 12c0 1.61.39 3.14 1.07 4.49l3.33-2.58z"/><path d="M12 5.98c1.47 0 2.79.5 3.83 1.5l2.86-2.86A9.98 9.98 0 0 0 12 2a10 10 0 0 0-8.93 5.51l3.33 2.58c.8-2.36 3-4.11 5.6-4.11z"/></svg>
+                            </button>
+                            <button type="button" class="btn-secondary btn-provider" data-provider="apple" onclick="handleAppleSignIn()" aria-label="Continue with Apple" title="Continue with Apple" disabled>
+                                <svg class="provider-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.37 12.64c-.02-2.13 1.74-3.15 1.82-3.2-.99-1.45-2.53-1.65-3.08-1.67-1.31-.13-2.56.77-3.22.77-.67 0-1.69-.75-2.78-.73-1.43.02-2.75.83-3.49 2.11-1.49 2.58-.38 6.4 1.07 8.5.71 1.03 1.55 2.18 2.65 2.14 1.07-.04 1.47-.69 2.76-.69s1.65.69 2.78.67c1.15-.02 1.87-1.04 2.57-2.07.81-1.19 1.14-2.34 1.16-2.4-.03-.01-2.22-.85-2.24-3.43zM14.25 6.39c.59-.71.99-1.7.88-2.69-.85.03-1.88.57-2.49 1.28-.55.63-1.03 1.64-.9 2.6.95.07 1.92-.48 2.51-1.19z"/></svg>
+                            </button>
+                        </div>
+                        <div class="form-toggle">
+                            Don't have an account? <a href="#" onclick="toggleForm(event)">Create one</a>
+                        </div>
+                    </form>
+
+                    <form id="sign-up-form" novalidate onsubmit="return handleSignUp(event)">
+                        <div class="form-group">
+                            <label for="sign-up-name">Full Name</label>
+                            <input type="text" id="sign-up-name" name="name" autocomplete="name" placeholder="John Doe" required disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="sign-up-email">Email</label>
+                            <input type="email" id="sign-up-email" name="email" autocomplete="email" placeholder="name@example.com" required disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="sign-up-password">Password</label>
+                            <input type="password" id="sign-up-password" name="password" autocomplete="new-password" placeholder="12 characters or more" minlength="12" required disabled>
+                        </div>
+                        <button type="submit" class="btn-primary" data-email-control disabled>Create Account</button>
+                        <p class="form-note" id="sign-up-note" role="status" aria-live="polite"></p>
+                        <div class="divider">or</div>
+                        <div class="providers">
+                            <button type="button" class="btn-secondary btn-provider" data-provider="google" onclick="handleGoogleSignIn()" aria-label="Continue with Google" title="Continue with Google" disabled>
+                                <svg class="provider-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 12.23c0-.68-.06-1.36-.18-2.02H12v3.83h5.4a4.6 4.6 0 0 1-2 3.03v2.5h3.22c1.89-1.74 2.98-4.3 2.98-7.34z"/><path d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.22-2.5c-.9.6-2.04.96-3.4.96-2.6 0-4.8-1.76-5.6-4.12H3.07v2.58A10 10 0 0 0 12 22z"/><path d="M6.4 13.91A6 6 0 0 1 6.09 12c0-.66.11-1.31.31-1.91V7.51H3.07A10 10 0 0 0 2 12c0 1.61.39 3.14 1.07 4.49l3.33-2.58z"/><path d="M12 5.98c1.47 0 2.79.5 3.83 1.5l2.86-2.86A9.98 9.98 0 0 0 12 2a10 10 0 0 0-8.93 5.51l3.33 2.58c.8-2.36 3-4.11 5.6-4.11z"/></svg>
+                            </button>
+                            <button type="button" class="btn-secondary btn-provider" data-provider="apple" onclick="handleAppleSignIn()" aria-label="Continue with Apple" title="Continue with Apple" disabled>
+                                <svg class="provider-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.37 12.64c-.02-2.13 1.74-3.15 1.82-3.2-.99-1.45-2.53-1.65-3.08-1.67-1.31-.13-2.56.77-3.22.77-.67 0-1.69-.75-2.78-.73-1.43.02-2.75.83-3.49 2.11-1.49 2.58-.38 6.4 1.07 8.5.71 1.03 1.55 2.18 2.65 2.14 1.07-.04 1.47-.69 2.76-.69s1.65.69 2.78.67c1.15-.02 1.87-1.04 2.57-2.07.81-1.19 1.14-2.34 1.16-2.4-.03-.01-2.22-.85-2.24-3.43zM14.25 6.39c.59-.71.99-1.7.88-2.69-.85.03-1.88.57-2.49 1.28-.55.63-1.03 1.64-.9 2.6.95.07 1.92-.48 2.51-1.19z"/></svg>
+                            </button>
+                        </div>
+                        <div class="form-toggle">
+                            Already have an account? <a href="#" onclick="toggleForm(event)">Sign in</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-brand">OHLCV<span class="footer-brand-gap"></span>Labs</div>
+            <div class="footer-clock">
+                <time id="footer-time" datetime="">--:--:--</time>
+                <span>IST</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // One accent per load, stepping through the PIN screen's own triple
+        // (navy, olive, wine) with the same counter it uses, so this page and
+        // the PIN screen after it walk the same colours in the same order.
+        const ACCENTS = [['#1f2b3a', '31, 43, 58'], ['#4a4f36', '74, 79, 54'], ['#5c2230', '92, 34, 48']];
+        const _n = (Number(localStorage.getItem('lock_col_n') || 0) + 1) % ACCENTS.length;
+        localStorage.setItem('lock_col_n', String(_n));
+        const [ACCENT_HEX, ACCENT_RGB] = ACCENTS[_n];
+        document.documentElement.style.setProperty('--accent', ACCENT_HEX);
+        document.documentElement.style.setProperty('--accent-rgb', ACCENT_RGB);
+
+        const canvas = document.getElementById('animated-bg');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        let frameCount = 0;
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.size = Math.random() * 1 + 0.5;
+                this.opacity = Math.random() * 0.35 + 0.15;
+                this.maxOpacity = this.opacity;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 150) {
+                    this.vx += dx * 0.00003;
+                    this.vy += dy * 0.00003;
+                    this.opacity = this.maxOpacity * (1 - distance / 150);
+                } else {
+                    this.opacity *= 0.96;
+                }
+                
+                this.vx *= 0.96;
+                this.vy *= 0.96;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(${ACCENT_RGB}, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 20; i++) {
+                particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgb(233, 231, 226)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (frameCount % 30 === 0) {
+                ctx.strokeStyle = `rgba(${ACCENT_RGB}, 0.06)`;
+                ctx.lineWidth = 0.3;
+                const gridSize = 250;
+
+                for (let x = 0; x < canvas.width; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+
+            frameCount++;
+            requestAnimationFrame(animate);
+        }
+
+        const cursor = document.getElementById('cursor');
+
+        // mouseX/mouseY feed both the particle field and the custom cursor.
+        // Unconditional: on a touch device this simply never fires and the
+        // particles fall back to centre.
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Custom cursor — pointer devices only (see the matching @media block).
+        // Runs at most once; if a mouse is attached to an iPad later, the
+        // media-query 'change' below lights it up then.
+        function initCursor() {
+            if (cursor.dataset.on) return;
+            cursor.dataset.on = '1';
+            document.body.classList.add('cursor-on');   // sticky: never removed
+            let smoothX = 0, smoothY = 0, placed = false;
+
+            // Snap straight to the pointer the first time its position is
+            // known, and again on every re-entry — so the dot never flies in
+            // from the corner on load, and never glides across the screen when
+            // the pointer leaves one edge and returns on another.
+            function place(x, y) { smoothX = x; smoothY = y; placed = true; cursor.style.opacity = '0.8'; }
+            const firstMove = (e) => { place(e.clientX, e.clientY); document.removeEventListener('mousemove', firstMove); };
+            document.addEventListener('mousemove', firstMove);
+            document.addEventListener('mouseenter', (e) => place(e.clientX, e.clientY));
+            document.addEventListener('mouseleave', () => { cursor.style.opacity = '0'; });
+
+            (function smoothCursor() {
+                if (placed) {
+                    smoothX += (mouseX - smoothX) * 0.15;
+                    smoothY += (mouseY - smoothY) * 0.15;
+                    cursor.style.transform = `translate(${smoothX}px, ${smoothY}px) translate(-50%, -50%)`;
+                }
+                requestAnimationFrame(smoothCursor);
+            })();
+
+            document.querySelectorAll('button, a, input').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.style.width = '14px';
+                    cursor.style.height = '14px';
+                    cursor.style.boxShadow = `0 0 20px rgba(${ACCENT_RGB}, 0.5)`;
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursor.style.width = '8px';
+                    cursor.style.height = '8px';
+                    cursor.style.boxShadow = `0 0 8px rgba(${ACCENT_RGB}, 0.35)`;
+                });
+            });
+        }
+
+        const cursorMQ = window.matchMedia('(hover: hover) and (pointer: fine)');
+        if (cursorMQ.matches) initCursor();
+        if (cursorMQ.addEventListener) cursorMQ.addEventListener('change', (e) => { if (e.matches) initCursor(); });
+        
+        // Smooth scroll reveal animations. Guarded: GSAP comes from a CDN, and
+        // if it fails to load the page must still work — without the guard
+        // the ReferenceError here would stop the script before the clock,
+        // the particles and the sign-in handlers below ever ran.
+        if (window.gsap && window.ScrollTrigger) {
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate header nav on page load
+        gsap.fromTo('.header-nav', {
+            opacity: 0,
+            y: -20
+        }, {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power2.out'
+        });
+        
+        // Animate container with scroll
+        gsap.fromTo('.container', {
+            opacity: 0,
+            y: 40
+        }, {
+            scrollTrigger: {
+                trigger: '.container',
+                start: 'top 80%',
+                end: 'top 50%',
+                scrub: 1,
+                markers: false
+            },
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: 'power2.out'
+        });
+        
+        // Animate form card
+        gsap.fromTo('.card', {
+            opacity: 0,
+            scale: 0.95,
+            y: 20
+        }, {
+            scrollTrigger: {
+                trigger: '.card',
+                start: 'top 75%',
+                end: 'top 50%',
+                scrub: 1,
+                markers: false
+            },
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'back.out(1.2)'
+        });
+        }
+
+        function toggleForm(e) {
+            e.preventDefault();
+            const a = document.getElementById('sign-in-form'), b = document.getElementById('sign-up-form');
+            const showSignUp = a.style.display !== 'none';
+            a.style.display = showSignUp ? 'none' : 'block';
+            b.style.display = showSignUp ? 'block' : 'none';
+        }
+
+        // ── Sign-in ──────────────────────────────────────────────────────
+        // Which methods are live is the server's to say (/api/auth/providers,
+        // read from Settings), not this file's. Every control starts disabled
+        // in the markup; this switches on the ones that have a server side,
+        // and tells the visitor what is not open yet rather than showing a
+        // button that does nothing. The handlers below are the real ones —
+        // they already speak to the addresses the sign-in work will add —
+        // so turning a provider on is a Settings change, not a page edit.
+        const PROVIDERS = { google: false, apple: false, email: false };
+
+        async function loadProviders() {
+            try {
+                const r = await fetch('/api/auth/providers', { cache: 'no-store' });
+                if (r.ok) Object.assign(PROVIDERS, await r.json());
+            } catch (e) {
+                // Opened as a file, or the server is down: everything stays
+                // "opens soon", which is the truthful state either way.
+            }
+            applyProviders();
+        }
+
+        function applyProviders() {
+            document.querySelectorAll('[data-provider]').forEach(btn => {
+                const name = btn.dataset.provider, live = !!PROVIDERS[name];
+                btn.disabled = !live;
+                const label = btn.getAttribute('aria-label');
+                btn.title = live ? label : `${label} — opens soon`;
+            });
+            document.querySelectorAll('#sign-in-form input, #sign-up-form input, [data-email-control]').forEach(el => {
+                el.disabled = !PROVIDERS.email;
+            });
+            const soon = [];
+            if (!PROVIDERS.google) soon.push('Google');
+            if (!PROVIDERS.apple) soon.push('Apple');
+            if (!PROVIDERS.email) soon.push('email');
+            let note = soon.length === 3 ? 'Sign-in opens soon.'
+                     : soon.length ? `${soon.join(', ').replace(/, ([^,]*)$/, ' and $1')} sign-in opens soon.`
+                     : '';
+            note = note.charAt(0).toUpperCase() + note.slice(1);
+            // A refusal message from a sign-in that just failed outranks
+            // "opens soon"; the visitor needs to read it.
+            if (_authErrorShown) return;
+            setNote('sign-in-note', note);
+            setNote('sign-up-note', note);
+        }
+
+        function setNote(id, text, tone) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = text || '';
+            if (tone) el.dataset.tone = tone; else delete el.dataset.tone;
+        }
+
+        // A refused Google sign-in comes back here as /?auth_error=<code>.
+        // Short lines only — the reason is in the server log, never in the
+        // page. Mirrors google_auth.ERROR_MESSAGES. The code is then taken
+        // off the address so a reload does not repeat it.
+        const AUTH_ERRORS = {
+            cancelled: 'Sign-in was cancelled.',
+            state: 'That sign-in link is stale. Please try again.',
+            expired: 'That took too long. Please try again.',
+            google: 'Google could not complete the sign-in. Please try again.',
+            not_allowed: 'There is no account for that email.',
+            linked_elsewhere: 'That email is linked to a different Google account.',
+            verify_first: 'That email has a password account. Sign in with the password instead.',
+            not_configured: 'Google sign-in is not set up on this server yet.',
+        };
+        let _authErrorShown = false;
+        function showAuthError() {
+            const code = new URLSearchParams(location.search).get('auth_error');
+            if (!code) return;
+            const msg = AUTH_ERRORS[code] || 'Sign-in did not work. Please try again.';
+            setNote('sign-in-note', msg, 'error');
+            setNote('sign-up-note', msg, 'error');
+            _authErrorShown = true;
+            history.replaceState(null, '', location.pathname);
+        }
+
+        // The provider buttons hand the browser to the server, which starts
+        // the sign-in with Google / Apple and brings it back to "/" with a
+        // session. Nothing about the identity check happens in this page.
+        function handleGoogleSignIn() { if (PROVIDERS.google) window.location.assign('/api/auth/google/start'); }
+        function handleAppleSignIn()  { if (PROVIDERS.apple)  window.location.assign('/api/auth/apple/start'); }
+
+        // Email: one POST, a cookie on success, and the dashboard. The
+        // password never touches storage here. X-Requested-With is the
+        // server's write guard — a request without it is refused.
+        async function submitEmail(path, body, noteId, form) {
+            const button = form.querySelector('[data-email-control]');
+            button.disabled = true;
+            setNote(noteId, 'One moment…');
+            try {
+                const r = await fetch(path, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify(body),
+                });
+                const d = await r.json().catch(() => ({}));
+                if (r.ok && d.success) { window.location.replace('/app'); return; }
+                setNote(noteId, d.error || 'That did not work. Please try again.', 'error');
+            } catch (e) {
+                setNote(noteId, 'Could not reach the server. Please try again.', 'error');
+            }
+            button.disabled = false;
+        }
+
+        function handleSignIn(e) {
+            e.preventDefault();
+            if (!PROVIDERS.email) return false;
+            const email = document.getElementById('sign-in-email').value.trim();
+            const password = document.getElementById('sign-in-password').value;
+            if (!email || !password) { setNote('sign-in-note', 'Email and password, please.', 'error'); return false; }
+            submitEmail('/api/auth/email/login', { email, password }, 'sign-in-note', e.target);
+            return false;
+        }
+
+        function handleSignUp(e) {
+            e.preventDefault();
+            if (!PROVIDERS.email) return false;
+            const name = document.getElementById('sign-up-name').value.trim();
+            const email = document.getElementById('sign-up-email').value.trim();
+            const password = document.getElementById('sign-up-password').value;
+            if (!name || !email || !password) { setNote('sign-up-note', 'All three fields, please.', 'error'); return false; }
+            if (password.length < 12) { setNote('sign-up-note', 'Passwords are 12 characters or more.', 'error'); return false; }
+            submitEmail('/api/auth/email/signup', { name, email, password }, 'sign-up-note', e.target);
+            return false;
+        }
+
+        // The clock shows Indian market time wherever the page is opened -
+        // the exchange's clock, not the visitor's.
+        const _clockFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        function updateClock() {
+            const el = document.getElementById('footer-time');
+            if (!el) return;
+            const now = new Date();
+            el.textContent = _clockFmt.format(now);
+            el.setAttribute('datetime', now.toISOString());
+        }
+
+        // The fixed header and footer are taken out of the flow, so the page
+        // reserves exactly their rendered height above and below the content.
+        // Measured, not hard-coded: the wordmark scales with the viewport.
+        function fitChrome() {
+            const nav = document.querySelector('.header-nav'), foot = document.querySelector('.footer');
+            if (nav) document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
+            if (foot) document.documentElement.style.setProperty('--footer-h', foot.offsetHeight + 'px');
+        }
+
+        window.addEventListener('load', () => {
+            fitChrome();
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitChrome);
+            initParticles();
+            animate();
+            updateClock();
+            setInterval(updateClock, 1000);
+            showAuthError();
+            loadProviders();
+        });
+
+        window.addEventListener('resize', () => {
+            fitChrome();
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // ── Flying bird ───────────────────────────────────────────────────
+        // One bird crosses the hero from time to time, behind the card. The
+        // motion is a small simulation, not a scripted path:
+        //   • the wing is jointed (shoulder → tip) and the tip LAGS the
+        //     shoulder, so each beat sends a flex flowing out along the wing;
+        //   • each downstroke fires an upward impulse into a soft damped
+        //     spring, so the body floats up on the beat and settles through
+        //     the glide — the vertical motion comes from the wingbeats;
+        //   • over that sits a slow two-frequency wave (the gentle ↗↘ path),
+        //     with pitch following the real vertical velocity;
+        //   • every beat's length and strength, and every crossing's height,
+        //     direction, speed and pause, vary — so nothing looks looped.
+        (function flyingBird() {
+            var bird = document.getElementById('skyBird');
+            var wing = document.getElementById('skyBirdWing');
+            if (!bird || !wing) return;
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            function ss(t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
+            // Wing elevation through one beat: +1 fully up, -1 fully down —
+            // rise, powered downstroke, recovery, glide-hold; smoothstepped.
+            function E(f) {
+                if (f < 0.18) return 0.10 + 0.90 * ss(f / 0.18);
+                if (f < 0.36) return 1 - 2 * ss((f - 0.18) / 0.18);
+                if (f < 0.55) return -1 + 1.2 * ss((f - 0.36) / 0.19);
+                return 0.10 + 0.12 * Math.sin((f - 0.55) / 0.45 * Math.PI);
+            }
+            var LIN = 13, LOUT = 16, AIN = 0.86, AOUT = 1.18, LAG = 0.17;
+            function n(v) { return v.toFixed(1); }
+            function wingPath(fp) {
+                var f = fp - Math.floor(fp);
+                var fo = fp - LAG; fo = fo - Math.floor(fo);
+                var ei = E(f), eo = E(fo);
+                var ai = AIN * ei, ao = ai + AOUT * eo;             // tip = shoulder + delayed bend
+                var lout = LOUT * (0.80 + 0.20 * (eo + 1) / 2);      // folds a little on the upstroke
+                var exR = 30 + LIN * Math.cos(ai), eyR = 20 - LIN * Math.sin(ai);
+                var txR = exR + lout * Math.cos(ao), tyR = eyR - lout * Math.sin(ao);
+                var exL = 30 - LIN * Math.cos(ai), eyL = 20 - LIN * Math.sin(ai);
+                var txL = exL - lout * Math.cos(ao), tyL = eyL - lout * Math.sin(ao);
+                return 'M' + n(txL) + ' ' + n(tyL) + ' Q' + n(exL) + ' ' + n(eyL) + ' 30 20 Q' + n(exR) + ' ' + n(eyR) + ' ' + n(txR) + ' ' + n(tyR);
+            }
+            function rnd(a, b) { return a + Math.random() * (b - a); }
+
+            var flying = false;
+            function crossing() {
+                flying = true;
+                var W = window.innerWidth, H = window.innerHeight;
+                var toRight = Math.random() < 0.6, face = toRight ? 1 : -1;
+                var dur = rnd(6.5, 9.5);
+                var x0 = toRight ? -80 : W + 80, x1 = toRight ? W + 80 : -80, vx = (x1 - x0) / dur;
+
+                // Altitude. On desktop the bird lives in the upper band, well
+                // above the centred card. On a phone the card fills the width,
+                // so pick a lane that clears it — mostly above, sometimes below,
+                // but ~1 crossing in 6 is left free to pass across, so it never
+                // looks like it is dodging on rails. SW is the vertical swing
+                // envelope (macro wave + bob) reserved on each side.
+                var isMobile = W < 640;
+                var SW = 44, baseY;
+                var card = document.querySelector('.card');
+                var lane = null;
+                if (isMobile && card && Math.random() < 0.82) {
+                    var r = card.getBoundingClientRect();
+                    var aboveMax = r.top - SW - 16;                  // highest baseY still clear above
+                    var belowMin = r.bottom + SW + 16;               // lowest baseY still clear below
+                    var belowMax = H - SW - 18;                      // keep off the very bottom
+                    var aboveOK = aboveMax > 34, belowOK = belowMin < belowMax;
+                    if (aboveOK && belowOK) lane = Math.random() < 0.66 ? [34, aboveMax] : [belowMin, belowMax];
+                    else if (aboveOK) lane = [34, aboveMax];
+                    else if (belowOK) lane = [belowMin, belowMax];
+                }
+                baseY = lane ? rnd(lane[0], lane[1]) : rnd(24, Math.max(60, H * (isMobile ? 0.5 : 0.34)));
+                var A1 = rnd(14, 24), A2 = rnd(5, 9), w1 = rnd(0.55, 0.85), w2 = rnd(1.2, 1.7), p1 = rnd(0, 6.28), p2 = rnd(0, 6.28);
+                var fp = rnd(0, 1), beatDur = rnd(0.74, 0.92), impulse = rnd(58, 74), impulsed = false, prevF = 0;
+                var microY = 0, vy = 0, G = 34, K = 96, DAMP = 3.4;
+                var x = x0, t = 0, y = baseY, prevY = baseY, rot = 0, last = 0;
+                bird.style.opacity = '1';
+                function frame(ts) {
+                    if (!last) last = ts;
+                    var dt = Math.min(0.05, (ts - last) / 1000); last = ts;
+                    t += dt; x += vx * dt;
+                    fp += dt / beatDur;
+                    var f = fp - Math.floor(fp);
+                    if (f < prevF) { beatDur = rnd(0.70, 0.96); impulse = rnd(56, 76); impulsed = false; }
+                    prevF = f;
+                    if (!impulsed && f >= 0.20 && f < 0.5) { vy -= impulse; impulsed = true; }
+                    wing.setAttribute('d', wingPath(fp));
+                    vy += G * dt; vy += -K * microY * dt; vy *= (1 - DAMP * dt); microY += vy * dt;
+                    var macroY = A1 * Math.sin(w1 * t + p1) + A2 * Math.sin(w2 * t + p2);
+                    y = baseY + macroY + microY;
+                    var target = Math.max(-12, Math.min(12, -((y - prevY) / (dt || 0.016)) * 0.05));
+                    rot += (target - rot) * Math.min(1, dt * 10); prevY = y;
+                    bird.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + rot.toFixed(2) + 'deg) scaleX(' + face + ')';
+                    if (toRight ? (x > x1) : (x < x1)) { bird.style.opacity = '0'; flying = false; schedule(); return; }
+                    requestAnimationFrame(frame);
+                }
+                requestAnimationFrame(frame);
+            }
+            function schedule() { setTimeout(function () { if (!flying) crossing(); }, rnd(12000, 24000)); }
+
+            // rAF is paused by the browser in a background tab, and the dt clamp
+            // absorbs the gap on return — no manual visibility handling needed.
+            setTimeout(crossing, 4000);
+        })();
+    </script>
+</body>
+</html>
