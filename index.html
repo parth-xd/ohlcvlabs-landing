@@ -526,11 +526,14 @@
             z-index: 1;
             /* Proportional, not fixed: the bird holds the same fraction of the
                screen on every device. Anchored to 38px on a ~1440px laptop
-               (38/1440 ≈ 2.64vw, a ~38:1 screen-to-bird ratio), so a 390px
-               phone gets ~10px — the same visual weight, not a fixed 38px that
-               would look oversized on a phone. Floor/cap keep it sane at the
-               extremes. */
-            width: clamp(9px, 2.64vw, 52px);
+               (38/1440 ≈ 2.64vw, a ~38:1 screen-to-bird ratio), rather than a
+               fixed 38px that would look oversized on a phone.
+               The 20px floor is what phones actually get: strict proportion
+               put a 390px phone at ~10px, which read as a speck rather than a
+               bird — too small to make out the wingbeat the animation exists
+               for. The floor takes over below ~758px wide; the vw term still
+               drives every size above that, so the laptop is unchanged. */
+            width: clamp(20px, 2.64vw, 52px);
             height: auto;
             opacity: 0;
             pointer-events: none;
