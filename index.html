@@ -64,22 +64,27 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* ── Resting page ──────────────────────────────────────────────── */
+        /* ── Page ─────────────────────────────────────────────────────── */
         /* Nav pinned top-right, wordmark block centred vertically and hung
            off the same left margin. Both use --gutter so they stay optically
-           aligned at every width. */
+           aligned at every width.
+
+           This sits ABOVE the intro overlay on purpose. The wordmark is never
+           duplicated or moved: it is drawn once, in its final position, and
+           the intro plays behind it. An earlier version staged a second copy
+           centre-screen and flew it here, which meant the two crossed over
+           each other at the hand-off. */
         .page {
             --gutter: clamp(22px, 8.5vw, 190px);
+            position: relative;
+            z-index: 2;
             min-height: 100vh;
             min-height: 100dvh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 0 var(--gutter);
-            opacity: 1;
-            transition: opacity .6s cubic-bezier(.215,.61,.355,1);
         }
-        body.intro-running .page { opacity: 0; }
 
         .nav {
             position: absolute;
@@ -114,12 +119,13 @@
 
         h1 {
             font-size: clamp(38px, 7.4vw, 152px);
-            /* Laid out from the start so land() can measure where the intro
-               wordmark is travelling to; revealed only once it arrives. */
             font-weight: 800;
             letter-spacing: -.035em;
             line-height: .95;
             color: var(--ink);
+            /* 1.2s, matching the zoom, so the wordmark finishes recolouring
+               exactly as the box finishes expanding. */
+            transition: color 1.2s cubic-bezier(.215,.61,.355,1);
         }
 
         .tagline {
@@ -132,24 +138,45 @@
             color: var(--mute);
         }
 
+        /* Everything except the wordmark waits: during the intro the screen
+           holds one thing, the way the dashboard's lock screen does. */
+        .nav, .tagline { transition: opacity .7s cubic-bezier(.215,.61,.355,1); }
+        body.intro-running .nav,
+        body.intro-running .tagline { opacity: 0; pointer-events: none; }
+        /* Light ink while a dark ground is behind it; resolves to the resting
+           colour over the same 1.2s the box takes to expand. */
+        body.on-dark h1 { color: var(--light); }
+
+        /* Per-character drop, on the real headline in its real position.
+           --i is the character index, set when the wordmark is split; 45ms
+           apart reads as a cascade without dragging. Splitting disables the
+           font's pair kerning — at this weight and size the loss is not
+           visible, so no per-pair correction is carried over from the
+           dashboard (those values were measured for "OHLCV" alone and do not
+           transfer to this wordmark). */
+        @keyframes chDrop {
+            from { opacity: 0; transform: translateY(-108%); }
+            to   { opacity: 1; transform: none; }
+        }
+        h1 .ch {
+            display: inline-block;
+            white-space: pre;
+            animation: chDrop .8s cubic-bezier(.215,.61,.355,1) both;
+            animation-delay: calc(var(--i) * 45ms);
+        }
+
         /* ── Intro overlay ─────────────────────────────────────────────── */
-        /* Phases, driven by classes set in runIntro():
-             staging    wordmark held centre-screen over the dark backdrop
+        /* Purely the ground and the box — no text of its own. It sits BELOW
+           the page so the box expands behind the wordmark.
              shot-in    the box fades up at .46 scale
              shot-full  the box expands to fill
-             on-dark    ink is light, against a dark backdrop or a dark box
-             done       the overlay fades out and the page fades in          */
+             done       ground and box fade away, leaving the resting page   */
         #intro {
             position: fixed;
             inset: 0;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 1;
-            transition: opacity .6s cubic-bezier(.215,.61,.355,1);
+            z-index: 1;
+            pointer-events: none;
         }
-        #intro.done { pointer-events: none; }
 
         /* No transition on the backdrop on purpose: it is a fixed ground for
            one visit, not an effect. Set once, never moved. */
@@ -172,50 +199,10 @@
         #intro.shot-in   .intro-box { opacity: 1; }
         #intro.shot-full .intro-box { transform: translate(-50%,-50%) scale(1); }
 
-        /* Every type metric here is the resting h1's, deliberately. The
-           wordmark does not cross-fade into place at the end — it travels
-           there, and the travel is a pure translate measured at run time
-           (see land()). Any difference in size, weight or tracking would
-           have to be scaled away mid-flight, which softens the glyphs and
-           makes the landing miss by a pixel or two. Keep these in step with
-           h1: if one changes, change both. */
-        .intro-title {
-            position: relative;
-            z-index: 2;
-            display: inline-block;      /* shrink to the text, so its box IS the text */
-            font-size: clamp(38px, 7.4vw, 152px);
-            font-weight: 800;
-            letter-spacing: -.035em;
-            line-height: .95;
-            color: var(--ink);
-            transition: color 1.2s cubic-bezier(.215,.61,.355,1);
-        }
-        /* The flight. Same curve as the zoom it hands off from, so the two
-           read as one movement rather than two. */
-        #intro.landing .intro-title {
-            transition: transform 1.15s cubic-bezier(.215,.61,.355,1),
-                        color 1.15s cubic-bezier(.215,.61,.355,1);
-        }
-        /* The ground drops away while the wordmark travels over it. */
-        #intro.landing .intro-canvas,
-        #intro.landing .intro-box { opacity: 0; transition: opacity .85s cubic-bezier(.215,.61,.355,1); }
-        #intro.on-dark .intro-title { color: var(--light); }
-
-        /* Per-character drop. --i is the character index, set when the
-           wordmark is split; 45ms apart reads as a cascade without dragging.
-           Splitting disables the font's pair kerning — at this weight and
-           size the loss is not visible, so no per-pair correction is carried
-           over from the dashboard (those values were measured for "OHLCV"
-           alone and do not transfer to this wordmark). */
-        @keyframes chDrop {
-            from { opacity: 0; transform: translateY(-108%); }
-            to   { opacity: 1; transform: none; }
-        }
-        .intro-title .ch {
-            display: inline-block;
-            white-space: pre;
-            animation: chDrop .8s cubic-bezier(.215,.61,.355,1) both;
-            animation-delay: calc(var(--i) * 45ms);
+        #intro.done .intro-canvas,
+        #intro.done .intro-box {
+            opacity: 0;
+            transition: opacity .85s cubic-bezier(.215,.61,.355,1);
         }
 
         /* Applied for a single frame whenever the sequence is jumped to its
@@ -227,12 +214,13 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .intro-title .ch { animation: none; }
-            #intro, .intro-box, .intro-title, .page { transition: none; }
+            h1 .ch { animation: none; }
+            #intro, .intro-box, .nav, .tagline, h1 { transition: none; }
         }
+
     </style>
 </head>
-<body class="intro-running">
+<body class="intro-running on-dark">
     <div class="page">
         <nav class="nav">
             <a href="/login/">Login</a>
@@ -249,35 +237,41 @@
     <div id="intro" aria-hidden="true">
         <div class="intro-canvas"></div>
         <div class="intro-box"></div>
-        <div class="intro-title">OHLCV LABS.</div>
     </div>
 
 <script>
 /* Intro choreography. Beats and durations mirror the dashboard PIN screen so
    the two read as one brand; the copy lives here independently.
 
-     2150  box fades up at .46 scale
-     2550  box expands to full, ink recolours over the same 1.2s
-     3750  = 2550 + the 1.2s transform transition. These two must stay in
-           step: handing off early starts the flight while the box is still
-           moving. If the CSS duration changes, change this.
-     +1150 the wordmark flies from centre to its resting position and the
-           two copies swap. Matches the CSS transition on .landing. */
+   The wordmark does not move. It is the page's own headline, in its final
+   position from the first frame, and the intro plays BEHIND it: the letters
+   drop into place where they will stay, then the box expands behind them.
+   An earlier version staged a second copy centre-screen and animated it into
+   position, which put two wordmarks on screen crossing over each other.
+
+     2150  box fades up at .46 scale, behind the wordmark
+     2550  box expands to full; ink follows over the same 1.2s
+     3750  = 2550 + the CSS transform duration. These two must stay in step:
+           finishing early fades the ground out while the box is still moving.
+           If the CSS duration changes, change this. */
 const _introTimers = [];
 
 function runIntro() {
   _introTimers.splice(0).forEach(clearTimeout);
 
-  const intro = document.getElementById('intro');
-  const title = document.querySelector('.intro-title');
-  const box   = document.querySelector('.intro-box');
-  const canvas= document.querySelector('.intro-canvas');
+  const intro  = document.getElementById('intro');
+  const title  = document.querySelector('h1');
+  const box    = document.querySelector('.intro-box');
+  const canvas = document.querySelector('.intro-canvas');
   if (!intro || !title || !box || !canvas) {
-    document.body.classList.remove('intro-running');   // never trap the page
+    document.body.classList.remove('intro-running', 'on-dark');   // never trap the page
     return;
   }
 
-  // Snap to the hidden start state for one frame before anything animates.
+  // Snap to the start state for one frame. A replay arrives with the box
+  // still full-screen from the last run; just dropping the classes would
+  // play its transitions in reverse while the new run starts.
+  intro.style.display = '';
   intro.classList.add('no-anim');
   intro.classList.remove('shot-in', 'shot-full', 'done');
   void intro.offsetWidth;
@@ -295,7 +289,7 @@ function runIntro() {
     title.appendChild(s);
   });
 
-  const ground = window.__splashGround || '#1f2b3a';
+  const ground    = window.__splashGround || '#1f2b3a';
   const boxColour = window.__splashBox || '#111014';
   canvas.style.background = ground;
   box.style.background = boxColour;
@@ -303,54 +297,22 @@ function runIntro() {
   // All three backdrops are dark, so the ink starts light and only changes
   // when the box expands — to dark ink if this load drew the off-white box.
   const boxIsDark = boxColour === '#111014';
-  const landInk = () => intro.classList.toggle('on-dark', boxIsDark);
+  const landInk = () => document.body.classList.toggle('on-dark', boxIsDark);
 
-  const rest = document.querySelector('h1');
-
-  // The page takes its resting layout with the headline present but undrawn.
-  // visibility, not opacity or display: the box has to stay measurable, since
-  // it is the target the intro wordmark is about to travel to.
-  const stagePage = () => {
-    rest.style.visibility = 'hidden';
-    document.body.classList.remove('intro-running');
-  };
-
-  // The two wordmarks trade places. They carry identical type metrics and sit
-  // at identical coordinates by now, so there is nothing to see in the swap.
-  const handOver = () => {
-    rest.style.visibility = '';
-    intro.style.display = 'none';
-  };
-
-  // The landing. Rather than cross-fading the overlay out and the page in --
-  // which reads as the wordmark teleporting from the centre to the margin --
-  // the intro wordmark TRAVELS to where the resting one sits and the two swap
-  // on arrival. The distance is measured at run time, never hard-coded: both
-  // ends are driven by clamp()s and move with the viewport, so any baked-in
-  // offset would be wrong at every width but one.
-  const land = () => {
+  const finish = () => {
     _introTimers.splice(0).forEach(clearTimeout);
-    intro.classList.add('shot-in', 'shot-full');
-    stagePage();
-    const from = title.getBoundingClientRect();
-    const to   = rest.getBoundingClientRect();
-    intro.classList.add('landing', 'done');
-    title.style.transform = `translate(${to.left - from.left}px, ${to.top - from.top}px)`;
-    // Ink resolves to the resting colour over the flight: whatever the box
-    // was, the page it lands on is cream, so the wordmark arrives dark.
-    intro.classList.remove('on-dark');
-    // Matches the CSS flight duration. If one changes, change the other.
-    _introTimers.push(setTimeout(handOver, 1150));
+    intro.classList.add('shot-in', 'shot-full', 'done');
+    // Ground and box fade away; the wordmark is already where it belongs, so
+    // all that is left is the ink resolving and the rest of the page arriving.
+    document.body.classList.remove('intro-running', 'on-dark');
+    // Out of the layer once it has faded, so it can never sit over the nav.
+    _introTimers.push(setTimeout(() => { intro.style.display = 'none'; }, 900));
   };
 
-  // Cutting to the end -- reduced motion, or anything that cannot wait. No
-  // flight: the page simply arrives in its resting state.
+  // Cutting to the end -- reduced motion, or anything that cannot wait.
   const jump = () => {
-    _introTimers.splice(0).forEach(clearTimeout);
-    intro.classList.add('no-anim', 'shot-in', 'shot-full', 'done');
-    intro.classList.remove('on-dark');
-    stagePage();
-    handOver();
+    intro.classList.add('no-anim');
+    finish();
     void intro.offsetWidth;
     intro.classList.remove('no-anim');
   };
@@ -361,12 +323,12 @@ function runIntro() {
     return;
   }
 
-  intro.classList.add('staging', 'on-dark');
+  document.body.classList.add('intro-running', 'on-dark');
 
   const at = (ms, fn) => _introTimers.push(setTimeout(fn, ms));
   at(2150, () => intro.classList.add('shot-in'));
   at(2550, () => { intro.classList.add('shot-full'); landInk(); });
-  at(3750, land);
+  at(3750, finish);
 }
 
 if (document.readyState === 'loading') {
