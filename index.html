@@ -114,6 +114,8 @@
 
         h1 {
             font-size: clamp(38px, 7.4vw, 152px);
+            /* Laid out from the start so land() can measure where the intro
+               wordmark is travelling to; revealed only once it arrives. */
             font-weight: 800;
             letter-spacing: -.035em;
             line-height: .95;
@@ -147,7 +149,7 @@
             opacity: 1;
             transition: opacity .6s cubic-bezier(.215,.61,.355,1);
         }
-        #intro.done { opacity: 0; pointer-events: none; }
+        #intro.done { pointer-events: none; }
 
         /* No transition on the backdrop on purpose: it is a fixed ground for
            one visit, not an effect. Set once, never moved. */
@@ -170,18 +172,33 @@
         #intro.shot-in   .intro-box { opacity: 1; }
         #intro.shot-full .intro-box { transform: translate(-50%,-50%) scale(1); }
 
+        /* Every type metric here is the resting h1's, deliberately. The
+           wordmark does not cross-fade into place at the end — it travels
+           there, and the travel is a pure translate measured at run time
+           (see land()). Any difference in size, weight or tracking would
+           have to be scaled away mid-flight, which softens the glyphs and
+           makes the landing miss by a pixel or two. Keep these in step with
+           h1: if one changes, change both. */
         .intro-title {
             position: relative;
             z-index: 2;
-            font-size: clamp(30px, 6vw, 118px);
+            display: inline-block;      /* shrink to the text, so its box IS the text */
+            font-size: clamp(38px, 7.4vw, 152px);
             font-weight: 800;
             letter-spacing: -.035em;
             line-height: .95;
             color: var(--ink);
-            /* 1.2s, matching the zoom, so the wordmark finishes recolouring
-               exactly as the box finishes expanding. */
             transition: color 1.2s cubic-bezier(.215,.61,.355,1);
         }
+        /* The flight. Same curve as the zoom it hands off from, so the two
+           read as one movement rather than two. */
+        #intro.landing .intro-title {
+            transition: transform 1.15s cubic-bezier(.215,.61,.355,1),
+                        color 1.15s cubic-bezier(.215,.61,.355,1);
+        }
+        /* The ground drops away while the wordmark travels over it. */
+        #intro.landing .intro-canvas,
+        #intro.landing .intro-box { opacity: 0; transition: opacity .85s cubic-bezier(.215,.61,.355,1); }
         #intro.on-dark .intro-title { color: var(--light); }
 
         /* Per-character drop. --i is the character index, set when the
@@ -242,8 +259,10 @@
      2150  box fades up at .46 scale
      2550  box expands to full, ink recolours over the same 1.2s
      3750  = 2550 + the 1.2s transform transition. These two must stay in
-           step: finishing early snaps the screen to its end state while the
-           box is still moving. If the CSS duration changes, change this. */
+           step: handing off early starts the flight while the box is still
+           moving. If the CSS duration changes, change this.
+     +1150 the wordmark flies from centre to its resting position and the
+           two copies swap. Matches the CSS transition on .landing. */
 const _introTimers = [];
 
 function runIntro() {
@@ -286,20 +305,52 @@ function runIntro() {
   const boxIsDark = boxColour === '#111014';
   const landInk = () => intro.classList.toggle('on-dark', boxIsDark);
 
-  const finish = () => {
-    _introTimers.splice(0).forEach(clearTimeout);
-    intro.classList.add('shot-in', 'shot-full', 'done');
-    landInk();
+  const rest = document.querySelector('h1');
+
+  // The page takes its resting layout with the headline present but undrawn.
+  // visibility, not opacity or display: the box has to stay measurable, since
+  // it is the target the intro wordmark is about to travel to.
+  const stagePage = () => {
+    rest.style.visibility = 'hidden';
     document.body.classList.remove('intro-running');
-    // Out of the layer once it has faded, so it can never sit over the nav.
-    setTimeout(() => { intro.style.display = 'none'; }, 700);
   };
 
-  // Cutting to the end. Suppressing transitions for one frame makes the jump
-  // land instantly rather than racing through the zoom from wherever it sits.
+  // The two wordmarks trade places. They carry identical type metrics and sit
+  // at identical coordinates by now, so there is nothing to see in the swap.
+  const handOver = () => {
+    rest.style.visibility = '';
+    intro.style.display = 'none';
+  };
+
+  // The landing. Rather than cross-fading the overlay out and the page in --
+  // which reads as the wordmark teleporting from the centre to the margin --
+  // the intro wordmark TRAVELS to where the resting one sits and the two swap
+  // on arrival. The distance is measured at run time, never hard-coded: both
+  // ends are driven by clamp()s and move with the viewport, so any baked-in
+  // offset would be wrong at every width but one.
+  const land = () => {
+    _introTimers.splice(0).forEach(clearTimeout);
+    intro.classList.add('shot-in', 'shot-full');
+    stagePage();
+    const from = title.getBoundingClientRect();
+    const to   = rest.getBoundingClientRect();
+    intro.classList.add('landing', 'done');
+    title.style.transform = `translate(${to.left - from.left}px, ${to.top - from.top}px)`;
+    // Ink resolves to the resting colour over the flight: whatever the box
+    // was, the page it lands on is cream, so the wordmark arrives dark.
+    intro.classList.remove('on-dark');
+    // Matches the CSS flight duration. If one changes, change the other.
+    _introTimers.push(setTimeout(handOver, 1150));
+  };
+
+  // Cutting to the end -- reduced motion, or anything that cannot wait. No
+  // flight: the page simply arrives in its resting state.
   const jump = () => {
-    intro.classList.add('no-anim');
-    finish();
+    _introTimers.splice(0).forEach(clearTimeout);
+    intro.classList.add('no-anim', 'shot-in', 'shot-full', 'done');
+    intro.classList.remove('on-dark');
+    stagePage();
+    handOver();
     void intro.offsetWidth;
     intro.classList.remove('no-anim');
   };
@@ -315,7 +366,7 @@ function runIntro() {
   const at = (ms, fn) => _introTimers.push(setTimeout(fn, ms));
   at(2150, () => intro.classList.add('shot-in'));
   at(2550, () => { intro.classList.add('shot-full'); landInk(); });
-  at(3750, finish);
+  at(3750, land);
 }
 
 if (document.readyState === 'loading') {
