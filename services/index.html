@@ -64,15 +64,6 @@
             overflow: hidden;
         }
 
-        .slide-num {
-            position: absolute;
-            top: clamp(64px, 9vh, 116px);
-            right: clamp(20px, 5vw, 96px);
-            font-size: clamp(13px, 1.15vw, 22px);
-            font-weight: 700;
-            letter-spacing: .02em;
-        }
-
         h2 {
             font-size: clamp(30px, 4.1vw, 74px);
             font-weight: 800;
@@ -113,13 +104,27 @@
             font-size: clamp(22px, 2.9vw, 52px);
             font-weight: 800;
             letter-spacing: -.01em;
-            color: var(--accent);
+            color: #000;
         }
 
-        /* The deck has the yellow panel sitting over the lower half of this
-           heading. Reproduced as a stack with real clearance instead: the
-           overlap reads as a slide that ran out of room, and at browser
-           widths it would clip different words at every size. */
+        .so-what-block {
+            display: flex;
+            flex-direction: column;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+        .so-what-block .so-what {
+            background: var(--accent);
+            padding: clamp(18px, 2.4vw, 42px) clamp(20px, 3vw, 54px);
+            padding-bottom: clamp(4px, .5vw, 10px);
+            border-radius: clamp(18px, 2vw, 38px) clamp(18px, 2vw, 38px) 0 0;
+        }
+        .so-what-block .callout {
+            border-radius: 0 0 clamp(18px, 2vw, 38px) clamp(18px, 2vw, 38px);
+        }
+
+        /* The heading and callout are one connected yellow block, matching the
+           deck where the heading sits directly on top of the panel. */
         .callout {
             background: var(--accent);
             color: #000;
@@ -163,10 +168,6 @@
         .reveal[data-delay="4"] { transition-delay: .36s; }
 
         @media (max-width: 860px) {
-            /* The number is pinned to the corner on wide screens, where the
-               heading is one line and nowhere near it. Once the heading wraps,
-               the corner is no longer free — so it rejoins the flow. */
-            .slide-num { position: static; text-align: right; }
             .points { grid-template-columns: 1fr; gap: clamp(18px, 3vh, 30px); }
             .point p, .point b { font-size: clamp(13px, 3.4vw, 17px); }
             .callout { font-size: clamp(12px, 3.1vw, 16px); text-align: left; }
@@ -191,7 +192,6 @@
     <main>
         <!-- Slide 03/10 -->
         <section class="slide">
-            <div data-speed="-0.5"><div class="slide-num reveal">03/10</div></div>
 
             <div data-speed="-0.9" class="h2-wrap">
                 <h2 class="reveal">Laying the Groundwork</h2>
@@ -224,14 +224,13 @@
                 </div>
             </div>
 
-            <div data-speed="0.4">
-                <h3 class="so-what reveal">SO WHAT? WHY ML?</h3>
-            </div>
-
-            <div data-speed="0.7">
-                <blockquote class="callout reveal">
-                    ML is already a part of sophisticated quants&rsquo; investing toolkit. It offers valuable modeling flexibility and has application throughout the investment process. We view the integration of ML into investing as an evolution rather than a revolution. The techniques aren&rsquo;t qualitatively distinct from traditional methods, and we expect that the quantitative investment process will remain recognizable in the foreseeable future, even as the research tools that inform its components evolve. Markets make for an especially challenging environment in which to apply ML, and beneficial ML-based research calls for process discipline and finance domain knowledge. For asset owners, more flexible but more opaque analytical tools will exacerbate challenges in distinguishing strategies that add value from data artifact. Working knowledge of ML approaches and ML research best practices offer a valuable defense.
-                </blockquote>
+            <div data-speed="0.6">
+                <div class="so-what-block reveal">
+                    <h3 class="so-what">SO WHAT? WHY ML?</h3>
+                    <blockquote class="callout">
+                        ML is already a part of sophisticated quants&rsquo; investing toolkit. It offers valuable modeling flexibility and has application throughout the investment process. We view the integration of ML into investing as an evolution rather than a revolution. The techniques aren&rsquo;t qualitatively distinct from traditional methods, and we expect that the quantitative investment process will remain recognizable in the foreseeable future, even as the research tools that inform its components evolve. Markets make for an especially challenging environment in which to apply ML, and beneficial ML-based research calls for process discipline and finance domain knowledge. For asset owners, more flexible but more opaque analytical tools will exacerbate challenges in distinguishing strategies that add value from data artifact. Working knowledge of ML approaches and ML research best practices offer a valuable defense.
+                    </blockquote>
+                </div>
             </div>
 
             <div data-speed="1.0">
