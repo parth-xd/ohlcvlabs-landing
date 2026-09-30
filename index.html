@@ -111,12 +111,6 @@
 
         .nav .sep { width: 1px; height: 1em; background: currentColor; opacity: .65; }
 
-        /* Inert until the deck it will hold exists. Rendered like the live
-           link on purpose — a real destination that is not built yet, not a
-           disabled control. */
-        .nav .pending { cursor: default; }
-        .nav .pending:hover { opacity: 1; }
-
         h1 {
             font-size: clamp(38px, 7.4vw, 152px);
             font-weight: 800;
@@ -225,7 +219,7 @@
         <nav class="nav">
             <a href="/login/">Login</a>
             <span class="sep" aria-hidden="true"></span>
-            <a class="pending" role="link" aria-disabled="true" title="Coming soon">Services</a>
+            <a href="/services/">Services</a>
         </nav>
 
         <main>

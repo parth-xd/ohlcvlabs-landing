@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <!-- Private for now, same rule as / and /login/. Remove from all three
+         when the site should be findable. -->
+    <meta name="robots" content="noindex">
+    <title>Services — OHLCV Labs</title>
+    <style>
+        :root {
+            --ink:     #ffffff;
+            --ground:  #000000;
+            --accent:  #ffe04d;   /* the deck's yellow */
+            --cream:   #f2e9e0;   /* the splash's cream, reused for the closer */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; background: var(--ground); }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: var(--ground);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        /* ── Chrome ───────────────────────────────────────────────────── */
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: clamp(14px, 2.2vw, 26px) clamp(18px, 4vw, 56px);
+            font-size: clamp(10px, 0.82vw, 14px);
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            /* Legible over the black without a hard edge against it. */
+            background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0));
+        }
+        .topbar a { color: var(--ink); text-decoration: none; padding: 8px 2px; transition: opacity .25s ease; }
+        .topbar a:hover, .topbar a:focus-visible { opacity: .5; }
+
+        /* ── Section scaffold ─────────────────────────────────────────── */
+        /* One deck slide = one section. Every slide reuses this shell, so
+           adding the remaining nine is a matter of copying the <section>
+           and swapping its contents — no new CSS per slide. */
+        .slide {
+            position: relative;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: clamp(72px, 9.5vh, 130px) clamp(20px, 5vw, 96px) clamp(52px, 7vh, 100px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: clamp(18px, 2.7vh, 44px);
+            overflow: hidden;
+        }
+
+        .slide-num {
+            position: absolute;
+            top: clamp(64px, 9vh, 116px);
+            right: clamp(20px, 5vw, 96px);
+            font-size: clamp(13px, 1.15vw, 22px);
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+
+        h2 {
+            font-size: clamp(30px, 4.1vw, 74px);
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.05;
+            /* The rule is the heading's own underline, so it always matches
+               the text width rather than being a fixed bar that drifts out of
+               step when the type reflows. */
+            display: inline-block;
+            padding-bottom: clamp(8px, 1vh, 16px);
+            border-bottom: clamp(3px, .34vw, 6px) solid var(--accent);
+        }
+        .h2-wrap { display: block; }
+
+        /* Three columns, as the slide sets them: 01 and 02 stack in the
+           first, 03 fills the second, 04 the third. */
+        .points {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(20px, 3vw, 64px);
+            align-items: start;
+        }
+        .col { display: flex; flex-direction: column; gap: clamp(18px, 2.6vh, 38px); }
+
+        .point { display: grid; grid-template-columns: auto 1fr; gap: clamp(10px, 1.1vw, 22px); align-items: start; }
+        .point b {
+            font-size: clamp(12px, 1.05vw, 20px);
+            font-weight: 700;
+            line-height: 1.5;
+        }
+        .point p {
+            font-size: clamp(12px, 1.05vw, 21px);
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .so-what {
+            font-size: clamp(22px, 2.9vw, 52px);
+            font-weight: 800;
+            letter-spacing: -.01em;
+            color: var(--accent);
+        }
+
+        /* The deck has the yellow panel sitting over the lower half of this
+           heading. Reproduced as a stack with real clearance instead: the
+           overlap reads as a slide that ran out of room, and at browser
+           widths it would clip different words at every size. */
+        .callout {
+            background: var(--accent);
+            color: #000;
+            border-radius: clamp(18px, 2vw, 38px);
+            corner-shape: squircle;
+            padding: clamp(18px, 2.4vw, 42px) clamp(20px, 3vw, 54px);
+            font-size: clamp(12px, 1.02vw, 20px);
+            font-weight: 700;
+            line-height: 1.5;
+            text-align: center;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .closer {
+            font-size: clamp(21px, 2.85vw, 52px);
+            font-weight: 800;
+            letter-spacing: -.015em;
+            line-height: 1.15;
+            color: var(--cream);
+            text-align: center;
+        }
+
+        /* ── Parallax + reveal ────────────────────────────────────────── */
+        /* Two separate effects on two separate elements, deliberately:
+           [data-speed] wrappers carry the parallax transform, .reveal children
+           carry the entrance. Putting both on one element means one transform
+           property fighting over two jobs. */
+        [data-speed] { will-change: transform; }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(26px);
+            transition: opacity .85s cubic-bezier(.16,1,.3,1),
+                        transform .85s cubic-bezier(.16,1,.3,1);
+        }
+        .reveal.in { opacity: 1; transform: none; }
+        .reveal[data-delay="1"] { transition-delay: .09s; }
+        .reveal[data-delay="2"] { transition-delay: .18s; }
+        .reveal[data-delay="3"] { transition-delay: .27s; }
+        .reveal[data-delay="4"] { transition-delay: .36s; }
+
+        @media (max-width: 860px) {
+            /* The number is pinned to the corner on wide screens, where the
+               heading is one line and nowhere near it. Once the heading wraps,
+               the corner is no longer free — so it rejoins the flow. */
+            .slide-num { position: static; text-align: right; }
+            .points { grid-template-columns: 1fr; gap: clamp(18px, 3vh, 30px); }
+            .point p, .point b { font-size: clamp(13px, 3.4vw, 17px); }
+            .callout { font-size: clamp(12px, 3.1vw, 16px); text-align: left; }
+            .slide { gap: clamp(22px, 3.4vh, 38px); }
+        }
+
+        /* Motion is decoration here: with it off, everything is simply in
+           place and the page is an ordinary scroll. */
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+            [data-speed] { transform: none !important; }
+            html { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a href="/">OHLCV Labs</a>
+        <a href="/login/">Login</a>
+    </header>
+
+    <main>
+        <!-- Slide 03/10 -->
+        <section class="slide">
+            <div data-speed="-0.5"><div class="slide-num reveal">03/10</div></div>
+
+            <div data-speed="-0.9" class="h2-wrap">
+                <h2 class="reveal">Laying the Groundwork</h2>
+            </div>
+
+            <div data-speed="-0.3">
+                <div class="points">
+                    <div class="col">
+                        <div class="point reveal" data-delay="1">
+                            <b>01</b>
+                            <p>An algo trading system that merges quantitative research and machine learning</p>
+                        </div>
+                        <div class="point reveal" data-delay="2">
+                            <b>02</b>
+                            <p>Started with &ldquo;Regression&rdquo; which was actually taught in my curriculum at University.</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="point reveal" data-delay="3">
+                            <b>03</b>
+                            <p>I went deeper into decision trees and discovered that the same tree structure could be used in two different ways: classification trees to predict categories, and regression trees to predict numbers. From there, I moved into Gradient Boosting and eventually XGBoost.</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="point reveal" data-delay="4">
+                            <b>04</b>
+                            <p>The GOAL? : Turn cutting-edge ideas and petabyte-scale data into bleeding edge models with direct trading impact &amp; I just don&rsquo;t like sitting at my laptop staring at charts so I made a system do it.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div data-speed="0.4">
+                <h3 class="so-what reveal">SO WHAT? WHY ML?</h3>
+            </div>
+
+            <div data-speed="0.7">
+                <blockquote class="callout reveal">
+                    ML is already a part of sophisticated quants&rsquo; investing toolkit. It offers valuable modeling flexibility and has application throughout the investment process. We view the integration of ML into investing as an evolution rather than a revolution. The techniques aren&rsquo;t qualitatively distinct from traditional methods, and we expect that the quantitative investment process will remain recognizable in the foreseeable future, even as the research tools that inform its components evolve. Markets make for an especially challenging environment in which to apply ML, and beneficial ML-based research calls for process discipline and finance domain knowledge. For asset owners, more flexible but more opaque analytical tools will exacerbate challenges in distinguishing strategies that add value from data artifact. Working knowledge of ML approaches and ML research best practices offer a valuable defense.
+                </blockquote>
+            </div>
+
+            <div data-speed="1.0">
+                <p class="closer reveal">Can this be turned into an actual trading system?</p>
+            </div>
+        </section>
+    </main>
+
+<script>
+/* Parallax and entrances, no library.
+
+   Parallax: each [data-speed] wrapper is offset by its distance from the
+   centre of the viewport times its own speed, so layers separate as you
+   scroll. Negative speeds move against the scroll, which is what opens a gap
+   between the columns above and the panel below. Read in a rAF callback and
+   written once per frame -- measuring inside the scroll event itself forces a
+   layout on every tick and is where this pattern usually goes wrong.
+
+   Entrances: IntersectionObserver rather than scroll maths, so a section that
+   is already on screen at load reveals immediately instead of waiting for a
+   scroll that may never come on a short page. */
+(function () {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const seen = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); seen.unobserve(e.target); }
+    });
+  }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => seen.observe(el));
+
+  if (reduced) return;
+
+  // Progress is measured per SECTION, not per element. An earlier version
+  // offset every layer by its own distance from the viewport centre, which
+  // meant each block was displaced even at rest and neighbouring blocks with
+  // different speeds drifted into one another -- the heading's rule landed on
+  // top of the first column. Sharing one progress value per section makes the
+  // offsets zero when that section is centred, which is exactly when someone
+  // is reading it: the composition is the deck's, and the layers only
+  // separate on the way past.
+  // Signs run monotonically top-to-bottom so vertically adjacent blocks
+  // SEPARATE on the pass rather than closing on each other. With the signs
+  // the other way round the heading drifted down into the first column and
+  // the clearance between them fell from 22px to 1px by the end of a pass.
+  const RANGE = 46;   // px at the extremes of a pass
+  const sections = [...document.querySelectorAll('.slide')].map(sec => ({
+    sec, layers: [...sec.querySelectorAll('[data-speed]')]
+  })).filter(s => s.layers.length);
+  if (!sections.length) return;
+
+  let ticking = false;
+  const frame = () => {
+    const mid = innerHeight / 2;
+    sections.forEach(({ sec, layers }) => {
+      const r = sec.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > innerHeight + 200) return;   // off-screen: skip
+      // -1 (section below the fold) .. 0 (centred) .. 1 (scrolled past)
+      const progress = Math.max(-1.6, Math.min(1.6,
+        ((r.top + r.height / 2) - mid) / innerHeight * -1));
+      layers.forEach(el => {
+        el.style.transform =
+          `translate3d(0, ${(progress * el.dataset.speed * RANGE).toFixed(2)}px, 0)`;
+      });
+    });
+    ticking = false;
+  };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } };
+
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
+  frame();
+})();
+</script>
+</body>
+</html>
