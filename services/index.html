@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#f1e8db">
     <!-- Private for now, same rule as / and /login/. Remove from all three
          when the site should be findable. -->
     <meta name="robots" content="noindex">
     <title>Services — OHLCV Labs</title>
     <style>
         :root {
-            --ink:     #ffffff;
-            --ground:  #000000;
-            --accent:  #ffe04d;   /* the deck's yellow */
-            --cream:   #f2e9e0;   /* the splash's cream, reused for the closer */
+            /* measured from the cream version of the slide */
+            --ink:     #181614;   /* text, and the callout box */
+            --ground:  #f1e8db;
+            --accent:  #000000;   /* title rule, SO WHAT heading */
+            --cream:   #f3ece2;   /* text inside the callout box */
             --radius:  clamp(18px, 2vw, 38px);
         }
 
@@ -43,8 +44,8 @@
             font-weight: 600;
             letter-spacing: 0.14em;
             text-transform: uppercase;
-            /* Legible over the black without a hard edge against it. */
-            background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0));
+            /* Legible over the cream without a hard edge against it. */
+            background: linear-gradient(to bottom, rgba(241,232,219,.92), rgba(241,232,219,0));
         }
         .topbar a { color: var(--ink); text-decoration: none; padding: 8px 2px; transition: opacity .25s ease; }
         .topbar a:hover, .topbar a:focus-visible { opacity: .5; }
@@ -101,7 +102,7 @@
             line-height: 1.5;
         }
 
-        /* As in the deck, the heading stands on the box's top edge; same yellow, so they fuse. */
+        /* As in the deck, the heading stands on the box's top edge. */
         .so-what-block {
             display: flex;
             flex-direction: column;
@@ -120,8 +121,8 @@
         }
 
         .callout {
-            background: var(--accent);
-            color: #000;
+            background: var(--ink);
+            color: var(--cream);
             border-radius: var(--radius);
             corner-shape: squircle;
             padding: clamp(18px, 2.4vw, 42px) clamp(20px, 3vw, 54px);
@@ -138,7 +139,7 @@
             font-weight: 800;
             letter-spacing: -.015em;
             line-height: 1.15;
-            color: var(--cream);
+            color: var(--ink);
             text-align: center;
         }
 
