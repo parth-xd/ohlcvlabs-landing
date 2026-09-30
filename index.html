@@ -9,45 +9,11 @@
          Remove from BOTH when it should be findable. -->
     <meta name="robots" content="noindex">
     <title>OHLCV Labs</title>
-<script>
-/* Intro colours, chosen before the first paint.
-
-   Mirrors the dashboard PIN screen's intro (index.html, PROTECTED there —
-   this is a separate copy for a separate site, not a shared module; changing
-   one does not change the other). Two independent picks, each alternating /
-   cycling per load so consecutive visits differ:
-     backdrop  navy -> olive -> wine   (all dark; the wordmark starts light)
-     box       black <-> off-white     (the "black and white" beat)
-
-   The root is deliberately left CREAM rather than painted the box colour.
-   iOS samples the status-bar strip once at first paint and never re-samples,
-   so painting it black would leave a black strip above a cream page for the
-   whole visit — the intro is 3.75s, the resting page is everything after it,
-   and the strip should match the latter. The dark backdrop is supplied by a
-   full-screen overlay instead, which covers the cream without changing what
-   iOS sampled. Storage keys are this site's own, so they never step the
-   dashboard's sequence. */
-(function () {
-  var GROUNDS = ['#1f2b3a', '#4a4f36', '#5c2230'];   // navy, olive, wine
-  var ground = GROUNDS[0], box = '#111014';
-  try {
-    var g = (Number(localStorage.getItem('splash_ground_n') || 0) + 1) % GROUNDS.length;
-    localStorage.setItem('splash_ground_n', String(g));
-    ground = GROUNDS[g];
-    var b = (Number(localStorage.getItem('splash_box_n') || 0) + 1) % 2;
-    localStorage.setItem('splash_box_n', String(b));
-    box = b ? '#111014' : '#f4f2ee';
-  } catch (e) { /* storage blocked (private mode): navy + black every load */ }
-  window.__splashGround = ground;
-  window.__splashBox = box;
-})();
-</script>
     <style>
         :root {
             --ground: #f2e9e0;
             --ink:    #0a0a0a;
             --mute:   #1e1d20;
-            --light:  #f4f2ee;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -67,17 +33,10 @@
         /* ── Page ─────────────────────────────────────────────────────── */
         /* Nav pinned top-right, wordmark block centred vertically and hung
            off the same left margin. Both use --gutter so they stay optically
-           aligned at every width.
-
-           This sits ABOVE the intro overlay on purpose. The wordmark is never
-           duplicated or moved: it is drawn once, in its final position, and
-           the intro plays behind it. An earlier version staged a second copy
-           centre-screen and flew it here, which meant the two crossed over
-           each other at the hand-off. */
+           aligned at every width. */
         .page {
             --gutter: clamp(22px, 8.5vw, 190px);
             position: relative;
-            z-index: 2;
             min-height: 100vh;
             min-height: 100dvh;
             display: flex;
@@ -117,9 +76,6 @@
             letter-spacing: -.035em;
             line-height: .95;
             color: var(--ink);
-            /* 1.2s, matching the zoom, so the wordmark finishes recolouring
-               exactly as the box finishes expanding. */
-            transition: color 1.2s cubic-bezier(.215,.61,.355,1);
         }
 
         .tagline {
@@ -137,9 +93,6 @@
         .nav, .tagline { transition: opacity .7s cubic-bezier(.215,.61,.355,1); }
         body.intro-running .nav,
         body.intro-running .tagline { opacity: 0; pointer-events: none; }
-        /* Light ink while a dark ground is behind it; resolves to the resting
-           colour over the same 1.2s the box takes to expand. */
-        body.on-dark h1 { color: var(--light); }
 
         /* Per-character drop, on the real headline in its real position.
            --i is the character index, set when the wordmark is split; 45ms
@@ -159,62 +112,14 @@
             animation-delay: calc(var(--i) * 45ms);
         }
 
-        /* ── Intro overlay ─────────────────────────────────────────────── */
-        /* Purely the ground and the box — no text of its own. It sits BELOW
-           the page so the box expands behind the wordmark.
-             shot-in    the box fades up at .46 scale
-             shot-full  the box expands to fill
-             done       ground and box fade away, leaving the resting page   */
-        #intro {
-            position: fixed;
-            inset: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* No transition on the backdrop on purpose: it is a fixed ground for
-           one visit, not an effect. Set once, never moved. */
-        .intro-canvas { position: absolute; inset: 0; z-index: 0; }
-
-        .intro-box {
-            /* A plain coloured block, never an image. The dashboard learned
-               this the hard way: an <img> of a one-colour SVG data URI was
-               refused by iOS WebKit and rendered as a grey box. A block
-               cannot fail to load. Colour is set in runIntro(). */
-            position: absolute;
-            left: 50%; top: 50%;
-            z-index: 1;
-            width: 100%; height: 100%;
-            opacity: 0;
-            transform: translate(-50%,-50%) scale(.46);
-            transition: opacity .7s cubic-bezier(.215,.61,.355,1),
-                        transform 1.2s cubic-bezier(.215,.61,.355,1);
-        }
-        #intro.shot-in   .intro-box { opacity: 1; }
-        #intro.shot-full .intro-box { transform: translate(-50%,-50%) scale(1); }
-
-        #intro.done .intro-canvas,
-        #intro.done .intro-box {
-            opacity: 0;
-            transition: opacity .85s cubic-bezier(.215,.61,.355,1);
-        }
-
-        /* Applied for a single frame whenever the sequence is jumped to its
-           end state. Without it, adding shot-full starts the 1.2s zoom from
-           wherever the box happens to be, and the expansion appears to race. */
-        #intro.no-anim, #intro.no-anim * {
-            transition: none !important;
-            animation: none !important;
-        }
-
         @media (prefers-reduced-motion: reduce) {
             h1 .ch { animation: none; }
-            #intro, .intro-box, .nav, .tagline, h1 { transition: none; }
+            .nav, .tagline { transition: none; }
         }
 
     </style>
 </head>
-<body class="intro-running on-dark">
+<body class="intro-running">
     <div class="page">
         <nav class="nav">
             <a href="/login/">Login</a>
@@ -228,51 +133,15 @@
         </main>
     </div>
 
-    <div id="intro" aria-hidden="true">
-        <div class="intro-canvas"></div>
-        <div class="intro-box"></div>
-    </div>
-
 <script>
-/* Intro choreography. Beats and durations mirror the dashboard PIN screen so
-   the two read as one brand; the copy lives here independently.
-
-   The wordmark does not move. It is the page's own headline, in its final
-   position from the first frame, and the intro plays BEHIND it: the letters
-   drop into place where they will stay, then the box expands behind them.
-   An earlier version staged a second copy centre-screen and animated it into
-   position, which put two wordmarks on screen crossing over each other.
-
-     2150  box fades up at .46 scale, behind the wordmark
-     2550  box expands to full; ink follows over the same 1.2s
-     3750  = 2550 + the CSS transform duration. These two must stay in step:
-           finishing early fades the ground out while the box is still moving.
-           If the CSS duration changes, change this. */
-const _introTimers = [];
-
+/* Intro: the wordmark's letters drop into the positions they keep; the nav
+   and tagline arrive as the last letter lands. */
 function runIntro() {
-  _introTimers.splice(0).forEach(clearTimeout);
+  const title = document.querySelector('h1');
+  const finish = () => document.body.classList.remove('intro-running');
+  if (!title) { finish(); return; }   // never trap the page
 
-  const intro  = document.getElementById('intro');
-  const title  = document.querySelector('h1');
-  const box    = document.querySelector('.intro-box');
-  const canvas = document.querySelector('.intro-canvas');
-  if (!intro || !title || !box || !canvas) {
-    document.body.classList.remove('intro-running', 'on-dark');   // never trap the page
-    return;
-  }
-
-  // Snap to the start state for one frame. A replay arrives with the box
-  // still full-screen from the last run; just dropping the classes would
-  // play its transitions in reverse while the new run starts.
-  intro.style.display = '';
-  intro.classList.add('no-anim');
-  intro.classList.remove('shot-in', 'shot-full', 'done');
-  void intro.offsetWidth;
-  intro.classList.remove('no-anim');
-
-  // Split the wordmark into per-character spans. Spaces get their own span
-  // (white-space:pre in the CSS) so the cascade stays evenly timed.
+  // Spaces get their own span (white-space:pre in the CSS) so the cascade stays evenly timed.
   const text = title.textContent;
   title.textContent = '';
   [...text].forEach((ch, i) => {
@@ -283,46 +152,12 @@ function runIntro() {
     title.appendChild(s);
   });
 
-  const ground    = window.__splashGround || '#1f2b3a';
-  const boxColour = window.__splashBox || '#111014';
-  canvas.style.background = ground;
-  box.style.background = boxColour;
+  const last = title.lastElementChild;
+  if (!last || matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
 
-  // All three backdrops are dark, so the ink starts light and only changes
-  // when the box expands — to dark ink if this load drew the off-white box.
-  const boxIsDark = boxColour === '#111014';
-  const landInk = () => document.body.classList.toggle('on-dark', boxIsDark);
-
-  const finish = () => {
-    _introTimers.splice(0).forEach(clearTimeout);
-    intro.classList.add('shot-in', 'shot-full', 'done');
-    // Ground and box fade away; the wordmark is already where it belongs, so
-    // all that is left is the ink resolving and the rest of the page arriving.
-    document.body.classList.remove('intro-running', 'on-dark');
-    // Out of the layer once it has faded, so it can never sit over the nav.
-    _introTimers.push(setTimeout(() => { intro.style.display = 'none'; }, 900));
-  };
-
-  // Cutting to the end -- reduced motion, or anything that cannot wait.
-  const jump = () => {
-    intro.classList.add('no-anim');
-    finish();
-    void intro.offsetWidth;
-    intro.classList.remove('no-anim');
-  };
-
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    title.querySelectorAll('.ch').forEach(c => { c.style.animation = 'none'; });
-    jump();
-    return;
-  }
-
-  document.body.classList.add('intro-running', 'on-dark');
-
-  const at = (ms, fn) => _introTimers.push(setTimeout(fn, ms));
-  at(2150, () => intro.classList.add('shot-in'));
-  at(2550, () => { intro.classList.add('shot-full'); landInk(); });
-  at(3750, finish);
+  // Timed off the CSS itself (last letter's delay + duration), so the two can't drift apart.
+  const cs = getComputedStyle(last);
+  setTimeout(finish, (parseFloat(cs.animationDelay) + parseFloat(cs.animationDuration)) * 1000);
 }
 
 if (document.readyState === 'loading') {
