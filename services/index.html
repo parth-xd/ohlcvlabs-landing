@@ -14,6 +14,7 @@
             --ground:  #000000;
             --accent:  #ffe04d;   /* the deck's yellow */
             --cream:   #f2e9e0;   /* the splash's cream, reused for the closer */
+            --radius:  clamp(18px, 2vw, 38px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -100,35 +101,28 @@
             line-height: 1.5;
         }
 
-        .so-what {
-            font-size: clamp(22px, 2.9vw, 52px);
-            font-weight: 800;
-            letter-spacing: -.01em;
-            color: #000;
-        }
-
+        /* As in the deck, the heading stands on the box's top edge; same yellow, so they fuse. */
         .so-what-block {
             display: flex;
             flex-direction: column;
             max-width: 1500px;
             margin: 0 auto;
         }
-        .so-what-block .so-what {
-            background: var(--accent);
-            padding: clamp(18px, 2.4vw, 42px) clamp(20px, 3vw, 54px);
-            padding-bottom: clamp(4px, .5vw, 10px);
-            border-radius: clamp(18px, 2vw, 38px) clamp(18px, 2vw, 38px) 0 0;
-        }
-        .so-what-block .callout {
-            border-radius: 0 0 clamp(18px, 2vw, 38px) clamp(18px, 2vw, 38px);
+        .so-what {
+            font-size: clamp(22px, 2.9vw, 52px);
+            font-weight: 800;
+            letter-spacing: -.01em;
+            color: var(--accent);
+            line-height: 1;
+            /* baseline sits 0.12-0.155em up the line box (measured SF/Helvetica/Arial): edge lands 0-2px above it, never a gap */
+            margin-bottom: calc(-0.14em - 1px);
+            padding-left: var(--radius);
         }
 
-        /* The heading and callout are one connected yellow block, matching the
-           deck where the heading sits directly on top of the panel. */
         .callout {
             background: var(--accent);
             color: #000;
-            border-radius: clamp(18px, 2vw, 38px);
+            border-radius: var(--radius);
             corner-shape: squircle;
             padding: clamp(18px, 2.4vw, 42px) clamp(20px, 3vw, 54px);
             font-size: clamp(12px, 1.02vw, 20px);
