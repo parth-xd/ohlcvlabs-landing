@@ -301,6 +301,7 @@
         @media (max-width: 860px) {
             .xgb-stage { height: 600vh; }
             .anatomy { width: 94vw; }
+            .brit-chip { width: 46vw; }
             .anat-side { width: 44vw; }
             .tree-big { width: 94vw; }
             .ens-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 94vw; }
@@ -629,6 +630,9 @@
   function measure() {
     var VW = probe.offsetWidth / 100, VH = probe.offsetHeight / 100;
     var vpW = vp.offsetWidth, vpH = vp.offsetHeight, narrow = innerWidth < 860;
+    /* phones: the watchlist shrinks as it slides left so it stays on screen and clear of the chip */
+    M.wlS = narrow ? Math.min(1, .41 * vpW / card.offsetWidth) : 1;
+    M.wlX = narrow ? 2 + card.offsetWidth * M.wlS / VW / 2 - 50 : -25;
 
     /* where the pair lands: between the two anatomy figures, level with their candles */
     var aH = anat.offsetHeight;
@@ -730,9 +734,9 @@
 
     /* watchlist card — center → left (horizontal only) → shrink → gone */
     place(card,
-      kf([[0,0],[.04,0],[.10,-25],[.28,-25]], p),
+      kf([[0,0],[.04,0],[.10,M.wlX],[.28,M.wlX]], p),
       kf([[0,0],[.28,0]], p),
-      kf([[0,1],[.25,1],[.28,.2]], p),
+      kf([[0,1],[.25,1],[.28,.2]], p) * kf([[0,1],[.04,1],[.10,M.wlS]], p),
       kf([[0,1],[.27,1],[.28,0]], p)
     );
 
