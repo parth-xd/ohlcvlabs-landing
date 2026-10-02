@@ -197,7 +197,9 @@
         .wl-hdr { display: flex; align-items: center; justify-content: space-between; }
         .wl-t { font-size: clamp(20px, 2.8vw, 44px); font-weight: 900; letter-spacing: -.02em; }
         .wl-play-btn {
-            font: 600 clamp(8px, .7vw, 12px)/1 inherit;
+            font-family: inherit; font-weight: 600; line-height: 1;
+            font-size: clamp(9px, .7vw, 12px);
+            -webkit-appearance: none; appearance: none;
             letter-spacing: .14em; text-transform: uppercase;
             padding: clamp(5px, .6vh, 9px) clamp(12px, 1.3vw, 20px);
             border: 1.5px solid var(--ink); border-radius: 100px;
