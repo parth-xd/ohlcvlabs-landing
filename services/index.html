@@ -176,6 +176,137 @@
             [data-speed] { transform: none !important; }
             html { scroll-behavior: auto; }
         }
+        /* ── XGBoost scroll-driven animation ──────────────────── */
+        .xgb-stage { position: relative; height: 700vh; }
+        .xgb-vp {
+            position: sticky; top: 0;
+            height: 100vh; height: 100dvh;
+            overflow: hidden; background: var(--ground);
+        }
+        .xgb-vp > * {
+            position: absolute; left: 50%; top: 50%;
+            will-change: transform, opacity;
+        }
+        .wl-card {
+            width: clamp(260px, 36vw, 520px);
+            background: var(--ground);
+            border: clamp(2px, .22vw, 3.5px) solid var(--ink);
+            border-radius: clamp(12px, 1.4vw, 24px);
+            padding: clamp(14px, 1.8vw, 28px); z-index: 5;
+        }
+        .wl-hdr { display: flex; align-items: center; justify-content: space-between; }
+        .wl-t { font-size: clamp(20px, 2.8vw, 44px); font-weight: 900; letter-spacing: -.02em; }
+        .wl-play-btn {
+            font: 600 clamp(8px, .7vw, 12px)/1 inherit;
+            letter-spacing: .14em; text-transform: uppercase;
+            padding: clamp(5px, .6vh, 9px) clamp(12px, 1.3vw, 20px);
+            border: 1.5px solid var(--ink); border-radius: 100px;
+            background: none; color: var(--ink); cursor: pointer;
+            transition: background .2s, color .2s;
+        }
+        .wl-play-btn:hover { background: var(--ink); color: var(--ground); }
+        .wl-hr {
+            height: clamp(2.5px, .3vw, 5px); background: var(--ink);
+            margin: clamp(6px, .8vh, 14px) 0 clamp(10px, 1.2vh, 20px);
+        }
+        .wl-row {
+            font-size: clamp(10px, .85vw, 16px); font-weight: 600;
+            padding: clamp(7px, .9vh, 12px) clamp(8px, 1vw, 16px);
+            background: #fff; border: 1px solid var(--ink);
+            border-radius: clamp(3px, .4vw, 7px);
+        }
+        .wl-stack {
+            position: relative; height: clamp(56px, 7vh, 100px);
+            margin-top: clamp(6px, .8vh, 12px);
+        }
+        .wl-gh {
+            position: absolute; left: 0; right: 0;
+            height: clamp(28px, 3.5vh, 44px);
+            background: #fff; border: 1px solid var(--ink);
+            border-radius: clamp(3px, .4vw, 7px);
+        }
+        .wl-gh:nth-child(1) { top: 0; }
+        .wl-gh:nth-child(2) { top: 4px; left: 5px; right: -3px; }
+        .wl-gh:nth-child(3) { top: 8px; left: 10px; right: -6px; }
+        .wl-gh:nth-child(4) { top: 12px; left: 15px; right: -9px; }
+        .wl-stack .wl-row { position: absolute; top: 16px; left: 20px; right: -12px; }
+        .brit-chip {
+            font-size: clamp(10px, .85vw, 16px); font-weight: 700;
+            padding: clamp(8px, 1vh, 14px) clamp(12px, 1.4vw, 24px);
+            width: clamp(180px, 28vw, 420px); box-sizing: border-box;
+            background: #fff; border: 1px solid var(--ink);
+            border-radius: clamp(3px, .4vw, 7px); z-index: 4;
+        }
+        .s-path {
+            left: 0; top: 0; width: 100%; height: 150%;
+            z-index: 1; pointer-events: none;
+        }
+        .xgb-t {
+            font-size: clamp(28px, 5vw, 88px);
+            font-weight: 900; font-style: italic;
+            letter-spacing: -.03em; color: var(--ink);
+            white-space: nowrap; z-index: 4;
+            background: var(--ground); padding: .6vh 2vw;
+        }
+        .chart-wrap {
+            width: max(280px, min(64vw, 1200px, calc((58vh - 90px) * 2.35)));
+            background: var(--ground);
+            border: clamp(2px, .22vw, 3.5px) solid var(--ink);
+            border-radius: clamp(12px, 1.4vw, 24px);
+            padding: clamp(14px, 1.8vw, 28px); z-index: 3;
+        }
+        .chart-lbl {
+            display: flex; justify-content: space-between; align-items: baseline; gap: 1em;
+            font-size: clamp(12px, 1.1vw, 20px); font-weight: 800; margin-bottom: clamp(6px, .8vh, 14px);
+        }
+        .chart-meta { font-size: .7em; font-weight: 600; letter-spacing: .1em; opacity: .55; white-space: nowrap; }
+        .chart-plot { position: relative; }
+        #chart-svg { width: 100%; display: block; overflow: visible; }
+        .anatomy {
+            width: min(78vw, 1300px);
+            display: flex; justify-content: space-between; align-items: flex-start; z-index: 6;
+        }
+        .anat-side { width: min(18vw, 30vh, 300px); text-align: center; }
+        .anat-side h4 { font-size: clamp(12px, 1.35vw, 24px); font-weight: 600; line-height: 1.25; margin-bottom: clamp(4px, 1vh, 12px); }
+        .anat-fig svg { display: block; width: 100%; height: auto; overflow: visible; }
+        .anat-fig text { font: 500 22px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; fill: #2a2723; }
+        .anat-cap {
+            margin-top: clamp(4px, .8vh, 10px); font-size: clamp(8px, .72vw, 13px); line-height: 1.5;
+            font-variant-numeric: tabular-nums; color: rgba(24,22,20,.62); text-wrap: balance;
+        }
+        .tree-big { width: min(67vw, 118vh, 1200px); z-index: 3; }
+        .dt { display: block; width: 100%; height: auto; overflow: visible; }
+        .dt text {
+            font: 700 26px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            fill: var(--ink); text-anchor: middle;
+        }
+        .tree-pill {
+            font-size: clamp(9px, 1vw, 18px); font-weight: 700;
+            color: var(--cream); background: var(--ink);
+            padding: .45em 1.15em;
+            border-radius: 100px; white-space: nowrap; z-index: 3;
+        }
+        #tree-pill { font-size: clamp(14px, 1.9vw, 34px); }
+        .ens-grid {
+            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+            width: min(88vw, 1500px); row-gap: clamp(14px, 3.2vh, 40px);
+            justify-items: center; z-index: 3;
+        }
+        .ens-tree {
+            display: flex; flex-direction: column; align-items: center;
+            gap: clamp(4px, .9vh, 10px);
+            transition: opacity .4s ease, transform .4s ease;
+        }
+        .ens-svg { width: min(11vw, 21vh, 210px); }
+        @media (max-width: 860px) {
+            .xgb-stage { height: 600vh; }
+            .anatomy { width: 94vw; }
+            .anat-side { width: 44vw; }
+            .tree-big { width: 94vw; }
+            .ens-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 94vw; }
+            .ens-svg { width: 27vw; }
+            .ens-tree .tree-pill { font-size: 8px; }
+        }
     </style>
 </head>
 <body>
@@ -230,6 +361,47 @@
 
             <div data-speed="1.0">
                 <p class="closer reveal">Can this be turned into an actual trading system?</p>
+            </div>
+        </section>
+
+        <!-- XGBoost: scroll-driven animation -->
+        <section class="xgb-stage" id="xgb-stage">
+            <div class="xgb-vp" id="xgb-vp">
+                <div class="wl-card" id="wl-card">
+                    <div class="wl-hdr">
+                        <span class="wl-t">Watchlist</span>
+                        <button class="wl-play-btn" id="wl-play" aria-label="Play animation" title="Auto-play the XGBoost animation">PLAY</button>
+                    </div>
+                    <div class="wl-hr"></div>
+                    <div class="wl-row">BRITANNIA</div>
+                    <div class="wl-stack">
+                        <div class="wl-gh"></div><div class="wl-gh"></div>
+                        <div class="wl-gh"></div><div class="wl-gh"></div>
+                        <div class="wl-row">LT</div>
+                    </div>
+                </div>
+                <div class="brit-chip" id="brit-chip">BRITANNIA</div>
+                <!-- wave crosses x=700 (chip column, 50%+20vw) at y=500 (chip centre); the lower path waits below the fold and scrolls in as the line rises with the chip -->
+                <svg class="s-path" id="s-path" viewBox="0 0 1000 1500" preserveAspectRatio="none">
+                    <path id="s-line" d="M744,1000 C744,952 729.3,904.1 700,833.3 C641.3,691.9 641.3,641.5 700,500 C758.7,358.5 758.7,308.1 700,166.7 C670.7,95.9 656,48 656,0"
+                          fill="none" stroke="#181614" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M700,1500 C641.3,1358.5 641.3,1308.1 700,1166.7 C729.3,1095.9 744,1048 744,1000"
+                          fill="none" stroke="#181614" stroke-width="3"/>
+                </svg>
+                <div class="xgb-t" id="xgb-t"><em>eXtreme Gradient Boosting</em></div>
+                <div class="chart-wrap" id="chart-wrap">
+                    <div class="chart-lbl"><span>BRITANNIA .</span><span class="chart-meta">09 SEP 2026 &middot; 5-MIN</span></div>
+                    <div class="chart-plot" id="chart-plot">
+                        <svg id="chart-svg" viewBox="0 0 800 340" role="img" aria-label="BRITANNIA 5-minute candles, 9 September 2026: opens 5,064, high 5,113, low 5,023, closes 5,090"></svg>
+                    </div>
+                </div>
+                <div class="anatomy" id="anatomy">
+                    <div class="anat-side" id="anat-up"><h4>Increasing :<br>Bullish Candle Stick</h4></div>
+                    <div class="anat-side" id="anat-dn"><h4>Decreasing :<br>Bearish Candle Stick</h4></div>
+                </div>
+                <div class="tree-big" id="tree-big"></div>
+                <div class="tree-pill" id="tree-pill">Tree #1 contributes +0.31</div>
+                <div class="ens-grid" id="ens-grid"></div>
             </div>
         </section>
     </main>
@@ -298,6 +470,379 @@
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);
   frame();
+})();
+</script>
+<script>
+(function () {
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var stage = document.getElementById('xgb-stage');
+  if (!stage) return;
+
+  var card    = document.getElementById('wl-card');
+  var playBtn = document.getElementById('wl-play');
+  var chip    = document.getElementById('brit-chip');
+  var sPath   = document.getElementById('s-path');
+  var sLine   = document.getElementById('s-line');
+  var xgbT    = document.getElementById('xgb-t');
+  var vp      = document.getElementById('xgb-vp');
+  var chartW  = document.getElementById('chart-wrap');
+  var chartSvg= document.getElementById('chart-svg');
+  var chartPlot = document.getElementById('chart-plot');
+  var chartLbl  = chartW.querySelector('.chart-lbl');
+  var anat    = document.getElementById('anatomy');
+  var treeBig = document.getElementById('tree-big');
+  var pill    = document.getElementById('tree-pill');
+  var ensGrid = document.getElementById('ens-grid');
+
+  /* ── candlestick chart: BRITANNIA, 09 Sep 2026, 5-min [o,h,l,c,v] ──
+     Built from the FYERS 5-second feed; matches FYERS' daily bar
+     (O 5064 · H 5113 · L 5023 · C 5090). */
+  var CD = [
+    [5064,5064,5035,5045.5,2219], [5043.5,5044,5028.5,5035,1465], [5035,5040,5031.5,5035.5,1280], [5035.5,5038,5032.5,5036,834], [5035,5035,5030,5035,1313],
+    [5035,5038.5,5030,5030,1206], [5030,5033,5029,5030,1010], [5032.5,5037.5,5032.5,5035,273], [5035,5035,5031.5,5031.5,170], [5031.5,5033.5,5025.5,5029.5,1394],
+    [5029.5,5029.5,5026,5027.5,219], [5027.5,5032,5023,5032,1096], [5032,5045,5032,5041.5,1299], [5041.5,5059.5,5040,5057,1531], [5057,5074,5056,5070,2890],
+    [5070,5074.5,5065,5070,1070], [5070,5071,5059.5,5062,605], [5059.5,5064,5059.5,5062.5,497], [5062.5,5067,5062,5065.5,887], [5065.5,5068.5,5058,5060,535],
+    [5060,5060,5047.5,5050.5,3023], [5050.5,5053,5050,5052.5,278], [5052.5,5053,5046.5,5047.5,1218], [5050,5053.5,5048,5050,619], [5050,5055.5,5047.5,5052,821],
+    [5052,5057.5,5051.5,5056,319], [5057.5,5058.5,5054.5,5056,327], [5056,5057.5,5053.5,5053.5,234], [5053.5,5057,5053,5057,364], [5057,5062.5,5056,5062.5,255],
+    [5062.5,5062.5,5056,5056,178], [5056,5059,5056,5058.5,112], [5058.5,5058.5,5053.5,5053.5,320], [5053.5,5062.5,5053,5060,2639], [5062.5,5064,5058.5,5063.5,6039],
+    [5063,5068.5,5063,5068.5,13898], [5068.5,5068.5,5058,5058.5,1345], [5058.5,5069.5,5057.5,5060,20866], [5060,5064.5,5058.5,5064.5,3868], [5064.5,5071.5,5063,5069,1300],
+    [5069,5072.5,5069,5070.5,249], [5070.5,5077.5,5070,5075,1416], [5075,5079.5,5075,5079.5,669], [5079.5,5081,5075,5075.5,2816], [5075.5,5079,5075,5076.5,1033],
+    [5079,5079,5076,5076,330], [5076,5076,5065,5065,14780], [5065,5068,5061.5,5061.5,571], [5061.5,5063.5,5061.5,5063,83], [5063,5065,5061.5,5062.5,205],
+    [5063,5067.5,5063,5065.5,56], [5065.5,5065.5,5060,5060.5,1101], [5060.5,5064,5060,5062.5,490], [5062.5,5069.5,5062,5068,431], [5068,5075,5068,5072.5,861],
+    [5072.5,5072.5,5066.5,5069,1205], [5069.5,5077,5069.5,5076,1703], [5076,5078,5075.5,5076,215], [5076,5080,5076,5076.5,540], [5076.5,5089,5075,5087.5,1845],
+    [5087.5,5091,5085,5089,1290], [5089,5094.5,5088.5,5088.5,917], [5088.5,5098.5,5088.5,5098.5,710], [5098.5,5101.5,5092,5096.5,3426], [5098.5,5098.5,5087.5,5087.5,2448],
+    [5087.5,5090.5,5083.5,5088,1256], [5088.5,5088.5,5083,5086,552], [5086,5113,5077,5078.5,26041], [5076.5,5080.5,5070,5074,9433], [5075,5077,5070.5,5074,4977],
+    [5074,5083.5,5073.5,5081,6273], [5081.5,5082,5072.5,5078,15235], [5081,5081,5081,5081,18], [5081,5081,5081,5081,0], [5081,5090,5081,5090,6972]
+  ];
+  var PAIR = 18;   /* 10:45 (up) and 10:50 (down): the zoom lands on these two */
+  var ns = 'http://www.w3.org/2000/svg';
+  var CW = 800, CH = 340, pitch = CW / CD.length, bw = pitch * .72;
+  var lo = Infinity, hi = -Infinity;
+  CD.forEach(function (d) { lo = Math.min(lo, d[2]); hi = Math.max(hi, d[1]); });
+  var pMin = lo - (hi - lo) * .06, pMax = hi + (hi - lo) * .06;
+  function py(v) { return (pMax - v) / (pMax - pMin) * CH; }
+  function hhmm(i) { var m = 555 + 5 * i; return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + m % 60).slice(-2); }
+
+  var zoomG = document.createElementNS(ns, 'g');
+  var restG = document.createElementNS(ns, 'g');
+  var pairG = document.createElementNS(ns, 'g');
+  zoomG.appendChild(restG); zoomG.appendChild(pairG); chartSvg.appendChild(zoomG);
+  CD.forEach(function (d, i) {
+    var o = d[0], h = d[1], l = d[2], c = d[3], x = pitch * (i + .5);
+    var g = i === PAIR || i === PAIR + 1 ? pairG : restG;
+    if (h > l) {
+      var wick = document.createElementNS(ns, 'line');
+      wick.setAttribute('x1', x); wick.setAttribute('x2', x);
+      wick.setAttribute('y1', py(h)); wick.setAttribute('y2', py(l));
+      wick.setAttribute('stroke', '#4a4743');
+      g.appendChild(wick);
+    }
+    var top = py(Math.max(o, c)), bh = py(Math.min(o, c)) - top;
+    if (bh < .9) { top -= (.9 - bh) / 2; bh = .9; }
+    var body = document.createElementNS(ns, 'rect');
+    body.setAttribute('x', x - bw / 2); body.setAttribute('y', top);
+    body.setAttribute('width', bw); body.setAttribute('height', bh);
+    body.setAttribute('fill', c >= o ? '#8cc074' : '#b82c0c');
+    g.appendChild(body);
+  });
+  var pa = CD[PAIR], pb = CD[PAIR + 1];
+  var FX = pitch * (PAIR + 1);
+  var PH = Math.max(pa[1], pb[1]), PL = Math.min(pa[2], pb[2]);
+  var FY = (py(PH) + py(PL)) / 2;
+
+  /* ── candle anatomy: textbook figure + the real pair's numbers ── */
+  function fmt(v) { return v.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
+  function anatFig(d, i) {
+    var up = d[3] >= d[0];
+    var vh = 46 * d[4] / Math.max(pa[4], pb[4]);
+    function lab(y, s, x2) {
+      return '<line x1="100" y1="' + y + '" x2="' + x2 + '" y2="' + y + '" stroke="#cbc4b8" stroke-width="1.5"/>'
+        + '<text x="92" y="' + y + '" dy=".35em" text-anchor="end">' + s + '</text>';
+    }
+    return '<div class="anat-fig"><svg viewBox="0 0 300 475" aria-hidden="true">'
+      + (up ? '<polygon points="46,128 76,168 58,168 58,272 34,272 34,168 16,168" fill="#dcf5cb"/>'
+            : '<polygon points="46,272 76,232 58,232 58,128 34,128 34,232 16,232" fill="#fbe1e1"/>')
+      + lab(20, 'High', 190) + lab(110, up ? 'Close' : 'Open', 162)
+      + lab(290, up ? 'Open' : 'Close', 162) + lab(380, 'Low', 190)
+      + lab(462 - vh / 2, 'Volume', 162)
+      + '<line x1="200" y1="20" x2="200" y2="380" stroke="#181614" stroke-width="5"/>'
+      + '<rect x="170" y="110" width="60" height="180" fill="' + (up ? '#a8dc84' : '#fcd4d4') + '" stroke="#181614" stroke-width="5"/>'
+      + '<rect x="170" y="' + (462 - vh) + '" width="60" height="' + vh + '" fill="#c9c1b4"/>'
+      + '<line x1="160" y1="462" x2="240" y2="462" stroke="#181614" stroke-width="1.5"/>'
+      + '</svg></div>'
+      + '<p class="anat-cap">BRITANNIA ' + hhmm(i) + ' &middot; Vol ' + d[4].toLocaleString('en-IN')
+      + '<br>O ' + fmt(d[0]) + ' &middot; H ' + fmt(d[1]) + ' &middot; L ' + fmt(d[2]) + ' &middot; C ' + fmt(d[3]) + '</p>';
+  }
+  document.getElementById('anat-up').insertAdjacentHTML('beforeend', anatFig(pa, PAIR));
+  document.getElementById('anat-dn').insertAdjacentHTML('beforeend', anatFig(pb, PAIR + 1));
+
+  /* ── s-curve stroke setup ──────────────────────────────── */
+  var pathLen = sLine.getTotalLength();
+  sLine.style.strokeDasharray  = pathLen;
+  sLine.style.strokeDashoffset = pathLen;
+
+  /* ── decision tree: one drawing for the big tree and all 12 ── */
+  var TREE = ['volume_ratio > 1.42',
+    ['return_12 > 0.65%', ['RSI > 61'], ['trend > 0.18']],
+    ['volatility < 0.42%', ['return_3 > 0.35%'], ['MA distance > 0.8%']]];
+  function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function treeSvg(decorative) {
+    var out = [];
+    function t(x, r, txt) { out.push('<text x="' + x + '" y="' + (30 + r * 44) + '" dy=".35em" data-r="' + r + '">' + esc(txt) + '</text>'); }
+    (function node(n, x, r, s) {
+      var leaf = n.length === 1, a = leaf ? s : s / 2;
+      t(x, r, n[0]);
+      t(x - a / 2, r + 1, '/'); t(x + a / 2, r + 1, '\\');
+      t(x - a, r + 2, 'YES'); t(x + a, r + 2, 'NO');
+      if (!leaf) {
+        t(x - 3 * s / 4, r + 3, '/'); t(x + 3 * s / 4, r + 3, '\\');
+        node(n[1], x - s, r + 4, s / 2); node(n[2], x + s, r + 4, s / 2);
+      }
+    })(TREE, 500, 0, 270);
+    return '<svg class="dt" viewBox="-40 0 1080 490"'
+      + (decorative ? ' aria-hidden="true">' : ' role="img" aria-label="Decision tree: volume_ratio above 1.42, then return_12 or volatility, then RSI, trend, return_3 or MA distance">')
+      + out.join('') + '</svg>';
+  }
+  treeBig.innerHTML = treeSvg(false);
+  var bigRows = [].map.call(treeBig.querySelectorAll('text'), function (el) { return [el, +el.getAttribute('data-r')]; });
+
+  /* ── ensemble: 12 copies of the same tree ──────────────── */
+  var treeInfo = [
+    {n:1,v:'+0.31'},{n:2,v:'+0.14'},{n:3,v:'-0.07'},{n:4,v:'+0.21'},
+    {n:5,v:'+0.03'},{n:6,v:'-0.51'},{n:7,v:'+0.34'},{n:8,v:'+0.58'},
+    {n:9,v:'+0.77'},{n:10,v:'+0.81'},{n:11,v:'+0.11'},{n:12,v:'+0.40'}
+  ];
+  treeInfo.forEach(function (t) {
+    var d = document.createElement('div');
+    d.className = 'ens-tree';
+    d.innerHTML = '<div class="ens-svg">' + treeSvg(true) + '</div><div class="tree-pill">Tree #' + t.n + ' contributes ' + t.v + '</div>';
+    ensGrid.appendChild(d);
+  });
+  /* slot 1 takes over from the flying tree in one frame, so no fade */
+  ensGrid.children[0].style.transition = 'none';
+
+  /* ── layout-dependent targets, in vw/vh for place() ────── */
+  var probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;visibility:hidden;pointer-events:none';
+  document.body.appendChild(probe);
+  var CHART_Y = 5, M = {};
+  function measure() {
+    var VW = probe.offsetWidth / 100, VH = probe.offsetHeight / 100;
+    var vpW = vp.offsetWidth, vpH = vp.offsetHeight, narrow = innerWidth < 860;
+
+    /* where the pair lands: between the two anatomy figures, level with their candles */
+    var aH = anat.offsetHeight;
+    M.anatY = ((narrow ? vpH * .44 + aH / 2 : vpH * .515) - vpH / 2) / VH;
+    var fig = anat.querySelector('.anat-fig');
+    var aTop = vpH / 2 + M.anatY * VH - aH / 2;
+    var tgtY = narrow ? vpH * .31 : aTop + fig.offsetTop + fig.offsetHeight * 200 / 475;
+    var wantH = narrow ? vpH * .15 : fig.offsetHeight * 360 / 475;
+    var k = chartPlot.offsetWidth / CW;
+    var plotL = vpW / 2 - chartW.offsetWidth / 2 + chartW.clientLeft + chartPlot.offsetLeft;
+    var plotT = vpH / 2 + CHART_Y * VH - chartW.offsetHeight / 2 + chartW.clientTop + chartPlot.offsetTop;
+    M.tx = (vpW / 2 - plotL) / k;
+    M.ty = (tgtY - plotT) / k;
+    M.zmax = Math.min(wantH / ((py(PL) - py(PH)) * k), (narrow ? .32 : .16) * vpW / ((pitch + bw) * k));
+    M.k = k; M.wickMax = Math.max(1.5, wantH / 70);
+
+    /* big tree under the chip, pill under the tree */
+    var tH = treeBig.offsetHeight, pH = pill.offsetHeight;
+    M.treeY = (vpH * .30 + tH / 2 - vpH / 2) / VH;
+    M.pillY = (vpH * .30 + tH + 2.5 * VH + pH / 2 - vpH / 2) / VH;
+    M.midS = .36; M.midPS = .69;
+    M.midY = (vpH * .55 - vpH / 2) / VH;
+    M.midPY = M.midY + (tH * M.midS / 2 + 3 * VH + pH * M.midPS / 2) / VH;
+
+    /* ensemble grid under the chip; slot 1 is where the big tree lands */
+    var gH = ensGrid.offsetHeight, gW = ensGrid.offsetWidth;
+    M.gridY = (vpH * .32 + gH / 2 - vpH / 2) / VH;
+    var c1 = ensGrid.children[0], sv = c1.firstChild, sp = c1.lastChild;
+    M.cellX = (sv.offsetLeft + sv.offsetWidth / 2 - gW / 2) / VW;
+    M.cellY = M.gridY + (sv.offsetTop + sv.offsetHeight / 2 - gH / 2) / VH;
+    M.cellS = sv.offsetWidth / treeBig.offsetWidth;
+    M.cpX = (sp.offsetLeft + sp.offsetWidth / 2 - gW / 2) / VW;
+    M.cpY = M.gridY + (sp.offsetTop + sp.offsetHeight / 2 - gH / 2) / VH;
+    M.cpS = sp.offsetWidth / pill.offsetWidth;
+  }
+
+  /* ── animation helpers ─────────────────────────────────── */
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function ease(t) { return t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+
+  function kf(frames, p) {
+    if (p <= frames[0][0]) return frames[0][1];
+    var last = frames[frames.length - 1];
+    if (p >= last[0]) return last[1];
+    for (var i = 0; i < frames.length - 1; i++) {
+      if (p <= frames[i + 1][0]) {
+        var t = (p - frames[i][0]) / (frames[i + 1][0] - frames[i][0]);
+        return lerp(frames[i][1], frames[i + 1][1], ease(t));
+      }
+    }
+    return last[1];
+  }
+
+  function place(el, x, y, s, o) {
+    el.style.transform = 'translate(-50%,-50%) translate(' + x + 'vw,' + y + 'vh) scale(' + s + ')';
+    el.style.opacity = o;
+  }
+
+  /* z: 0 = whole day, 1 = the 10:45 / 10:50 pair filling the middle */
+  function setZoom(z) {
+    var Z = Math.pow(M.zmax, z);
+    zoomG.setAttribute('transform', 'translate(' + (FX + (M.tx - FX) * z) + ' ' + (FY + (M.ty - FY) * z)
+      + ') scale(' + Z + ') translate(' + -FX + ' ' + -FY + ')');
+    /* wicks thicken with the zoom only up to the anatomy figures' weight */
+    zoomG.setAttribute('stroke-width', (1.05 + (M.wickMax - 1.05) * z) / (M.k * Z));
+    restG.style.opacity = 1 - Math.min(1, Math.max(0, (z - .12) / .4));
+  }
+
+  /* ── main update ───────────────────────────────────────── */
+  function update() {
+    var rect = stage.getBoundingClientRect();
+    var range = stage.offsetHeight - innerHeight;
+    var p = Math.max(0, Math.min(1, -rect.top / range));
+    var trees = ensGrid.children, j;
+
+    if (reduced) {
+      place(card, 0, 0, 1, p < .15 ? 1 : 0);
+      place(chip, 0, -25, 1, p > .58 && p < .9 ? 1 : 0);
+      sPath.style.opacity = 0;
+      place(xgbT, 0, -36, 1, p > .12 && p < .9 ? 1 : 0);
+      var still = p > .40 && p < .50;
+      setZoom(still ? 1 : 0);
+      chartW.style.borderColor = still ? 'transparent' : '';
+      chartLbl.style.opacity = still ? 0 : 1;
+      place(chartW, 0, CHART_Y, 1, p > .25 && p < .58 ? 1 : 0);
+      place(anat, 0, M.anatY, 1, p > .40 && p < .50 ? 1 : 0);
+      place(treeBig, 0, M.treeY, 1, p > .58 && p < .70 ? 1 : 0);
+      place(pill, 0, M.pillY, 1, p > .58 && p < .70 ? 1 : 0);
+      place(ensGrid, 0, M.gridY, 1, p > .70 && p < .88 ? 1 : 0);
+      for (j = 0; j < trees.length; j++) {
+        trees[j].style.opacity = 1; trees[j].style.transform = 'scale(1)';
+      }
+      return;
+    }
+
+    /* play button */
+    playBtn.style.opacity = kf([[0,1],[.03,1],[.06,0]], p);
+    playBtn.style.pointerEvents = p < .05 ? 'auto' : 'none';
+
+    /* watchlist card — center → left (horizontal only) → shrink → gone */
+    place(card,
+      kf([[0,0],[.04,0],[.10,-25],[.28,-25]], p),
+      kf([[0,0],[.28,0]], p),
+      kf([[0,1],[.25,1],[.28,.2]], p),
+      kf([[0,1],[.27,1],[.28,0]], p)
+    );
+
+    /* britannia chip — extracts right, rises straight up with the line, hidden for the chart,
+       back under the title for the trees, then to the centre at the end */
+    place(chip,
+      kf([[0,0],[.06,0],[.10,20],[.30,20],[.58,0]], p),
+      kf([[0,0],[.20,0],[.25,-35],[.30,-35],[.58,-25],[.86,-25],[.885,6],[.905,6],[.925,0]], p),
+      1,
+      kf([[0,0],[.06,0],[.08,1],[.28,1],[.30,0],[.585,0],[.60,1],[.925,1],[.945,0]], p)
+    );
+
+    /* line — draws bottom→top through the chip's centre, then rises with it (same keyframes as chip y) */
+    var sOp = kf([[0,0],[.08,0],[.10,.8],[.28,.8],[.30,0],[.94,0],[.96,.5],[1,.5]], p);
+    sPath.style.opacity = sOp;
+    var draw = p < .93
+      ? kf([[.10,1],[.20,0]], p)
+      : kf([[.94,1],[1,.3]], p);
+    sLine.style.strokeDashoffset = pathLen * draw;
+    sPath.style.transform = p < .93
+      ? 'translateY(' + kf([[.20,0],[.25,-35]], p) + 'vh)'
+      : 'translateX(-20vw)';
+
+    /* xgboost title — enters from right once the chip has risen, settles at the top */
+    place(xgbT,
+      kf([[.25,42],[.295,0]], p),
+      kf([[.305,0],[.325,-36],[.86,-36],[.885,-5]], p),
+      1,
+      kf([[0,0],[.25,0],[.28,1],[.90,1],[.915,0]], p)
+    );
+
+    /* chart: the real day, then a camera push into the 10:45 / 10:50 pair and back out */
+    place(chartW, 0,
+      kf([[.315,62],[.355,CHART_Y],[.56,CHART_Y],[.59,62]], p), 1,
+      kf([[0,0],[.315,0],[.335,1],[.57,1],[.59,0]], p));
+    setZoom(kf([[.375,0],[.43,1],[.49,1],[.545,0]], p));
+    var frame = kf([[.375,1],[.395,0],[.525,0],[.545,1]], p);
+    chartW.style.borderColor = 'rgba(24,22,20,' + frame + ')';
+    chartLbl.style.opacity = frame;
+
+    /* candle anatomy: rises in beside the zoomed pair */
+    place(anat, 0,
+      M.anatY + kf([[.42,10],[.44,0],[.48,0],[.495,8]], p), 1,
+      kf([[0,0],[.42,0],[.44,1],[.48,1],[.495,0]], p));
+
+    /* decision tree: grows row by row under the chip, shrinks, then flies into slot 1 */
+    var landed = p >= .72;
+    place(treeBig,
+      kf([[.665,0],[.69,0],[.72,M.cellX]], p),
+      kf([[.665,M.treeY],[.69,M.midY],[.72,M.cellY]], p),
+      kf([[.665,1],[.69,M.midS],[.72,M.cellS]], p),
+      p > .59 && !landed ? 1 : 0);
+    for (j = 0; j < bigRows.length; j++) {
+      bigRows[j][0].style.opacity = Math.min(1, Math.max(0, (p - .595 - bigRows[j][1] * .0033) / .008));
+    }
+    place(pill,
+      kf([[.665,0],[.69,0],[.72,M.cpX]], p),
+      kf([[.665,M.pillY],[.69,M.midPY],[.72,M.cpY]], p),
+      kf([[.665,1],[.69,M.midPS],[.72,M.cpS]], p),
+      landed ? 0 : kf([[0,0],[.635,0],[.645,1]], p));
+
+    /* ensemble: 1 → 4 → 8 → 12 → 8 → 4 → 0 */
+    var nShow = landed ? Math.round(kf([[.72,1],[.745,4],[.77,8],[.795,12],[.815,12],[.83,8],[.845,4],[.86,0]], p)) : 0;
+    place(ensGrid, 0, M.gridY, 1, nShow > 0 ? 1 : 0);
+    for (j = 0; j < trees.length; j++) {
+      trees[j].style.opacity = j < nShow ? '1' : '0';
+      trees[j].style.transform = j < nShow || j === 0 ? 'scale(1)' : 'scale(0.7)';
+    }
+  }
+
+  /* ── scroll listener ───────────────────────────────────── */
+  var ticking = false;
+  function onScroll() {
+    if (!ticking) { ticking = true; requestAnimationFrame(function () { update(); ticking = false; }); }
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', function () { measure(); onScroll(); });
+  measure();
+  update();
+
+  /* ── PLAY auto-scroll ──────────────────────────────────── */
+  var autoPlaying = false, autoRAF;
+  playBtn.addEventListener('click', function () {
+    if (autoPlaying) return;
+    autoPlaying = true;
+    var from = scrollY;
+    var to = stage.offsetTop + stage.offsetHeight - innerHeight;
+    var dist = to - from;
+    if (dist <= 0) { autoPlaying = false; return; }
+    /* steady pace (~7 s per screen) with short eased ends, so the middle acts can be read */
+    var dur = Math.max(6000, dist / innerHeight * 7000), A = .06;
+    var t0 = performance.now();
+    document.documentElement.style.scrollBehavior = 'auto';
+    function step(now) {
+      if (!autoPlaying) return;
+      var t = Math.min((now - t0) / dur, 1);
+      var e = t < A ? t * t / (2 * A * (1 - A))
+            : t > 1 - A ? 1 - (1 - t) * (1 - t) / (2 * A * (1 - A))
+            : (t - A / 2) / (1 - A);
+      scrollTo(0, from + dist * e);
+      if (t < 1) autoRAF = requestAnimationFrame(step);
+      else stopAuto();
+    }
+    autoRAF = requestAnimationFrame(step);
+  });
+
+  function stopAuto() { autoPlaying = false; cancelAnimationFrame(autoRAF); document.documentElement.style.scrollBehavior = ''; }
+  addEventListener('wheel', stopAuto, { passive: true });
+  addEventListener('touchstart', stopAuto, { passive: true });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape') stopAuto(); });
 })();
 </script>
 </body>
