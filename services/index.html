@@ -186,7 +186,9 @@
         .xgb-vp > * {
             position: absolute; left: 50%; top: 50%;
             will-change: transform, opacity;
+            pointer-events: none;   /* faded-out layers must not swallow clicks */
         }
+        .xgb-vp > .wl-card { pointer-events: auto; }
         .wl-card {
             width: clamp(260px, 36vw, 520px);
             background: var(--ground);
