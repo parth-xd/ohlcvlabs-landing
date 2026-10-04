@@ -252,10 +252,12 @@
         }
         .xgb-t {
             font-size: clamp(28px, 5vw, 88px);
-            font-weight: 900; font-style: italic;
+            font-weight: 900; font-style: normal;
             letter-spacing: -.03em; color: var(--ink);
             white-space: nowrap; z-index: 4;
-            background: var(--ground); padding: .6vh 2vw;
+            /* same soft-edged box as the NLP titles (no hard edge → no Retina hairline; identical at the handoff) */
+            background: linear-gradient(to bottom, rgba(241,232,219,0) 0, var(--ground) 16%, var(--ground) 84%, rgba(241,232,219,0) 100%);
+            padding: .6vh 2vw;
         }
         .chart-wrap {
             width: max(280px, min(64vw, 1200px, calc((58vh - 90px) * 2.35)));
@@ -348,7 +350,7 @@
         }
         .nlp-t, .nlp-xgb-t {
             font-size: clamp(28px, 5vw, 88px);
-            font-weight: 900; font-style: italic;
+            font-weight: 900; font-style: normal;
             letter-spacing: -.03em; color: var(--ink);
             white-space: nowrap; z-index: 4;
         }
@@ -359,8 +361,8 @@
             background: linear-gradient(to bottom, rgba(241,232,219,0) 0, var(--ground) 16%, var(--ground) 84%, rgba(241,232,219,0) 100%);
             padding: .6vh 2vw;
         }
-        /* the NLP title (and its "?") are upright; only the carried-over XGB title stays italic */
-        .nlp-t, .nlp-t em { font-style: normal; }
+        /* section titles (and the "?") are upright; the <em> wrappers would otherwise italicise them */
+        .xgb-t em, .nlp-xgb-t em, .nlp-t em { font-style: normal; }
         .nlp-q {
             font-size: clamp(28px, 5vw, 88px);
             font-weight: 900; font-style: normal;
