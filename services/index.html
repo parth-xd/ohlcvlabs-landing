@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <!-- RaOne font cycle: subset to the five letters it shows (text=RaOne), so each face is a few hundred bytes -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&family=Bebas+Neue&family=Space+Mono:wght@700&family=Pacifico&family=Abril+Fatface&family=Rubik+Mono+One&family=Cormorant+Garamond:ital,wght@1,600&family=Permanent+Marker&family=Major+Mono+Display&family=Lobster&family=UnifrakturMaguntia&family=Monoton&family=Coming+Soon&text=RaOne&display=block" rel="stylesheet">
-    <title>Services — OHLCV Labs</title>
+    <title>OHLCV</title>
     <style>
         :root {
             /* measured from the cream version of the slide */
@@ -352,11 +352,18 @@
             letter-spacing: -.03em; color: var(--ink);
             white-space: nowrap; z-index: 4;
         }
-        /* ground-coloured box masks the road behind the title — the gap it "fits" into */
-        .nlp-xgb-t, .nlp-t { background: var(--ground); padding: .6vh 2vw; }
+        /* ground-coloured box masks the road behind the title — the gap it "fits" into. Its top and bottom
+           fade out instead of ending hard: a hard edge on this moving GPU layer showed as a faint dashed
+           hairline under the title in Chrome on Retina (per raster tile), and the line now eases into the gap */
+        .nlp-xgb-t, .nlp-t {
+            background: linear-gradient(to bottom, rgba(241,232,219,0) 0, var(--ground) 16%, var(--ground) 84%, rgba(241,232,219,0) 100%);
+            padding: .6vh 2vw;
+        }
+        /* the NLP title (and its "?") are upright; only the carried-over XGB title stays italic */
+        .nlp-t, .nlp-t em { font-style: normal; }
         .nlp-q {
             font-size: clamp(28px, 5vw, 88px);
-            font-weight: 900; font-style: italic;
+            font-weight: 900; font-style: normal;
             color: #8b1a2b; z-index: 4;
         }
         .raone-hw {
@@ -460,9 +467,13 @@
         @media (max-width: 860px) {
             .nlp-stage { height: 1300vh; }
             .nlp-chip { width: 46vw; }   /* must match .brit-chip, or the card visibly resizes at the XGB→NLP handoff */
+            /* narrow: the handwriting's viewBox is cropped to its widest line in JS (measureHw), so
+               the 30px script fills the width — ~15px on a phone instead of ~7px */
             .hw-svg { width: 96vw; }
-            .hw-svg text { font-size: 22px; }
             .news-card { width: 36vw; }
+            /* smaller floor so the title clears a phone's edges; bigger on portrait tablets */
+            .nlp-t, .nlp-q { font-size: clamp(22px, 6.4vw, 88px); }
+            .raone-pill { font-size: clamp(18px, 4.6vw, 46px); }
         }
     </style>
 </head>
@@ -632,10 +643,10 @@
                     <h5>Reliance shares hit a fresh 52-week low; stock plunges 24% YTD</h5>
                     <p class="news-body news-meta">NSE: RELIANCE &middot; 28 Sep 2026</p>
                 </div>
-                <div class="news-card" id="news-3" data-raone="0.0000">
-                    <div class="news-mast">Business Standard</div>
-                    <h5>TCS to buy US retailer Best Buy&rsquo;s India GCC, develop an AI-native centre</h5>
-                    <p class="news-body news-meta">NSE: TCS &middot; 1 Oct 2026</p>
+                <div class="news-card" id="news-3" data-raone="-0.6000">
+                    <div class="news-mast">AD HOC NEWS</div>
+                    <h5>Bharat Petroleum stock falls 1.82 percent as Q1 loss weighs</h5>
+                    <p class="news-body news-meta">NSE: BPCL &middot; 28 Sep 2026</p>
                 </div>
                 <div class="news-card" id="news-4" data-raone="0.8500">
                     <div class="news-mast">Moneycontrol</div>
@@ -1186,6 +1197,14 @@
       hwPen[i].t0 = HW_P0 + (HW_P1 - HW_P0) * u[0] / total;
       hwPen[i].t1 = HW_P0 + (HW_P1 - HW_P0) * u[1] / total;
     });
+    /* narrow screens: crop the viewBox to the widest line so the text scales up to a readable size */
+    if (innerWidth < 860) {
+      var widest = Math.max.apply(null, hwLines.map(function(l){ return l.getBBox().width; }));
+      var vbW = Math.min(1200, widest + 60);
+      hwSvg.setAttribute('viewBox', (600 - vbW / 2) + ' 0 ' + vbW + ' 340');
+    } else {
+      hwSvg.setAttribute('viewBox', '0 0 1200 340');
+    }
   }
   function penAt(i, frac){
     var e = hwPen[i].x0 + frac * (hwPen[i].x1 - hwPen[i].x0);
@@ -1444,7 +1463,11 @@
     var SCALE_END = .65, scale = 1 - (1 - SCALE_END) * easeSine(clamp01((t - .35) / .5));
 
     var s = pathS(t);
-    var x0 = -W / 2 - 80, xEnd = pillL + ph * .7 + W * SCALE_END / 2;
+    /* narrow screens have little width but plenty of height: rise from below the bottom edge along the
+       left side (fully on screen sideways) and curve into the pill, instead of crossing from the left */
+    var narrow = vpW < 860;
+    if (narrow) lanePx = vpH / 2 + H / 2 + 24;
+    var x0 = narrow ? W / 2 + 12 + (n % 2) * 12 : -W / 2 - 80, xEnd = pillL + ph * .7 + W * SCALE_END / 2;
     /* while being fed in, the forward motion stutters like paper caught by shredder rollers */
     var feed = feedEnv(t), T = performance.now() / 1000;
     var cx = x0 + (xEnd - x0) * s + feed * 3.2 * Math.sin(2 * Math.PI * 7 * T + n * 1.7);
@@ -1566,7 +1589,12 @@
   function placeScoreSlots(){
     var vwPx = innerWidth / 100, vhPx = innerHeight / 100;
     var pr = pill.offsetWidth / 2, ph = pill.offsetHeight;
-    var x0 = pr + 50, x1 = pr + Math.max(260, Math.min(420, vwPx * 24)), yR = Math.min(240, vhPx * 24);
+    /* landing band: right of the pill, and never past the screen's right edge (a phone has ~140px there) */
+    var maxBw = Math.max.apply(null, scores.map(function(s){ return s.offsetWidth; }));
+    var x0 = pr + maxBw / 2 + 10;
+    var x1 = Math.min(pr + Math.max(260, Math.min(420, vwPx * 24)), innerWidth / 2 - 10 - maxBw / 2);
+    if (x1 < x0) x1 = x0;
+    var yR = Math.min(240, vhPx * 24);
     var placed = [];
     SCORE_FX.forEach(function(fx, i){
       var bw = scores[i].offsetWidth + 24, bh = scores[i].offsetHeight + 14, x, y, tries = 0;
