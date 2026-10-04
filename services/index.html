@@ -9,6 +9,9 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- RaOne font cycle: subset to the five letters it shows (text=RaOne), so each face is a few hundred bytes -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&family=Bebas+Neue&family=Space+Mono:wght@700&family=Pacifico&family=Abril+Fatface&family=Rubik+Mono+One&family=Cormorant+Garamond:ital,wght@1,600&family=Permanent+Marker&family=Major+Mono+Display&family=Lobster&family=UnifrakturMaguntia&family=Monoton&family=Coming+Soon&text=RaOne&display=block" rel="stylesheet">
     <title>Services — OHLCV Labs</title>
     <style>
         :root {
@@ -314,6 +317,153 @@
             .ens-svg { width: 27vw; }
             .ens-tree .tree-pill { font-size: 8px; }
         }
+        /* ── NLP / RaOne scroll-driven animation ─────────────── */
+        /* overlaps the last screen of .xgb-stage so this viewport pins the moment the XGB one releases — no frame shows both */
+        .nlp-stage { position: relative; height: 1400vh; margin-top: -100vh; }
+        .nlp-vp {
+            position: sticky; top: 0;
+            height: 100vh; height: 100dvh;
+            overflow: hidden; background: var(--ground);
+        }
+        .nlp-vp > * {
+            position: absolute; left: 50%; top: 50%;
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+        .nlp-curve {
+            left: 0; top: 0; width: 100%; height: 150%;
+            z-index: 1;
+        }
+        /* 1 viewBox unit = .1vw across, .1vh down */
+        .nlp-road {
+            left: 0; top: 0; width: 100%; height: 230%;
+            z-index: 1;
+        }
+        .nlp-chip {
+            font-size: clamp(10px, .85vw, 16px); font-weight: 700;
+            padding: clamp(8px, 1vh, 14px) clamp(12px, 1.4vw, 24px);
+            width: clamp(180px, 28vw, 420px); box-sizing: border-box;
+            background: #fff; border: 1px solid var(--ink);
+            border-radius: clamp(3px, .4vw, 7px); z-index: 4;
+        }
+        .nlp-t, .nlp-xgb-t {
+            font-size: clamp(28px, 5vw, 88px);
+            font-weight: 900; font-style: italic;
+            letter-spacing: -.03em; color: var(--ink);
+            white-space: nowrap; z-index: 4;
+        }
+        /* ground-coloured box masks the road behind the title — the gap it "fits" into */
+        .nlp-xgb-t, .nlp-t { background: var(--ground); padding: .6vh 2vw; }
+        .nlp-q {
+            font-size: clamp(28px, 5vw, 88px);
+            font-weight: 900; font-style: italic;
+            color: #8b1a2b; z-index: 4;
+        }
+        .raone-hw {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(32px, 5vw, 80px);
+            font-weight: 700; color: #8b1a2b; z-index: 5;
+        }
+        .raone-brand {
+            font-size: clamp(32px, 5vw, 80px);
+            font-weight: 900; color: #8b1a2b; z-index: 5;
+        }
+        .hw-svg { width: min(90vw, 1200px); z-index: 5; overflow: visible; }
+        /* revealed by a per-line mask (a slanted pen front sweeping left→right), not by fading */
+        .hw-svg text {
+            font-family: 'Caveat', cursive;
+            font-size: 30px; text-anchor: middle;
+            fill: #181614;
+        }
+        .hw-svg .hw-bold { font-weight: 700; }
+        .hw-svg .hw-stat { fill: #8b1a2b; }
+        /* proportions measured from the reference frame (208×72 in a 1942-wide slide), in em of the label size */
+        .raone-pill {
+            display: flex; align-items: center; gap: .27em;
+            box-sizing: border-box; height: 1.48em;
+            padding: 0 .55em 0 .3em;
+            font-family: 'Coming Soon', cursive;
+            font-size: clamp(18px, 2.5vw, 46px); line-height: 1;
+            color: #a7261c;
+            /* the squircle (fill + outline) is drawn by .raone-pill-bg; the border stays, transparent,
+               so the layout and the stroke width (read in JS) are unchanged */
+            border: .08em solid transparent;
+            white-space: nowrap; z-index: 5;
+        }
+        .raone-pill-bg {
+            position: absolute; left: -.08em; top: -.08em;
+            width: calc(100% + .16em); height: calc(100% + .16em);
+            overflow: visible; z-index: -1; pointer-events: none;
+        }
+        .raone-gear { width: .74em; height: .74em; flex: none; }
+        /* Coming Soon ships one weight; a hairline text-stroke matches the reference's heavier marker line */
+        .raone-pill span {
+            font-size: .86em; letter-spacing: .02em;
+            -webkit-text-stroke: .035em currentColor;
+            transform: translateY(.04em);
+        }
+        .raone-star-w { z-index: 5; }
+        .raone-star-w svg { display: block; width: clamp(120px, 18vw, 280px); height: auto; }
+        .raone-star-txt {
+            position: absolute; left: 50%; top: 50%;
+            transform: translate(-50%,-50%);
+            font-size: clamp(14px, 2.2vw, 36px);
+            font-weight: 900; color: #8b1a2b;
+            letter-spacing: .04em;
+        }
+        .news-card {
+            width: clamp(120px, 16vw, 240px);
+            background: #fff; padding: clamp(6px, .8vw, 14px);
+            border: 1px solid #bbb;
+            box-shadow: 2px 3px 10px rgba(0,0,0,.10);
+            z-index: 6;
+            font-family: Georgia, 'Times New Roman', serif;
+        }
+        .news-mast {
+            font-size: clamp(5px, .5vw, 8px); font-weight: 400;
+            text-transform: uppercase; letter-spacing: .2em;
+            text-align: center; border-bottom: 2px solid #111;
+            padding-bottom: 3px; margin-bottom: 5px; color: #333;
+        }
+        .news-card h5 {
+            font-size: clamp(8px, 1vw, 16px); font-weight: 700;
+            line-height: 1.15; margin-bottom: 4px; color: #111;
+        }
+        .news-card .news-body {
+            font-size: clamp(4px, .45vw, 7px); line-height: 1.35;
+            color: #555; columns: 2; column-gap: 5px;
+            column-rule: .5px solid #ddd;
+        }
+        /* the newspapers are painted here (the .news-card elements stay laid out, invisible, as the
+           source of their text layout). Under the pill (z 5) so the drop's tail disappears into it. */
+        .news-canvas { left: 0; top: 0; width: 100%; height: 100%; z-index: 4; }
+        .sent-badge {
+            font-size: clamp(12px, 1.1vw, 20px);
+            font-weight: 700; color: #1a8c3a;
+            white-space: nowrap; z-index: 5;
+            display: flex; align-items: center; gap: .3em;
+        }
+        .sent-tri {
+            width: 0; height: 0;
+            border-left: .35em solid transparent;
+            border-right: .35em solid transparent;
+            border-bottom: .55em solid #1a8c3a;
+        }
+        .news-card .news-meta {
+            columns: 1; column-rule: none;
+            letter-spacing: .08em; text-transform: uppercase; color: #777;
+        }
+        .sent-badge.neg { color: #b3261e; }
+        .sent-badge.neu { color: #8a847c; }
+        .sent-badge.neu .sent-tri { display: none; }
+        .sent-badge.neg .sent-tri { border-bottom: 0; border-top: .55em solid #b3261e; }
+        @media (max-width: 860px) {
+            .nlp-stage { height: 1300vh; }
+            .nlp-chip { width: 46vw; }   /* must match .brit-chip, or the card visibly resizes at the XGB→NLP handoff */
+            .hw-svg { width: 96vw; }
+            .hw-svg text { font-size: 22px; }
+            .news-card { width: 36vw; }
+        }
     </style>
 </head>
 <body>
@@ -409,6 +559,107 @@
                 <div class="tree-big" id="tree-big"></div>
                 <div class="tree-pill" id="tree-pill">Tree #1 contributes +0.31</div>
                 <div class="ens-grid" id="ens-grid"></div>
+            </div>
+        </section>
+
+        <!-- NLP / RaOne: scroll-driven animation -->
+        <section class="nlp-stage" id="nlp-stage">
+            <div class="nlp-vp" id="nlp-vp">
+                <svg class="nlp-curve" id="nlp-curve" viewBox="0 0 1000 1500" preserveAspectRatio="none">
+                    <!-- exit line: same S as before, centred — crosses x=500 at y=500 (screen centre, behind the title) -->
+                    <path id="nlp-line" d="M544,1000 C544,952 529.3,904.1 500,833.3 C441.3,691.9 441.3,641.5 500,500 C558.7,358.5 558.7,308.1 500,166.7 C470.7,95.9 456,48 456,0"
+                          fill="none" stroke="#181614" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <!-- S-road through the screen centre; draws bottom→top and ends at the BRITANNIA card's centre (x=500, y=560 = 56vh) -->
+                <svg class="nlp-road" id="nlp-road" viewBox="0 0 1000 2300" preserveAspectRatio="none">
+                    <path id="nlp-road-line" d="M500,2226.7 C575,2115.6 575,2004.5 500,1893.3 C425,1782.2 425,1671.1 500,1560 C575,1448.9 575,1337.8 500,1226.7 C425,1115.6 425,1004.5 500,893.3 C575,782.2 575,671.1 500,560"
+                          fill="none" stroke="#181614" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <div class="nlp-xgb-t" id="nlp-xgb-t"><em>eXtreme Gradient Boosting</em></div>
+                <div class="nlp-chip" id="nlp-chip">BRITANNIA</div>
+                <div class="nlp-t" id="nlp-t"><em>Natural language processing</em></div>
+                <span class="nlp-q" id="nlp-q">?</span>
+
+                <div class="raone-hw" id="raone-hw">RaOne</div>
+                <div class="raone-brand" id="raone-brand">RaOne</div>
+
+                <svg class="hw-svg" id="hw-svg" viewBox="0 0 1200 340">
+                    <text class="hw-line" x="600" y="40">Its RaOne</text>
+                    <text class="hw-line" x="600" y="90">Our In house NLP Engine that's trained on more than</text>
+                    <text class="hw-line" x="600" y="130">75000 News Articles Collected and marked relevant</text>
+                    <text class="hw-line" x="600" y="170">by our old engine</text>
+                    <text class="hw-line hw-stat hw-bold" x="600" y="240">RaOne removes 78.9% of articles as noise.</text>
+                    <text class="hw-line" x="600" y="280">The old scorer scored nearly everything | if it had any</text>
+                    <text class="hw-line" x="600" y="315">text, it got a TextBlob polarity score and counted.</text>
+                </svg>
+
+                <!-- what RaOne lands on after the font cycle; the hub the newspapers fold into and the scores leave from -->
+                <div class="raone-pill" id="raone-pill">
+                    <svg class="raone-pill-bg" aria-hidden="true"><path id="raone-pill-path" fill="#d8b97a" stroke="#000"/></svg>
+                    <svg class="raone-gear" viewBox="0 0 24 24" aria-hidden="true">
+                        <g fill="#1d1444">
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6"/>
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6" transform="rotate(45 12 12)"/>
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6" transform="rotate(90 12 12)"/>
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6" transform="rotate(135 12 12)"/>
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6" transform="rotate(180 12 12)"/>
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6" transform="rotate(225 12 12)"/>
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6" transform="rotate(270 12 12)"/>
+                            <rect x="10.4" y="1" width="3.2" height="4" rx=".6" transform="rotate(315 12 12)"/>
+                        </g>
+                        <circle cx="12" cy="12" r="7.2" fill="none" stroke="#1d1444" stroke-width="2.6"/>
+                    </svg>
+                    <span>RaOne</span>
+                </div>
+                <!-- replaced by .raone-pill; kept hidden until removal is confirmed -->
+                <div class="raone-star-w" id="raone-star" hidden>
+                    <svg viewBox="0 0 200 190" aria-hidden="true">
+                        <polygon points="100,10 123,68 185,68 135,108 155,168 100,135 45,168 65,108 15,68 77,68" fill="#f4d03f"/>
+                    </svg>
+                    <span class="raone-star-txt">RAONE</span>
+                </div>
+
+                <!-- real stored headlines (news_articles), each scored by RaOne — sentiment_lexicon.score_for(title, symbol),
+                     the production per-stock scorer — on 2026-10-04. data-raone is that score; it is what the sentiment
+                     badge shows when the article is swallowed. Re-score with the same call if a headline is swapped. -->
+                <div class="news-card" id="news-1" data-raone="1.0000">
+                    <div class="news-mast">Equitypandit</div>
+                    <h5>Coal India September Output Jumps 9% as Offtake Rises 12.5%</h5>
+                    <p class="news-body news-meta">NSE: COALINDIA &middot; 1 Oct 2026</p>
+                </div>
+                <div class="news-card" id="news-2" data-raone="-1.0000">
+                    <div class="news-mast">LiveMint</div>
+                    <h5>Reliance shares hit a fresh 52-week low; stock plunges 24% YTD</h5>
+                    <p class="news-body news-meta">NSE: RELIANCE &middot; 28 Sep 2026</p>
+                </div>
+                <div class="news-card" id="news-3" data-raone="0.0000">
+                    <div class="news-mast">Business Standard</div>
+                    <h5>TCS to buy US retailer Best Buy&rsquo;s India GCC, develop an AI-native centre</h5>
+                    <p class="news-body news-meta">NSE: TCS &middot; 1 Oct 2026</p>
+                </div>
+                <div class="news-card" id="news-4" data-raone="0.8500">
+                    <div class="news-mast">Moneycontrol</div>
+                    <h5>Kotak Mahindra Bank shares gain over 3% after Anup Kumar Saha named new MD &amp; CEO</h5>
+                    <p class="news-body news-meta">NSE: KOTAKBANK &middot; 1 Oct 2026</p>
+                </div>
+                <div class="news-card" id="news-5" data-raone="-0.7615">
+                    <div class="news-mast">univest.in</div>
+                    <h5>NTPC Share Price Today Falls 2.41%: Key Analysis</h5>
+                    <p class="news-body news-meta">NSE: NTPC &middot; 1 Oct 2026</p>
+                </div>
+                <div class="news-card" id="news-6" data-raone="0.7630">
+                    <div class="news-mast">HDFC Sky</div>
+                    <h5>L&amp;T Secures Two Dubai Road Contracts; Shares Rise 0.42%</h5>
+                    <p class="news-body news-meta">NSE: LT &middot; 30 Sep 2026</p>
+                </div>
+                <canvas class="news-canvas" id="news-canvas" aria-hidden="true"></canvas>
+
+                <div class="sent-badge" id="sent-1"><span class="sent-tri"></span>+0.0779</div>
+                <div class="sent-badge" id="sent-2"><span class="sent-tri"></span>+0.0779</div>
+                <div class="sent-badge" id="sent-3"><span class="sent-tri"></span>+0.0779</div>
+                <div class="sent-badge" id="sent-4"><span class="sent-tri"></span>+0.0779</div>
+                <div class="sent-badge" id="sent-5"><span class="sent-tri"></span>+0.0779</div>
+                <div class="sent-badge" id="sent-6"><span class="sent-tri"></span>+0.0779</div>
             </div>
         </section>
     </main>
@@ -713,12 +964,14 @@
     var range = stage.offsetHeight - innerHeight;
     var p = Math.max(0, Math.min(1, -rect.top / range));
     var trees = ensGrid.children, j;
+    /* above the title's background once they share the centre, matching the NLP handoff frame */
+    chip.style.zIndex = p > .58 ? 5 : '';
 
     if (reduced) {
       place(card, 0, 0, 1, p < .15 ? 1 : 0);
-      place(chip, 0, -25, 1, p > .58 && p < .9 ? 1 : 0);
+      place(chip, 0, 6, 1, p > .58 ? 1 : 0);
       sPath.style.opacity = 0;
-      place(xgbT, 0, -36, 1, p > .12 && p < .9 ? 1 : 0);
+      place(xgbT, 0, 0, 1, p > .12 ? 1 : 0);
       var still = p > .40 && p < .50;
       setZoom(still ? 1 : 0);
       chartW.style.borderColor = still ? 'transparent' : '';
@@ -747,31 +1000,27 @@
     );
 
     /* britannia chip — extracts right, rises straight up with the line, hidden for the chart,
-       back under the title for the trees, then to the centre at the end */
+       back under the title for the trees, then rests at centre for the NLP handoff */
     place(chip,
       kf([[0,0],[.06,0],[.10,20],[.30,20],[.58,0]], p),
-      kf([[0,0],[.20,0],[.25,-35],[.30,-35],[.58,-25],[.86,-25],[.885,6],[.905,6],[.925,0]], p),
+      kf([[0,0],[.20,0],[.25,-35],[.30,-35],[.58,-25],[.86,-25],[.90,6]], p),
       1,
-      kf([[0,0],[.06,0],[.08,1],[.28,1],[.30,0],[.585,0],[.60,1],[.925,1],[.945,0]], p)
+      kf([[0,0],[.06,0],[.08,1],[.28,1],[.30,0],[.585,0],[.60,1]], p)
     );
 
-    /* line — draws bottom→top through the chip's centre, then rises with it (same keyframes as chip y) */
-    var sOp = kf([[0,0],[.08,0],[.10,.8],[.28,.8],[.30,0],[.94,0],[.96,.5],[1,.5]], p);
+    /* line — draws bottom→top through the chip's centre, then rises with it */
+    var sOp = kf([[0,0],[.08,0],[.10,.8],[.28,.8],[.30,0]], p);
     sPath.style.opacity = sOp;
-    var draw = p < .93
-      ? kf([[.10,1],[.20,0]], p)
-      : kf([[.94,1],[1,.3]], p);
+    var draw = kf([[.10,1],[.20,0]], p);
     sLine.style.strokeDashoffset = pathLen * draw;
-    sPath.style.transform = p < .93
-      ? 'translateY(' + kf([[.20,0],[.25,-35]], p) + 'vh)'
-      : 'translateX(-20vw)';
+    sPath.style.transform = 'translateY(' + kf([[.20,0],[.25,-35]], p) + 'vh)';
 
-    /* xgboost title — enters from right once the chip has risen, settles at the top */
+    /* xgboost title — enters from right once the chip has risen, rests at centre for NLP handoff */
     place(xgbT,
       kf([[.25,42],[.295,0]], p),
-      kf([[.305,0],[.325,-36],[.86,-36],[.885,-5]], p),
+      kf([[.305,0],[.325,-36],[.86,-36],[.90,0]], p),
       1,
-      kf([[0,0],[.25,0],[.28,1],[.90,1],[.915,0]], p)
+      kf([[0,0],[.25,0],[.28,1]], p)
     );
 
     /* chart: the real day, then a camera push into the 10:45 / 10:50 pair and back out */
@@ -853,6 +1102,654 @@
   addEventListener('wheel', stopAuto, { passive: true });
   addEventListener('touchstart', stopAuto, { passive: true });
   addEventListener('keydown', function (e) { if (e.key === 'Escape') stopAuto(); });
+})();
+</script>
+<script>
+/* ── NLP / RaOne scroll-driven animation ─────────────────── */
+(function () {
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var stage = document.getElementById('nlp-stage');
+  if (!stage) return;
+
+  var nlpVp     = document.getElementById('nlp-vp');
+  var curve     = document.getElementById('nlp-curve');
+  var cLine     = document.getElementById('nlp-line');
+  var xgbT      = document.getElementById('nlp-xgb-t');
+  var nlpChip   = document.getElementById('nlp-chip');
+  var nlpT      = document.getElementById('nlp-t');
+  var nlpQ      = document.getElementById('nlp-q');
+  var raHw      = document.getElementById('raone-hw');
+  var raBrand   = document.getElementById('raone-brand');
+  var hwSvg     = document.getElementById('hw-svg');
+  var pill      = document.getElementById('raone-pill');
+  var news      = [1,2,3,4,5,6].map(function(i){return document.getElementById('news-'+i)});
+  var scores    = [1,2,3,4,5,6].map(function(i){return document.getElementById('sent-'+i)});
+
+  /* stroke-draw setup on s-curve */
+  var cLen = cLine.getTotalLength();
+  cLine.style.strokeDasharray  = cLen;
+  cLine.style.strokeDashoffset = cLen;
+
+  /* entry road: the part below the fold (y > 1000) is pre-drawn so the visible tip starts at the screen's bottom edge */
+  var road     = document.getElementById('nlp-road');
+  var rLine    = document.getElementById('nlp-road-line');
+  var rLen     = rLine.getTotalLength();
+  var ROAD_D   = rLine.getAttribute('d'), roadLive = false;
+  var rLo = 0, rHi = rLen;
+  while (rHi - rLo > .5) { var rMid = (rLo + rHi) / 2; if (rLine.getPointAtLength(rMid).y > 1000) rLo = rMid; else rHi = rMid; }
+  var rHidden  = rLen - rLo;
+  rLine.style.strokeDasharray  = rLen;
+  rLine.style.strokeDashoffset = rLen;
+
+  /* handwriting: each line gets a mask whose gradient edge is the pen front. The edge is slanted
+     like the italic script and feathered, so letters appear one after another and each one
+     completes gradually as the front crosses it. */
+  var hwLines = [].slice.call(hwSvg.querySelectorAll('.hw-line'));
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var HW_FEATHER = 14, HW_SLANT = Math.tan(18 * Math.PI / 180);
+  var hwDefs = document.createElementNS(SVGNS, 'defs');
+  hwSvg.insertBefore(hwDefs, hwSvg.firstChild);
+  var hwPen = hwLines.map(function(l, i){
+    var g = document.createElementNS(SVGNS, 'linearGradient');
+    g.id = 'hw-g' + i;
+    g.setAttribute('gradientUnits', 'userSpaceOnUse');
+    g.innerHTML = '<stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/>';
+    var m = document.createElementNS(SVGNS, 'mask');
+    m.id = 'hw-m' + i;
+    m.setAttribute('maskUnits', 'userSpaceOnUse');
+    m.setAttribute('x', -200); m.setAttribute('y', -200); m.setAttribute('width', 1600); m.setAttribute('height', 800);
+    var r = document.createElementNS(SVGNS, 'rect');
+    r.setAttribute('x', -200); r.setAttribute('y', -200); r.setAttribute('width', 1600); r.setAttribute('height', 800);
+    r.setAttribute('fill', 'url(#hw-g' + i + ')');
+    m.appendChild(r);
+    hwDefs.appendChild(g); hwDefs.appendChild(m);
+    l.setAttribute('mask', 'url(#hw-m' + i + ')');
+    return { g: g, x0: 0, x1: 0, t0: 0, t1: 0 };
+  });
+  /* writing schedule inside p .22→.355: time ∝ line width (steady pen speed), short lift between
+     lines, longer between paragraphs (detected from the larger baseline gap) */
+  var HW_P0 = .22, HW_P1 = .355;
+  function measureHw(){
+    var units = [], total = 0, prevY = null;
+    hwLines.forEach(function(l, i){
+      var bb = l.getBBox(), y = +l.getAttribute('y');
+      var pause = prevY === null ? 0 : (y - prevY > 45 ? 140 : 45);
+      prevY = y;
+      hwPen[i].x0 = bb.x - 16;
+      hwPen[i].x1 = bb.x + bb.width + HW_FEATHER + 16;
+      var cy = bb.y + bb.height / 2;
+      hwPen[i].g.setAttribute('gradientTransform', 'translate(' + (HW_SLANT * cy) + ',0) skewX(-18)');
+      units.push([total + pause, total + pause + bb.width]);
+      total += pause + bb.width;
+    });
+    units.forEach(function(u, i){
+      hwPen[i].t0 = HW_P0 + (HW_P1 - HW_P0) * u[0] / total;
+      hwPen[i].t1 = HW_P0 + (HW_P1 - HW_P0) * u[1] / total;
+    });
+  }
+  function penAt(i, frac){
+    var e = hwPen[i].x0 + frac * (hwPen[i].x1 - hwPen[i].x0);
+    hwPen[i].g.setAttribute('x1', e - HW_FEATHER);
+    hwPen[i].g.setAttribute('x2', e);
+  }
+
+  /* RaOne card outline: a squircle — each corner is a superellipse quadrant (|x|ⁿ+|y|ⁿ=1, n=4), whose
+     curvature falls to zero where it meets the straight edges, so the corners flow into the sides
+     with no visible join (the "continuous corner" of app icons), unlike a circular border-radius */
+  var pillPath = document.getElementById('raone-pill-path');
+  /* the title's ink as "r,g,b", for fading its lettering without fading its background */
+  var NLP_INK = (getComputedStyle(nlpT).color.match(/\d+(\.\d+)?/g) || [24, 22, 20]).slice(0, 3).join(',');
+  function drawPillShape(){
+    var sw = parseFloat(getComputedStyle(pill).borderTopWidth) || 3;
+    var w = pill.offsetWidth, h = pill.offsetHeight, i0 = sw / 2;
+    var x0 = i0, y0 = i0, x1 = w - i0, y1 = h - i0;
+    var r = Math.min((y1 - y0) * .5, (x1 - x0) * .5), N = 4, STEPS = 24;
+    var corners = [[x1 - r, y0 + r, 1, -1, 0], [x1 - r, y1 - r, 1, 1, 1], [x0 + r, y1 - r, -1, 1, 2], [x0 + r, y0 + r, -1, -1, 3]];
+    var d = '';
+    corners.forEach(function(c){
+      for (var k = 0; k <= STEPS; k++) {
+        /* walk each quadrant clockwise: top-right goes from the top edge down to the right edge, etc. */
+        var th = (c[4] % 2 === 0 ? (STEPS - k) : k) / STEPS * Math.PI / 2;
+        var px = c[0] + c[2] * r * Math.pow(Math.cos(th), 2 / N);
+        var py = c[1] + c[3] * r * Math.pow(Math.sin(th), 2 / N);
+        d += (d ? 'L' : 'M') + px.toFixed(2) + ' ' + py.toFixed(2);
+      }
+    });
+    pillPath.setAttribute('d', d + 'Z');
+    pillPath.setAttribute('stroke-width', sw);
+    pillPath.setAttribute('stroke-linejoin', 'round');
+  }
+
+  /* "?" sits just after the title's last letter, on the same baseline */
+  var qX = 0;
+  function measureQ(){
+    var vw = innerWidth / 100;
+    var textHalf = nlpT.offsetWidth / 2 - parseFloat(getComputedStyle(nlpT).paddingRight);
+    var gap = parseFloat(getComputedStyle(nlpQ).fontSize) * .06;
+    qX = (textHalf + gap + nlpQ.offsetWidth / 2) / vw;
+  }
+
+  /* extra scroll (in screens) for phases that need room; each phase keeps the same p range,
+     everything else keeps its original scroll length */
+  var STRETCH = [[0, .12, 1], [.22, .36, 1.5], [.42, .50, 1], [.52, .72, 2.5]];
+
+  /* newspapers, rendered in WebGL. Each card is rasterised once from its own DOM layout (so it looks
+     exactly like the card) and used as a texture on a finely subdivided sheet. A vertex shader rolls
+     the sheet up from its bottom edge around a cylinder (the classic page-curl technique: points
+     behind the rolling line are rotated round the roll's axis, on a slowly tightening spiral), so the
+     roll is real geometry with real lighting — the printed face inside, the newsprint's back outside. */
+  var newsCv = document.getElementById('news-canvas');
+  var gl = newsCv.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true, depth: true });
+  var NEWS_PAD = 14, DPR = 1, PAPER_NX = 6, PAPER_NY = 240;
+  var newsBmp = [], newsDirty = true;
+  var gear = pill.querySelector('.raone-gear');
+  /* per-article variation so no two papers move alike */
+  var PAPER_RND = news.map(function(){
+    return { tilt: (Math.random() * 2 - 1) * .07, arc: (Math.random() * 2 - 1) * 26 };
+  });
+  var paperGL = gl && (function(){
+    function sh(type, src){
+      var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.warn('paper shader:', gl.getShaderInfoLog(s));
+      return s;
+    }
+    function prog(vs, fs){
+      var p = gl.createProgram();
+      gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(p);
+      if (gl.getProgramParameter(p, gl.LINK_STATUS)) return p;
+      console.warn('paper program:', gl.getProgramInfoLog(p));
+      return null;
+    }
+    /* shared placement: local px (centred on the card) → scale → in-plane tilt → screen → mild perspective */
+    var PLACE =
+      'uniform vec2 uAnchor; uniform float uScale; uniform float uTilt; uniform vec2 uView; uniform float uCam;\n' +
+      'vec4 placeIt(vec3 p){\n' +
+      '  p *= uScale;\n' +
+      '  float c = cos(uTilt), s = sin(uTilt);\n' +
+      '  vec2 scr = uAnchor + vec2(p.x * c - p.y * s, p.x * s + p.y * c);\n' +
+      '  vec2 h = uView * .5;\n' +
+      '  float w = (uCam - p.z) / uCam;\n' +
+      '  return vec4((scr.x - h.x) / h.x, (h.y - scr.y) / h.y, -p.z / 600. * w, w);\n' +
+      '}\n';
+    var paper = prog(
+      'precision highp float;\nattribute vec2 aUV;\n' +
+      'uniform vec2 uSize; uniform float uRoll; uniform float uR; uniform float uThick;\n' + PLACE +
+      'varying vec2 vUV; varying vec3 vN;\n' +
+      'void main(){\n' +
+      '  float x = aUV.x * uSize.x, yTop = aUV.y * uSize.y;\n' +
+      '  float d = uSize.y - yTop, yRoll = uSize.y - uRoll;\n' +
+      '  vec3 p; vec3 n;\n' +
+      '  if (d >= uRoll) { p = vec3(x, yTop, 0.); n = vec3(0., 0., 1.); }\n' +
+      '  else {\n' +
+      '    float th = (uRoll - d) / uR;\n' +
+      '    float r = max(uR - uThick * th / 6.2831853, .5);\n' +
+      '    p = vec3(x, yRoll + r * sin(th), uR - r * cos(th));\n' +
+      '    n = vec3(0., -sin(th), cos(th));\n' +
+      '  }\n' +
+      '  vUV = aUV; vN = n;\n' +
+      '  gl_Position = placeIt(p - vec3(uSize * .5, 0.));\n' +
+      '}',
+      'precision mediump float;\n' +
+      'uniform sampler2D uTex; uniform vec4 uUVRect; uniform float uAlpha;\n' +
+      'varying vec2 vUV; varying vec3 vN;\n' +
+      'void main(){\n' +
+      '  vec3 n = normalize(gl_FrontFacing ? vN : -vN);\n' +
+      '  vec3 L = normalize(vec3(-.35, -.55, 1.)), H = normalize(L + vec3(0., 0., 1.));\n' +
+      '  float lit = .45 + .55 * max(dot(n, L), 0.) + .2 * pow(max(dot(n, H), 0.), 36.);\n' +
+      '  float flat_ = .45 + .55 * L.z + .2 * pow(H.z, 36.);\n' +
+      '  vec3 tex = texture2D(uTex, uUVRect.xy + vUV * uUVRect.zw).rgb;\n' +
+      '  vec3 col = gl_FrontFacing ? tex : mix(vec3(.955, .948, .93), tex, .1);\n' +
+      '  gl_FragColor = vec4(col * (lit / flat_), 1.) * uAlpha;\n' +
+      '}');
+    var shadow = prog(
+      /* uniforms shared with the fragment shader must match its (mediump) precision or linking fails */
+      'precision highp float;\nattribute vec2 aUV;\nuniform mediump vec4 uRect; uniform mediump float uBlur; uniform vec2 uOff;\n' + PLACE +
+      'varying vec2 vLocal;\n' +
+      'void main(){\n' +
+      '  vLocal = mix(uRect.xy - uBlur, uRect.zw + uBlur, aUV);\n' +
+      '  vec4 q = placeIt(vec3(vLocal, 0.));\n' +
+      '  q.xy += uOff / (uView * .5) * vec2(1., -1.);\n' +
+      '  gl_Position = q;\n' +
+      '}',
+      'precision mediump float;\nuniform vec4 uRect; uniform float uBlur; uniform float uAlpha;\nvarying vec2 vLocal;\n' +
+      'void main(){\n' +
+      '  vec2 c = (uRect.xy + uRect.zw) * .5, h = (uRect.zw - uRect.xy) * .5;\n' +
+      '  vec2 q = abs(vLocal - c) - h;\n' +
+      '  float dist = length(max(q, 0.)) + min(max(q.x, q.y), 0.);\n' +
+      '  gl_FragColor = vec4(0., 0., 0., 1.) * uAlpha * (1. - smoothstep(-uBlur * .4, uBlur, dist));\n' +
+      '}');
+    if (!paper || !shadow) return null;
+    /* sheet mesh: PAPER_NX × PAPER_NY quads, fine along the rolling direction */
+    var uv = [], idx = [], i, j, cols = PAPER_NX + 1;
+    for (j = 0; j <= PAPER_NY; j++) for (i = 0; i <= PAPER_NX; i++) uv.push(i / PAPER_NX, j / PAPER_NY);
+    for (j = 0; j < PAPER_NY; j++) for (i = 0; i < PAPER_NX; i++) {
+      var a = j * cols + i, b = a + 1, c = a + cols, d = c + 1;
+      idx.push(a, c, b, b, c, d);   /* counter-clockwise once y is flipped to clip space */
+    }
+    var meshUV = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, meshUV); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.STATIC_DRAW);
+    var meshIdx = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, meshIdx); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
+    var quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 0,1, 1,1]), gl.STATIC_DRAW);
+    function locs(p, names){ var o = {}; names.forEach(function(nm){ o[nm] = gl.getUniformLocation(p, nm); }); o.aUV = gl.getAttribLocation(p, 'aUV'); return o; }
+    var common = ['uAnchor', 'uScale', 'uTilt', 'uView', 'uCam'];
+    return {
+      paper: paper, shadow: shadow, meshUV: meshUV, meshIdx: meshIdx, quad: quad, count: idx.length,
+      pl: locs(paper, common.concat(['uSize', 'uRoll', 'uR', 'uThick', 'uTex', 'uUVRect', 'uAlpha'])),
+      sl: locs(shadow, common.concat(['uRect', 'uBlur', 'uOff', 'uAlpha']))
+    };
+  })();
+  function rasteriseNews(){
+    if (paperGL) newsBmp.forEach(function(b){ if (b.tex) gl.deleteTexture(b.tex); });
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    newsCv.width = Math.round(nlpVp.clientWidth * DPR);
+    newsCv.height = Math.round(nlpVp.clientHeight * DPR);
+    newsBmp = news.map(function(card){
+      var W = card.offsetWidth, H = card.offsetHeight, P = NEWS_PAD, S = DPR * 1.5;
+      var cv = document.createElement('canvas');
+      cv.width = Math.ceil((W + 2 * P) * S); cv.height = Math.ceil((H + 2 * P) * S);
+      var c = cv.getContext('2d');
+      c.scale(S, S); c.translate(P, P);
+      c.save();
+      c.shadowColor = 'rgba(0,0,0,.10)'; c.shadowBlur = 10; c.shadowOffsetX = 2; c.shadowOffsetY = 3;
+      c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+      c.restore();
+      c.strokeStyle = '#bbb'; c.lineWidth = 1; c.strokeRect(.5, .5, W - 1, H - 1);
+      var cr = card.getBoundingClientRect(), rg = document.createRange();
+      function rel(r){ return { x: r.left - cr.left, y: r.top - cr.top, w: r.width, h: r.height }; }
+      function paintText(el, perChar){
+        var cs = getComputedStyle(el), up = cs.textTransform === 'uppercase';
+        c.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+        c.fillStyle = cs.color; c.textBaseline = 'alphabetic';
+        var asc = c.measureText('Hg').fontBoundingBoxAscent;
+        var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), node, m;
+        while ((node = tw.nextNode())) {
+          var re = perChar ? /\S/g : /\S+/g, txt = node.textContent;
+          while ((m = re.exec(txt))) {
+            rg.setStart(node, m.index); rg.setEnd(node, m.index + m[0].length);
+            var r = rg.getClientRects()[0];
+            if (r) c.fillText(up ? m[0].toUpperCase() : m[0], r.left - cr.left, r.top - cr.top + asc);
+          }
+        }
+      }
+      var mast = card.querySelector('.news-mast'), body = card.querySelector('.news-body');
+      var mcs = getComputedStyle(mast), mr = rel(mast.getBoundingClientRect()), mb = parseFloat(mcs.borderBottomWidth);
+      c.fillStyle = mcs.borderBottomColor; c.fillRect(mr.x, mr.y + mr.h - mb, mr.w, mb);
+      var bcs = getComputedStyle(body), br = rel(body.getBoundingClientRect());
+      if (bcs.columnRuleStyle !== 'none' && parseInt(bcs.columnCount, 10) > 1) {
+        c.fillStyle = bcs.columnRuleColor; c.fillRect(br.x + br.w / 2 - .25, br.y, .5, br.h);
+      }
+      paintText(mast, true);
+      paintText(card.querySelector('h5'), false);
+      paintText(body, false);
+      return { cv: cv, BW: W + 2 * P, BH: H + 2 * P };
+    });
+    if (!paperGL) return;
+    newsBmp.forEach(function(b){
+      b.tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, b.tex);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, b.cv);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    });
+    newsDirty = true;
+  }
+  function clearNews(){
+    if (!paperGL || !newsDirty) return;
+    gl.viewport(0, 0, newsCv.width, newsCv.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    newsDirty = false;
+  }
+  function easeInOut(x){ return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+  function clamp01(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
+
+  function setPlacement(L, x, y, scale, tilt, vpW, vpH){
+    gl.uniform2f(L.uAnchor, x, y); gl.uniform1f(L.uScale, scale); gl.uniform1f(L.uTilt, tilt);
+    gl.uniform2f(L.uView, vpW, vpH); gl.uniform1f(L.uCam, 1400);
+  }
+  function easeSine(x){ return .5 - .5 * Math.cos(Math.PI * x); }
+  /* distance along the path for journey time t: speed 1 − .55·sin(πt), normalised —
+     fast in, slow mid-roll, fast again as it is drawn in */
+  function pathS(t){ return (t - .55 * (1 - Math.cos(Math.PI * t)) / Math.PI) / (1 - 1.1 / Math.PI); }
+  /* 0 → 1 → 0 while the paper is being fed through the pill's mouth (shredder wiggle) */
+  function feedEnv(t){
+    if (t <= 0 || t >= 1) return 0;
+    var s = pathS(t);
+    return clamp01((s - .78) / .05) * (1 - clamp01((s - .96) / .04));
+  }
+  /* t: 0 → 1 over the article's journey — one continuous movement, it never stops.
+     The paper's visual centre travels from its lane (off-screen left) along a gentle S-curve onto the
+     pill's centre line and on into the pill. Speed: in briskly, slower while it rolls, quicker again
+     as it is drawn in. It rolls (bottom edge up, toward the viewer) slowly the whole way across,
+     finishing just before the pill's mouth, and shrinks a little as it goes. */
+  function drawPaper(n, t, lanePx){
+    var b = newsBmp[n];
+    if (!paperGL || !b || !b.tex) return;
+    newsDirty = true;
+    var P = NEWS_PAD, W = b.BW - 2 * P, H = b.BH - 2 * P, rnd = PAPER_RND[n];
+    var vpW = nlpVp.clientWidth, vpH = nlpVp.clientHeight;
+    var pillL = vpW / 2 - pill.offsetWidth / 2, ph = pill.offsetHeight;
+
+    /* flat until it is fully on screen (t ≈ .27), then rolls slowly, done just before the pill's mouth (t ≈ .86) */
+    var rr = easeSine(clamp01((t - .27) / .53));
+    var roll = rr * H;
+    var R0 = H * .055, thick = H * .011;
+    var R = Math.sqrt(R0 * R0 + roll * thick / Math.PI);     /* the roll thickens as paper winds on */
+    var SCALE_END = .65, scale = 1 - (1 - SCALE_END) * easeSine(clamp01((t - .35) / .5));
+
+    var s = pathS(t);
+    var x0 = -W / 2 - 80, xEnd = pillL + ph * .7 + W * SCALE_END / 2;
+    /* while being fed in, the forward motion stutters like paper caught by shredder rollers */
+    var feed = feedEnv(t), T = performance.now() / 1000;
+    var cx = x0 + (xEnd - x0) * s + feed * 3.2 * Math.sin(2 * Math.PI * 7 * T + n * 1.7);
+    var lift = easeSine(clamp01(s / .8));                    /* level with the pill well before its mouth */
+    var cy = vpH / 2 + lanePx * (1 - lift) + rnd.arc * .6 * Math.sin(Math.PI * clamp01(s / .8));
+    /* anchor is the sheet's centre; the visible mass sits at −roll/2 (the tube's axis is the top edge
+       once fully rolled), so offset it to keep the path smooth while the roll climbs */
+    var x = cx, y = cy + roll / 2 * scale;
+    var tilt = rnd.tilt * (1 - easeSine(clamp01(t / .7))) + rnd.tilt * .3 * Math.sin(Math.PI * rr) * (1 - clamp01((t - .6) / .2));
+    /* shredder wiggle: fast vertical judder and a little rocking, irregular (two frequencies) */
+    y += feed * (2.6 * Math.sin(2 * Math.PI * 17 * T + n) + 1.3 * Math.sin(2 * Math.PI * 29 * T + n * 2.3));
+    tilt += feed * (.034 * Math.sin(2 * Math.PI * 11 * T + n * .7) + .015 * Math.sin(2 * Math.PI * 23 * T + n));
+    var alpha = 1 - clamp01((s - .93) / .07);
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+    /* soft contact shadow under whatever is flat or rolled */
+    var yRollL = H / 2 - roll;
+    var top = Math.min(-H / 2, yRollL - R), bot = roll > 0 ? yRollL + R : H / 2;
+    var sl = paperGL.sl;
+    gl.disable(gl.DEPTH_TEST);
+    gl.useProgram(paperGL.shadow);
+    setPlacement(sl, x, y, scale, tilt, vpW, vpH);
+    gl.uniform4f(sl.uRect, -W / 2, top, W / 2, bot);
+    gl.uniform1f(sl.uBlur, 10); gl.uniform2f(sl.uOff, 2, 5); gl.uniform1f(sl.uAlpha, .13 * alpha);
+    gl.bindBuffer(gl.ARRAY_BUFFER, paperGL.quad);
+    gl.enableVertexAttribArray(sl.aUV);
+    gl.vertexAttribPointer(sl.aUV, 2, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    /* the sheet */
+    var pl = paperGL.pl;
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+    gl.useProgram(paperGL.paper);
+    setPlacement(pl, x, y, scale, tilt, vpW, vpH);
+    gl.uniform2f(pl.uSize, W, H); gl.uniform1f(pl.uRoll, roll);
+    gl.uniform1f(pl.uR, R); gl.uniform1f(pl.uThick, thick);
+    gl.uniform4f(pl.uUVRect, P / b.BW, P / b.BH, W / b.BW, H / b.BH);
+    gl.uniform1f(pl.uAlpha, alpha);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, b.tex); gl.uniform1i(pl.uTex, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, paperGL.meshUV);
+    gl.enableVertexAttribArray(pl.aUV);
+    gl.vertexAttribPointer(pl.aUV, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, paperGL.meshIdx);
+    gl.drawElements(gl.TRIANGLES, paperGL.count, gl.UNSIGNED_SHORT, 0);
+  }
+
+  /* RaOne cycles through these faces (hard cuts) between .42 and .475, then cuts to the RaOne pill */
+  var FONT_CYCLE = [
+    ['Playfair Display', 900, 'italic'], ['Bebas Neue', 400, 'normal'], ['Space Mono', 700, 'normal'],
+    ['Pacifico', 400, 'normal'], ['Abril Fatface', 400, 'normal'], ['Rubik Mono One', 400, 'normal'],
+    ['Cormorant Garamond', 600, 'italic'], ['Permanent Marker', 400, 'normal'], ['Major Mono Display', 400, 'normal'],
+    ['Lobster', 400, 'normal'], ['UnifrakturMaguntia', 400, 'normal'], ['Monoton', 400, 'normal']
+  ];
+  var CYCLE_P0 = .42, CYCLE_P1 = .475, cycleStep = -2;
+  /* fetch every face up front so no cut ever shows a fallback font */
+  if (document.fonts && document.fonts.load) FONT_CYCLE.forEach(function(f){
+    document.fonts.load(f[2] + ' ' + f[1] + ' 40px "' + f[0] + '"', 'RaOne');
+  });
+  if (document.fonts && document.fonts.load) document.fonts.load('40px "Coming Soon"', 'RaOne');
+  function setCycleFont(step){
+    if (step === cycleStep) return;
+    cycleStep = step;
+    var f = FONT_CYCLE[step];
+    raBrand.style.fontFamily = f ? '"' + f[0] + '", serif' : '';
+    raBrand.style.fontWeight = f ? f[1] : '';
+    raBrand.style.fontStyle  = f ? f[2] : '';
+  }
+  function scrollToP(s, range){
+    var ih = innerHeight, ex = 0, i;
+    for (i = 0; i < STRETCH.length; i++) ex += STRETCH[i][2] * ih;
+    var L = range - ex, pos = 0, prev = 0, len;
+    for (i = 0; i < STRETCH.length; i++) {
+      var a = STRETCH[i][0], b = STRETCH[i][1];
+      len = (a - prev) * L;
+      if (s < pos + len) return prev + (s - pos) / L;
+      pos += len;
+      len = (b - a) * L + STRETCH[i][2] * ih;
+      if (s < pos + len) return a + (b - a) * (s - pos) / len;
+      pos += len; prev = b;
+    }
+    return Math.min(1, prev + (s - pos) / L);
+  }
+
+  /* animation helpers (same as xgb, re-declared for closure) */
+  function lerp(a,b,t){return a+(b-a)*t}
+  function ease(t){return t<.5?2*t*t:-1+(4-2*t)*t}
+  function kf(f,p){
+    if(p<=f[0][0])return f[0][1];var L=f[f.length-1];if(p>=L[0])return L[1];
+    for(var i=0;i<f.length-1;i++)if(p<=f[i+1][0]){var t=(p-f[i][0])/(f[i+1][0]-f[i][0]);return lerp(f[i][1],f[i+1][1],ease(t))}return L[1];
+  }
+  function place(el,x,y,s,o){
+    el.style.transform='translate(-50%,-50%) translate('+x+'vw,'+y+'vh) scale('+s+')';
+    el.style.opacity=o;
+  }
+
+  /* score cascade positions (diagonal staircase to lower-right) */
+  var SC = [{x:14,y:-8},{x:18,y:-3},{x:12,y:2},{x:16,y:7},{x:20,y:12},{x:24,y:18}];
+  /* article n enters at NEWS_T0[n] and is fully swallowed NEWS_DUR later; starts .016 apart so
+     about three are on screen at once. Lanes (vh from centre) alternate so neighbours never overlap. */
+  var NEWS_T0 = [.52, .545, .57, .595, .62, .645], NEWS_DUR = .075;
+  /* |lane| ≥ 13vh keeps a clear corridor through the pill's centre line for the rolled tubes;
+     ≥ −20vh keeps the papers clear of the title above */
+  var NEWS_LANE = [-19, 15, -14, 21, -18, 13];
+
+  /* sentiment scores: each badge shows RaOne's score for its own article (the card's data-raone),
+     with an unstructured exit — random spot on the pill's edge, curved path, jittered timing,
+     scattered landing spot */
+  var SCORE_FX = scores.map(function(el, i){
+    var v = parseFloat(news[i].getAttribute('data-raone')) || 0;
+    el.classList.toggle('neg', v < 0);
+    el.classList.toggle('neu', v === 0);
+    el.lastChild.textContent = (v < 0 ? '−' : v > 0 ? '+' : '') + Math.abs(v).toFixed(4);
+    return { lag: Math.random() * .003, dur: .005 + Math.random() * .004, cDelay: Math.random() * .04,
+             bend: Math.random() * 2 - 1, edge: Math.random() * 2 - 1 };
+  });
+  function placeScoreSlots(){
+    var vwPx = innerWidth / 100, vhPx = innerHeight / 100;
+    var pr = pill.offsetWidth / 2, ph = pill.offsetHeight;
+    var x0 = pr + 50, x1 = pr + Math.max(260, Math.min(420, vwPx * 24)), yR = Math.min(240, vhPx * 24);
+    var placed = [];
+    SCORE_FX.forEach(function(fx, i){
+      var bw = scores[i].offsetWidth + 24, bh = scores[i].offsetHeight + 14, x, y, tries = 0;
+      do {
+        x = x0 + Math.random() * (x1 - x0); y = (Math.random() * 2 - 1) * yR; tries++;
+      } while (tries < 200 && placed.some(function(q){ return Math.abs(q[0] - x) < bw && Math.abs(q[1] - y) < bh; }));
+      placed.push([x, y]);
+      var ex = pr + 6, ey = fx.edge * ph * .3;
+      var mx = (ex + x) / 2, my = (ey + y) / 2, dx = x - ex, dy = y - ey;
+      fx.ex = ex / vwPx; fx.ey = ey / vhPx; fx.sx = x / vwPx; fx.sy = y / vhPx;
+      fx.cx = (mx - dy * .35 * fx.bend) / vwPx; fx.cy = (my + dx * .35 * fx.bend) / vhPx;
+    });
+  }
+
+  /* scrub smoothing: what is drawn eases toward the scroll position (time constant SCRUB_TAU) instead
+     of jumping a step per wheel notch — the same idea as GSAP's `scrub: <seconds>` */
+  var SCRUB_TAU = .28, pShown = null, lastFrame = 0, scrubPending = false, newsFeeding = false;
+  function update(){
+    var rect = stage.getBoundingClientRect();
+    var range = stage.offsetHeight - innerHeight;
+    var pTarget = scrollToP(Math.max(0, -rect.top), range);
+    var now = performance.now(), dt = Math.min(.1, (now - lastFrame) / 1000);
+    lastFrame = now;
+    if (pShown === null || reduced) pShown = pTarget;
+    else pShown += (pTarget - pShown) * (1 - Math.exp(-dt / SCRUB_TAU));
+    if (Math.abs(pTarget - pShown) < 2e-5) pShown = pTarget;
+    scrubPending = pShown !== pTarget;
+    var p = pShown;
+    var tp = Math.min(1, p / .12);   /* the XGB→NLP road's own 0→1 clock */
+    /* until pinned it would slide up over the still-pinned XGB viewport */
+    nlpVp.style.visibility = rect.top > 0 ? 'hidden' : '';
+
+    if(reduced){
+      curve.style.opacity = 0;
+      road.style.opacity = 0;
+      place(xgbT,0,0,1, p<.06?1:0);
+      place(nlpChip,0,6,1, p<.06?1:0);
+      place(nlpT,0,-36,1, p>.06?1:0);
+      place(nlpQ,0,0,1,0);
+      place(raHw,0,-16,1, p>.14&&p<.42?1:0);
+      place(raBrand,0,0,1, p>.42&&p<.475?1:0);
+      hwSvg.style.opacity = p>.20&&p<.38?1:0;
+      hwSvg.style.transform='translate(-50%,-50%) translate(0,9vh)';
+      hwLines.forEach(function(l,i){penAt(i,1)});
+      place(pill,0,0,1, p>=.475&&p<.84?1:0);
+      news.forEach(function(n){place(n,0,0,1,0)});
+      scores.forEach(function(s){place(s,0,0,1,0)});
+      return;
+    }
+
+    /* exit curve only (the entry uses the road below) */
+    curve.style.opacity = kf([[0,0],[.92,0],[.96,.5],[1,.5]], p);
+    cLine.style.strokeDashoffset = cLen * (p<.90 ? 1 : kf([[.94,1],[1,.3]], p));
+
+    /* ── Phase 1 (tp): the road ──
+       .00–.08 rest  ·  .08–.30 line draws up to BRITANNIA  ·  .30–.50 drags it to the top (title stays)
+       .50–.70 line, card and title rise together and leave  ·  .70–.90 NLP slides in from the right into the line
+       .88–.98 line fades */
+    road.style.opacity = kf([[0,.8],[.88,.8],[.98,0]], tp);
+    if (tp <= .30) {
+      /* drawing in: the fixed S is revealed bottom → top up to the card */
+      if (roadLive) { rLine.setAttribute('d', ROAD_D); rLine.style.strokeDasharray = rLen; roadLive = false; }
+      rLine.style.strokeDashoffset = kf([[.08,rHidden],[.30,0]], tp);
+    } else {
+      /* pulled: rebuilt each frame as the same sine (amp 56, wavelength 666.7 units), but its phase
+         follows the card at only 45% of the card's speed — so the wave travels along the line and it
+         slithers up like a pulled rope instead of sliding as a rigid shape. Once the card has gone,
+         the wave keeps drifting while NLP slides in. Matches the drawn S exactly at tp = .30. */
+      if (!roadLive) { rLine.style.strokeDasharray = 'none'; rLine.style.strokeDashoffset = 0; roadLive = true; }
+      var tipY = 500 + 10 * kf([[.30,6],[.50,-30],[.70,-95]], tp);   /* card centre, in road units (.1vh) */
+      var Y0 = 560 + .45 * (tipY - 560) - 140 * clamp01((tp - .70) / .30);
+      var rd = '', ry = Math.max(tipY, -60);
+      for (;; ry += 8) {
+        var yy = Math.min(ry, 1060);
+        rd += (rd ? 'L' : 'M') + (500 + 56 * Math.sin(2 * Math.PI * (yy - Y0) / 666.7)).toFixed(1) + ' ' + yy.toFixed(1);
+        if (yy >= 1060) break;
+      }
+      rLine.setAttribute('d', rd);
+    }
+
+    place(nlpChip, 0, kf([[.30,6],[.50,-30],[.70,-95]], tp), 1, tp < .70 ? 1 : 0);
+    place(xgbT,    0, kf([[.50,0],[.70,-65]], tp),           1, tp < .70 ? 1 : 0);
+
+    /* ── Phase 2–3: NLP title slides in from the right, then settles at top ── */
+    place(nlpT,
+      kf([[.70,42],[.90,0]], tp),
+      kf([[.12,0],[.16,-36],[.90,-36],[.94,0]], p),
+      1, tp < .70 ? 0 : kf([[.70,0],[.76,1]], tp));
+    /* the closing fade dims only the lettering — the ground-coloured box stays solid so the exit
+       line still passes behind the title with a gap, as the entry road does */
+    var endFade = kf([[.90,1],[.96,1],[1,.5]], p);
+    nlpT.style.color = endFade < 1 ? 'rgba(' + NLP_INK + ',' + endFade + ')' : '';
+
+    /* ── Phase 3: question mark ── */
+    place(nlpQ,
+      kf([[.14,qX + 2],[.16,qX]], p),
+      -36,
+      1, kf([[0,0],[.14,0],[.16,1],[.19,1],[.21,0]], p));
+
+    /* ── Phase 3–4: RaOne handwritten enters from bottom; holds clear of the paragraph
+       and only moves to centre once the paragraph has faded (.38) ── */
+    place(raHw,
+      0,
+      kf([[.14,50],[.18,-16],[.38,-16],[.42,0],[.44,0]], p),
+      1, p >= CYCLE_P0 ? 0 : kf([[0,0],[.14,0],[.18,1]], p));
+
+    /* ── Phase 4: handwriting — the pen front sweeps each line in turn ── */
+    hwSvg.style.opacity = kf([[0,0],[.20,0],[.21,1],[.36,1],[.38,0]], p);
+    hwSvg.style.transform = 'translate(-50%,-50%) translate(0,' + kf([[.20,14],[.22,9]], p) + 'vh)';
+    for (var i = 0; i < hwLines.length; i++) {
+      var pen = hwPen[i];
+      penAt(i, Math.max(0, Math.min(1, (p - pen.t0) / (pen.t1 - pen.t0))));
+    }
+
+    /* ── Phase 6: the handwritten RaOne hard-cuts through 12 typefaces… ── */
+    setCycleFont(p < CYCLE_P0 || p >= CYCLE_P1 ? -1
+      : Math.min(FONT_CYCLE.length - 1, Math.floor((p - CYCLE_P0) / (CYCLE_P1 - CYCLE_P0) * FONT_CYCLE.length)));
+    place(raBrand, 0, 0, 1, p >= CYCLE_P0 && p < CYCLE_P1 ? 1 : 0);
+
+    /* ── Phase 7: …and the last cut lands on the RaOne pill, which holds the centre until the scores collapse.
+       While it is feeding a paper in, it buzzes slightly, like a shredder at work ── */
+    var chew = 0;
+    for (var f = 0; f < news.length; f++) chew = Math.max(chew, feedEnv((p - NEWS_T0[f]) / NEWS_DUR));
+    newsFeeding = chew > 0;
+    var TT = performance.now() / 1000;
+    place(pill,
+      chew * .9 * Math.sin(2 * Math.PI * 23 * TT) / (innerWidth / 100),
+      chew * .7 * Math.sin(2 * Math.PI * 31 * TT + 1.3) / (innerHeight / 100),
+      kf([[.82,1],[.86,.3],[.88,0]], p),
+      p < CYCLE_P1 ? 0 : kf([[.84,1],[.88,0]], p));
+
+    /* ── Phase 8: newspapers slide in from the left in overlapping waves (2–3 on screen at once),
+       roll up and are drawn into the pill; the pill's gear turns once for each one swallowed ── */
+    clearNews();
+    var spin = 0;
+    for(var n=news.length-1;n>=0;n--){       /* later articles underneath the ones further along */
+      place(news[n], 0, 0, 1, 0);            /* layout source only; the canvas paints them */
+      var nt = (p - NEWS_T0[n]) / NEWS_DUR;
+      spin += 360 * easeInOut(clamp01((nt - .86) / .3));
+      if (nt <= 0 || nt >= 1) continue;
+      drawPaper(n, nt, NEWS_LANE[n] * nlpVp.clientHeight / 100);
+    }
+    gear.style.transform = 'rotate(' + spin + 'deg)';
+
+    /* ── Phase 9: the moment an article is swallowed its score pops out of the pill's right side ── */
+    /* each score leaves from its own spot on the pill's right edge, along its own curve, with a
+       little timing jitter, and lands on a scattered (non-overlapping) spot */
+    for(var s=0;s<scores.length;s++){
+      var fx = SCORE_FX[s];
+      var ss = NEWS_T0[s] + NEWS_DUR + fx.lag;
+      var st = Math.max(0, Math.min(1, (p - ss) / fx.dur));
+      st = 1 - Math.pow(1 - st, 3);               /* shoots out, settles softly */
+      var mt = 1 - st;
+      var outX = mt * mt * fx.ex + 2 * mt * st * fx.cx + st * st * fx.sx;
+      var outY = mt * mt * fx.ey + 2 * mt * st * fx.cy + st * st * fx.sy;
+      var collapseS = .78 + fx.cDelay;
+      var collapseE = collapseS + .02;
+      var cFrac = p > collapseS ? Math.max(0, Math.min(1, (p - collapseS) / (collapseE - collapseS))) : 0;
+      cFrac = cFrac < .5 ? 2*cFrac*cFrac : -1+(4-2*cFrac)*cFrac;
+      var sx = outX * (1 - cFrac);
+      var sy = outY * (1 - cFrac);
+
+      var sop = p < ss ? 0 : kf([[.78,1],[collapseE,0]], p);
+      place(scores[s], sx, sy, .6 + .4 * st, sop);
+    }
+  }
+
+  var ticking = false;
+  function tick(){
+    update();
+    /* keep drawing while the scroll is still being caught up, or a paper is mid-wiggle */
+    if (scrubPending || newsFeeding) requestAnimationFrame(tick); else ticking = false;
+  }
+  function onScroll(){
+    if (!ticking) { ticking = true; lastFrame = performance.now(); requestAnimationFrame(tick); }
+  }
+  addEventListener('scroll', onScroll, {passive:true});
+  function remeasure(){ measureHw(); measureQ(); drawPillShape(); rasteriseNews(); placeScoreSlots(); onScroll(); }
+  addEventListener('resize', remeasure);
+  measureHw(); measureQ(); drawPillShape(); rasteriseNews(); placeScoreSlots();
+  /* web fonts change line widths and the title's width */
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+  update();
 })();
 </script>
 </body>
