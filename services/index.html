@@ -370,6 +370,9 @@
             font-weight: 900; font-style: normal;
             color: #8b1a2b; z-index: 4;
         }
+        /* script and italic faces draw past their own box (Caveat's final "e" overhangs it), and Safari
+           clips a will-change layer at that box — so pad it; the padding is symmetric, so the word stays centred */
+        .raone-hw, .raone-brand { padding: 0 .25em; }
         .raone-hw {
             font-family: 'Caveat', cursive;
             font-size: clamp(32px, 5vw, 80px);
