@@ -413,6 +413,19 @@
             -webkit-text-stroke: .035em currentColor;
             transform: translateY(.04em);
         }
+        /* the RaOne seal: the hub the papers go into and the scores leave from. The ring of text is
+           laid on a circle of r=80 in a 200-unit viewBox (textLength = its circumference, so the
+           phrase closes on itself with no seam) and turns a sixth for each article swallowed */
+        .raone-seal {
+            width: clamp(150px, 13vw, 240px); height: clamp(150px, 13vw, 240px);
+            border-radius: 50%; background: var(--ink);
+            box-shadow: 0 14px 18px rgba(24,22,20,.28);
+            z-index: 5;
+        }
+        .raone-seal svg { display: block; width: 100%; height: 100%; overflow: visible; }
+        .raone-seal .seal-ring-txt { font-size: 13px; font-weight: 600; fill: var(--cream); fill-opacity: .8; }
+        .raone-seal .seal-name { font-size: 36px; font-weight: 900; letter-spacing: -.04em; fill: var(--cream); }
+        .raone-pill[hidden] { display: none; }
         .raone-star-w { z-index: 5; }
         .raone-star-w svg { display: block; width: clamp(120px, 18vw, 280px); height: auto; }
         .raone-star-txt {
@@ -478,6 +491,7 @@
             /* smaller floor so the title clears a phone's edges; bigger on portrait tablets */
             .nlp-t, .nlp-q { font-size: clamp(22px, 6.4vw, 88px); }
             .raone-pill { font-size: clamp(18px, 4.6vw, 46px); }
+            .raone-seal { width: clamp(120px, 34vw, 200px); height: clamp(120px, 34vw, 200px); }
         }
     </style>
 </head>
@@ -609,7 +623,19 @@
                 </svg>
 
                 <!-- what RaOne lands on after the font cycle; the hub the newspapers fold into and the scores leave from -->
-                <div class="raone-pill" id="raone-pill">
+                <div class="raone-seal" id="raone-seal" role="img" aria-label="RaOne, news sentiment engine">
+                    <svg viewBox="0 0 200 200" aria-hidden="true">
+                        <path id="seal-ring-path" d="M20,100 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0" fill="none"/>
+                        <circle cx="100" cy="100" r="66" fill="none" stroke="#f3ece2" stroke-opacity=".16"/>
+                        <g class="seal-ring">
+                            <text class="seal-ring-txt"><textPath href="#seal-ring-path" textLength="502.6" lengthAdjust="spacing">NEWS SENTIMENT ENGINE • 75,000 ARTICLES •&#160;</textPath></text>
+                        </g>
+                        <text class="seal-name" x="100" y="113" text-anchor="middle">RaOne</text>
+                        <circle cx="100" cy="133" r="3.5" fill="#d2465a"/>
+                    </svg>
+                </div>
+                <!-- replaced by .raone-seal; kept hidden until removal is confirmed -->
+                <div class="raone-pill" id="raone-pill" hidden>
                     <svg class="raone-pill-bg" aria-hidden="true"><path id="raone-pill-path" fill="#d8b97a" stroke="#000"/></svg>
                     <svg class="raone-gear" viewBox="0 0 24 24" aria-hidden="true">
                         <g fill="#1d1444">
@@ -1147,7 +1173,7 @@
   var raHw      = document.getElementById('raone-hw');
   var raBrand   = document.getElementById('raone-brand');
   var hwSvg     = document.getElementById('hw-svg');
-  var pill      = document.getElementById('raone-pill');
+  var pill      = document.getElementById('raone-seal');   /* the RaOne seal (the name predates it) */
   var news      = [1,2,3,4,5,6].map(function(i){return document.getElementById('news-'+i)});
   var scores    = [1,2,3,4,5,6].map(function(i){return document.getElementById('sent-'+i)});
 
@@ -1276,7 +1302,7 @@
   var gl = newsCv.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true, depth: true });
   var NEWS_PAD = 14, DPR = 1, PAPER_NX = 6, PAPER_NY = 240;
   var newsBmp = [], newsDirty = true;
-  var gear = pill.querySelector('.raone-gear');
+  var ring = pill.querySelector('.seal-ring');
   /* per-article variation so no two papers move alike */
   var PAPER_RND = news.map(function(){
     return { tilt: (Math.random() * 2 - 1) * .07, arc: (Math.random() * 2 - 1) * 26 };
@@ -1482,7 +1508,7 @@
        left side (fully on screen sideways) and curve into the pill, instead of crossing from the left */
     var narrow = vpW < 860;
     if (narrow) lanePx = vpH / 2 + H / 2 + 24;
-    var x0 = narrow ? W / 2 + 12 + (n % 2) * 12 : -W / 2 - 80, xEnd = pillL + ph * .7 + W * SCALE_END / 2;
+    var x0 = narrow ? W / 2 + 12 + (n % 2) * 12 : -W / 2 - 80, xEnd = pillL + ph / 2;   /* the rolled tube ends centred under the round seal, hidden by it */
     /* while being fed in, the forward motion stutters like paper caught by shredder rollers */
     var feed = feedEnv(t), T = performance.now() / 1000;
     var cx = x0 + (xEnd - x0) * s + feed * 3.2 * Math.sin(2 * Math.PI * 7 * T + n * 1.7);
@@ -1617,7 +1643,8 @@
         x = x0 + Math.random() * (x1 - x0); y = (Math.random() * 2 - 1) * yR; tries++;
       } while (tries < 200 && placed.some(function(q){ return Math.abs(q[0] - x) < bw && Math.abs(q[1] - y) < bh; }));
       placed.push([x, y]);
-      var ex = pr + 6, ey = fx.edge * ph * .3;
+      /* just outside the rim at that height (a round end: the seal's circle) */
+      var ey = fx.edge * ph * .3, ex = pr - ph / 2 + Math.sqrt(ph * ph / 4 - ey * ey) + 6;
       var mx = (ex + x) / 2, my = (ey + y) / 2, dx = x - ex, dy = y - ey;
       fx.ex = ex / vwPx; fx.ey = ey / vhPx; fx.sx = x / vwPx; fx.sy = y / vhPx;
       fx.cx = (mx - dy * .35 * fx.bend) / vwPx; fx.cy = (my + dx * .35 * fx.bend) / vhPx;
@@ -1729,7 +1756,7 @@
       : Math.min(FONT_CYCLE.length - 1, Math.floor((p - CYCLE_P0) / (CYCLE_P1 - CYCLE_P0) * FONT_CYCLE.length)));
     place(raBrand, 0, 0, 1, p >= CYCLE_P0 && p < CYCLE_P1 ? 1 : 0);
 
-    /* ── Phase 7: …and the last cut lands on the RaOne pill, which holds the centre until the scores collapse.
+    /* ── Phase 7: …and the last cut lands on the RaOne seal, which holds the centre until the scores collapse.
        While it is feeding a paper in, it buzzes slightly, like a shredder at work ── */
     var chew = 0;
     for (var f = 0; f < news.length; f++) chew = Math.max(chew, feedEnv((p - NEWS_T0[f]) / NEWS_DUR));
@@ -1742,17 +1769,18 @@
       p < CYCLE_P1 ? 0 : kf([[.84,1],[.88,0]], p));
 
     /* ── Phase 8: newspapers slide in from the left in overlapping waves (2–3 on screen at once),
-       roll up and are drawn into the pill; the pill's gear turns once for each one swallowed ── */
+       roll up and are drawn into the seal; its ring of text turns a sixth for each one swallowed,
+       so the six make one full turn ── */
     clearNews();
     var spin = 0;
     for(var n=news.length-1;n>=0;n--){       /* later articles underneath the ones further along */
       place(news[n], 0, 0, 1, 0);            /* layout source only; the canvas paints them */
       var nt = (p - NEWS_T0[n]) / NEWS_DUR;
-      spin += 360 * easeInOut(clamp01((nt - .86) / .3));
+      spin += 60 * easeInOut(clamp01((nt - .86) / .3));
       if (nt <= 0 || nt >= 1) continue;
       drawPaper(n, nt, NEWS_LANE[n] * nlpVp.clientHeight / 100);
     }
-    gear.style.transform = 'rotate(' + spin + 'deg)';
+    ring.setAttribute('transform', 'rotate(' + spin + ' 100 100)');
 
     /* ── Phase 9: the moment an article is swallowed its score pops out of the pill's right side ── */
     /* each score leaves from its own spot on the pill's right edge, along its own curve, with a
@@ -1787,9 +1815,9 @@
     if (!ticking) { ticking = true; lastFrame = performance.now(); requestAnimationFrame(tick); }
   }
   addEventListener('scroll', onScroll, {passive:true});
-  function remeasure(){ measureHw(); measureQ(); drawPillShape(); rasteriseNews(); placeScoreSlots(); onScroll(); }
+  function remeasure(){ measureHw(); measureQ(); rasteriseNews(); placeScoreSlots(); onScroll(); }
   addEventListener('resize', remeasure);
-  measureHw(); measureQ(); drawPillShape(); rasteriseNews(); placeScoreSlots();
+  measureHw(); measureQ(); rasteriseNews(); placeScoreSlots();
   /* web fonts change line widths and the title's width */
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
   update();
