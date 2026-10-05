@@ -317,7 +317,9 @@
             .tree-big { width: 94vw; }
             .ens-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 94vw; }
             .ens-svg { width: 27vw; }
-            .ens-tree .tree-pill { font-size: 8px; }
+            /* a third of a phone can't hold the full label: slots read "Tree #1 +0.31" */
+            .ens-tree .tree-pill { font-size: clamp(9px, 2.6vw, 12px); }
+            .ens-tree .tp-c { display: none; }
         }
         /* ── NLP / RaOne scroll-driven animation ─────────────── */
         /* overlaps the last screen of .xgb-stage so this viewport pins the moment the XGB one releases — no frame shows both */
@@ -570,7 +572,7 @@
                     <div class="anat-side" id="anat-dn"><h4>Decreasing :<br>Bearish Candle Stick</h4></div>
                 </div>
                 <div class="tree-big" id="tree-big"></div>
-                <div class="tree-pill" id="tree-pill">Tree #1 contributes +0.31</div>
+                <div class="tree-pill" id="tree-pill">Tree #1<span class="tp-c">&nbsp;contributes</span> +0.31</div>
                 <div class="ens-grid" id="ens-grid"></div>
             </div>
         </section>
@@ -763,6 +765,7 @@
   var anat    = document.getElementById('anatomy');
   var treeBig = document.getElementById('tree-big');
   var pill    = document.getElementById('tree-pill');
+  var pillC   = pill.querySelector('.tp-c');
   var ensGrid = document.getElementById('ens-grid');
 
   /* ── candlestick chart: BRITANNIA, 09 Sep 2026, 5-min [o,h,l,c,v] ──
@@ -886,7 +889,7 @@
   treeInfo.forEach(function (t) {
     var d = document.createElement('div');
     d.className = 'ens-tree';
-    d.innerHTML = '<div class="ens-svg">' + treeSvg(true) + '</div><div class="tree-pill">Tree #' + t.n + ' contributes ' + t.v + '</div>';
+    d.innerHTML = '<div class="ens-svg">' + treeSvg(true) + '</div><div class="tree-pill">Tree #' + t.n + '<span class="tp-c">&nbsp;contributes</span> ' + t.v + '</div>';
     ensGrid.appendChild(d);
   });
   /* slot 1 takes over from the flying tree in one frame, so no fade */
@@ -936,7 +939,12 @@
     M.cellS = sv.offsetWidth / treeBig.offsetWidth;
     M.cpX = (sp.offsetLeft + sp.offsetWidth / 2 - gW / 2) / VW;
     M.cpY = M.gridY + (sp.offsetTop + sp.offsetHeight / 2 - gH / 2) / VH;
-    M.cpS = sp.offsetWidth / pill.offsetWidth;
+    /* phones: the slot label is shorter, so match by text size; the flying label sheds "contributes" on the way in */
+    M.narrow = narrow;
+    pillC.style.cssText = narrow ? 'display:inline-block;vertical-align:top;overflow:hidden' : '';
+    M.pcW = pillC.offsetWidth;
+    M.cpS = narrow ? parseFloat(getComputedStyle(sp).fontSize) / parseFloat(getComputedStyle(pill).fontSize)
+                   : sp.offsetWidth / pill.offsetWidth;
   }
 
   /* ── animation helpers ─────────────────────────────────── */
@@ -1065,6 +1073,11 @@
       kf([[.665,M.pillY],[.69,M.midPY],[.72,M.cpY]], p),
       kf([[.665,1],[.69,M.midPS],[.72,M.cpS]], p),
       landed ? 0 : kf([[0,0],[.635,0],[.645,1]], p));
+    if (M.narrow) {
+      var shed = kf([[.69,0],[.72,1]], p);
+      pillC.style.maxWidth = M.pcW * (1 - shed) + 'px';
+      pillC.style.opacity = 1 - shed;
+    }
 
     /* ensemble: 1 → 4 → 8 → 12 → 8 → 4 → 0 */
     var nShow = landed ? Math.round(kf([[.72,1],[.73,4],[.74,8],[.755,12],[.765,12],[.775,8],[.785,4],[.80,0]], p)) : 0;
