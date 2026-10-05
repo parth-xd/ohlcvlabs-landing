@@ -182,7 +182,7 @@
             html { scroll-behavior: auto; }
         }
         /* ── XGBoost scroll-driven animation ──────────────────── */
-        .xgb-stage { position: relative; height: 700vh; }
+        .xgb-stage { position: relative; height: 650vh; }
         .xgb-vp {
             position: sticky; top: 0;
             height: 100vh; height: 100dvh;
@@ -310,7 +310,7 @@
         }
         .ens-svg { width: min(11vw, 21vh, 210px); }
         @media (max-width: 860px) {
-            .xgb-stage { height: 600vh; }
+            .xgb-stage { height: 550vh; }
             .anatomy { width: 94vw; }
             .brit-chip { width: 46vw; }
             .anat-side { width: 44vw; }
@@ -993,7 +993,7 @@
       place(anat, 0, M.anatY, 1, p > .40 && p < .50 ? 1 : 0);
       place(treeBig, 0, M.treeY, 1, p > .58 && p < .70 ? 1 : 0);
       place(pill, 0, M.pillY, 1, p > .58 && p < .70 ? 1 : 0);
-      place(ensGrid, 0, M.gridY, 1, p > .70 && p < .88 ? 1 : 0);
+      place(ensGrid, 0, M.gridY, 1, p > .70 && p < .82 ? 1 : 0);
       for (j = 0; j < trees.length; j++) {
         trees[j].style.opacity = 1; trees[j].style.transform = 'scale(1)';
       }
@@ -1016,7 +1016,7 @@
        back under the title for the trees, then rests at centre for the NLP handoff */
     place(chip,
       kf([[0,0],[.06,0],[.10,20],[.30,20],[.58,0]], p),
-      kf([[0,0],[.20,0],[.25,-35],[.30,-35],[.58,-25],[.86,-25],[.90,6]], p),
+      kf([[0,0],[.20,0],[.25,-35],[.30,-35],[.58,-25],[.80,-25],[.94,6]], p),
       1,
       kf([[0,0],[.06,0],[.08,1],[.28,1],[.30,0],[.585,0],[.60,1]], p)
     );
@@ -1031,7 +1031,7 @@
     /* xgboost title — enters from right once the chip has risen, rests at centre for NLP handoff */
     place(xgbT,
       kf([[.25,42],[.295,0]], p),
-      kf([[.305,0],[.325,-36],[.86,-36],[.90,0]], p),
+      kf([[.305,0],[.325,-36],[.80,-36],[.94,0]], p),
       1,
       kf([[0,0],[.25,0],[.28,1]], p)
     );
@@ -1067,7 +1067,7 @@
       landed ? 0 : kf([[0,0],[.635,0],[.645,1]], p));
 
     /* ensemble: 1 → 4 → 8 → 12 → 8 → 4 → 0 */
-    var nShow = landed ? Math.round(kf([[.72,1],[.745,4],[.77,8],[.795,12],[.815,12],[.83,8],[.845,4],[.86,0]], p)) : 0;
+    var nShow = landed ? Math.round(kf([[.72,1],[.73,4],[.74,8],[.755,12],[.765,12],[.775,8],[.785,4],[.80,0]], p)) : 0;
     place(ensGrid, 0, M.gridY, 1, nShow > 0 ? 1 : 0);
     for (j = 0; j < trees.length; j++) {
       trees[j].style.opacity = j < nShow ? '1' : '0';
