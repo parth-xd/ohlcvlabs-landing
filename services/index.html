@@ -997,17 +997,14 @@
     el.style.transform = 'translate(-50%,-50%) translate(' + x + 'vw,' + y + 'vh) scale(' + s + ')';
     el.style.opacity = o;
   }
-  /* setting an SVG attribute re-renders the element even when the value is unchanged, and update()
-     runs on every scroll frame anywhere on the page — so write only real changes */
-  function setAttr(el, name, v) { v = String(v); if (el.getAttribute(name) !== v) el.setAttribute(name, v); }
 
   /* z: 0 = whole day, 1 = the 10:45 / 10:50 pair filling the middle */
   function setZoom(z) {
     var Z = Math.pow(M.zmax, z);
-    setAttr(zoomG, 'transform', 'translate(' + (FX + (M.tx - FX) * z) + ' ' + (FY + (M.ty - FY) * z)
+    zoomG.setAttribute('transform', 'translate(' + (FX + (M.tx - FX) * z) + ' ' + (FY + (M.ty - FY) * z)
       + ') scale(' + Z + ') translate(' + -FX + ' ' + -FY + ')');
     /* wicks thicken with the zoom only up to the anatomy figures' weight */
-    setAttr(zoomG, 'stroke-width', (1.05 + (M.wickMax - 1.05) * z) / (M.k * Z));
+    zoomG.setAttribute('stroke-width', (1.05 + (M.wickMax - 1.05) * z) / (M.k * Z));
     restG.style.opacity = 1 - Math.min(1, Math.max(0, (z - .12) / .4));
   }
 
@@ -1255,8 +1252,8 @@
   }
   function penAt(i, frac){
     var e = hwPen[i].x0 + frac * (hwPen[i].x1 - hwPen[i].x0);
-    setAttr(hwPen[i].g, 'x1', e - HW_FEATHER);
-    setAttr(hwPen[i].g, 'x2', e);
+    hwPen[i].g.setAttribute('x1', e - HW_FEATHER);
+    hwPen[i].g.setAttribute('x2', e);
   }
 
   /* RaOne card outline: a squircle — each corner is a superellipse quadrant (|x|ⁿ+|y|ⁿ=1, n=4), whose
@@ -1612,9 +1609,6 @@
     el.style.transform='translate(-50%,-50%) translate('+x+'vw,'+y+'vh) scale('+s+')';
     el.style.opacity=o;
   }
-  /* setting an SVG attribute re-renders the element even when the value is unchanged (the handwriting
-     masks are costly to repaint), and update() runs on every scroll frame — so write only real changes */
-  function setAttr(el,name,v){ v=String(v); if (el.getAttribute(name)!==v) el.setAttribute(name,v); }
 
   /* score cascade positions (diagonal staircase to lower-right) */
   var SC = [{x:14,y:-8},{x:18,y:-3},{x:12,y:2},{x:16,y:7},{x:20,y:12},{x:24,y:18}];
@@ -1723,7 +1717,7 @@
         rd += (rd ? 'L' : 'M') + (500 + 56 * Math.sin(2 * Math.PI * (yy - Y0) / 666.7)).toFixed(1) + ' ' + yy.toFixed(1);
         if (yy >= 1060) break;
       }
-      setAttr(rLine, 'd', rd);
+      rLine.setAttribute('d', rd);
     }
 
     place(nlpChip, 0, kf([[.30,6],[.50,-30],[.70,-95]], tp), 1, tp < .70 ? 1 : 0);
@@ -1789,7 +1783,7 @@
       if (nt <= 0 || nt >= 1) continue;
       drawPaper(n, nt, NEWS_LANE[n] * nlpVp.clientHeight / 100);
     }
-    setAttr(ring, 'transform', 'rotate(' + spin + ' 100 100)');
+    ring.setAttribute('transform', 'rotate(' + spin + ' 100 100)');
 
     /* ── Phase 9: the moment an article is swallowed its score pops out of the pill's right side ── */
     /* each score leaves from its own spot on the pill's right edge, along its own curve, with a
