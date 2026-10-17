@@ -543,8 +543,9 @@
         /* phones: a watchlist you can read (the storyboard's 37%-wide card is ~140px on a phone); the lifted
            BRITANNIA copy must keep the rows' type, or it would visibly change size as it leaves its row */
         @media (max-width: 860px) {
-            .cag-card { width: 84vw; }
-            .cag-rows .wl-row, .cag-brit { font-size: clamp(11px, 3.2vw, 15px); }
+            .cag-card { width: 72vw; }
+            .cag-rows .wl-row, .cag-brit { font-size: clamp(10px, 2.9vw, 13px); padding-top: .9vh; padding-bottom: .9vh; }
+            .cag-rows .wl-row { margin-bottom: 1.2vh; }
         }
         .cag-cv4 { left: 0; top: 0; width: 100%; height: 100%; overflow: visible; z-index: 1; }
         /* "Cost Aware Gap" has no masking panel behind it (its hard sides showed as a box where a line met
@@ -1982,12 +1983,21 @@
       var r = a.getBoundingClientRect();
       if (r.right > (W - tW) / 2 && r.left < (W + tW) / 2) safe = Math.max(safe, r.bottom);
     });
-    /* compact screens: below the bar's fading backdrop too, or it washes out the title's top */
-    if (W / Hv < 1.2 || Hv < 600) safe = Math.max(safe, document.querySelector('.topbar').getBoundingClientRect().bottom - 6);
+    /* compact screens: clear of the bar and its fading backdrop with room to breathe, and a smaller card
+       (~54% of the height) centred in the space under the title */
+    var compact = W / Hv < 1.2 || Hv < 600;
+    /* (a phone on its side has no height to spare: just clear of the backdrop there) */
+    if (compact) safe = Math.max(safe, document.querySelector('.topbar').getBoundingClientRect().bottom + (W / Hv < 1.2 ? 30 : -6));
     var ty = Math.max(-40 * VH, safe ? safe + 6 + tH / 2 - half : -1e9);
     TOP_Y = ty / VH;
-    var top = Math.max(half + (4.75 - 35) * VH, half + ty + tH / 2 + 12);
-    var bot = Math.min(half + (4.75 + 35) * VH, Hv - 12);
+    var top, bot;
+    if (compact) {
+      var r0 = half + ty + tH / 2 + 20, r1 = Hv - 20, ch = Math.min(54 * VH, r1 - r0);
+      top = (r0 + r1 - ch) / 2; bot = top + ch;
+    } else {
+      top = Math.max(half + (4.75 - 35) * VH, half + ty + tH / 2 + 12);
+      bot = Math.min(half + (4.75 + 35) * VH, Hv - 12);
+    }
     card.style.height = (bot - top) + 'px';
     CARD_Y = ((top + bot) / 2 - half) / VH;
   }
