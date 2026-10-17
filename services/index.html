@@ -529,8 +529,11 @@
         /* BRITANNIA lifted out of the list: a copy of its row that grows and rises to the centre */
         .cag-brit { box-sizing: border-box; z-index: 4; transform-origin: 50% 50%; }
         /* handwritten notes around BRITANNIA (PDF pages 17–28); font-size is fitted in JS to the storyboard's line widths */
+        /* the side padding is for Safari, which clips a will-change layer at its box: Caveat's last letter
+           draws past the box (the "l" of "Model", the "s" of "this" were cut). Symmetric, so centring holds;
+           the fitting below measures the text without it */
         .cag-hw { font-family: 'Caveat', 'Kalam', cursive; font-size: 3vw; line-height: 1.25;
-            color: var(--ink); white-space: nowrap; z-index: 5; }
+            padding: 0 .25em; color: var(--ink); white-space: nowrap; z-index: 5; }
         .cag-hw.pu { color: #1e1246; }    /* the storyboard's purple ink */
         .cag-hw.b { font-weight: 700; }
         /* arrows and the scribble, in the storyboard's own coordinates (1440×810 pt page = the viewport) */
@@ -1989,9 +1992,18 @@
     /* (a phone on its side has no height to spare: just clear of the backdrop there) */
     if (compact) safe = Math.max(safe, document.querySelector('.topbar').getBoundingClientRect().bottom + (W / Hv < 1.2 ? 30 : -6));
     var ty = Math.max(-40 * VH, safe ? safe + 6 + tH / 2 - half : -1e9);
-    TOP_Y = ty / VH;
+    TOP_Y = TOP_Y2 = TOP_Y3 = ty / VH;
+    MIN_T = safe ? safe + 6 + tH / 2 - half : -1e9;
     var top, bot;
-    if (compact) {
+    if (W / Hv < 1.2) {
+      /* portrait phones: the title and the card are one group, centred on the screen (the card ~54% tall,
+         20px under the title); never above the top bar. With the notes the group is shorter, so the title
+         takes a second place then (TOP_Y3, set in frame()) and glides between the two */
+      var ch = Math.min(54 * VH, Hv - (safe + 6) - tH - 40);
+      var t2 = Math.max(MIN_T, -(tH + 20 + ch) / 2 + tH / 2);
+      TOP_Y = TOP_Y2 = TOP_Y3 = t2 / VH;
+      top = half + t2 + tH / 2 + 20; bot = top + ch;
+    } else if (compact) {
       var r0 = half + ty + tH / 2 + 20, r1 = Hv - 20, ch = Math.min(54 * VH, r1 - r0);
       top = (r0 + r1 - ch) / 2; bot = top + ch;
     } else {
@@ -2064,7 +2076,7 @@
      .20–.58 the list scrolls to its end (BRITANNIA last), its scrollbar thumb travelling with it
      .62–.70 BRITANNIA lifts out of the list and grows · .70–.84 it rises to the centre
      .80–.88 the card fades, leaving the title and BRITANNIA */
-  var CARD_Y = 4.75, TOP_Y = -40, BRIT_S = 2.27;
+  var CARD_Y = 4.75, TOP_Y = -40, TOP_Y2 = -40, TOP_Y3 = -40, MIN_T = -1e9, BRIT_S = 2.27;
 
   /* the notes, arrows and wool are laid out on the storyboard's 16:9 page. On a wide screen that page is
      the viewport, as designed. A portrait screen would squeeze it (tiny notes, stretched arrows), so there
@@ -2084,7 +2096,13 @@
     if (PORTRAIT) {
       /* the page's title row (−40.2%) sits on the title, so the notes hang right under it as in the
          storyboard (FC: the page centre, px from the screen centre); it shrinks if it would run off the bottom */
-      var fw = W / H < 1.2 ? W * 1.64 : W, fh = fw * 9 / 16, ty = TOP_Y * VH;
+      var fw = W / H < 1.2 ? W * 1.35 : W, fh = fw * 9 / 16, ty = TOP_Y * VH;
+      if (W / H < 1.2) {
+        /* portrait: title + notes centred as a group — it runs from the title's top to ~30% of the page
+           below the page centre, and the page centre is .402 of the page below the title */
+        ty = Math.max(MIN_T, (cagT.offsetHeight / 2 - .702 * fh) / 2);
+        TOP_Y3 = ty / VH;
+      }
       fh = Math.min(fh, (H / 2 - 8 - ty) / .902); fw = fh * 16 / 9;
       FC = ty + .402 * fh;
       FR = { w: fw, h: fh, x: (W - fw) / 2, y: H / 2 + FC - fh / 2 };
@@ -2114,17 +2132,19 @@
   /* lines of one paragraph share a size: fit it to the storyboard's widths (median over the lines) */
   var GROUPS = [['n1a','n1b'],['n2a','n2b'],['n3a','n3b'],['c1'],['c2'],['c4a','c4b'],['chg'],['n4a','n4b'],['n5']];
   var c3aX = 0, c3bX = 0;
+  /* a note's text width: its box less the side padding (.25em each side) */
+  function tw(el){ return el.offsetWidth - .5 * parseFloat(getComputedStyle(el).fontSize); }
   function fitNotes(){
     var vw = FR.w / 100;   /* storyboard-page %, not viewport */
     GROUPS.forEach(function(g){
-      var r = g.map(function(k){ el3[k].style.fontSize = 3 * vw + 'px'; return NOTE[k][2] * (MATH[k] ? MS : 1) * vw / el3[k].offsetWidth; })
+      var r = g.map(function(k){ el3[k].style.fontSize = 3 * vw + 'px'; return NOTE[k][2] * (MATH[k] ? MS : 1) * vw / tw(el3[k]); })
                .sort(function(a,b){ return a - b; });
       var fs = 3 * vw * r[Math.floor(r.length / 2)] + 'px';
       g.forEach(function(k){ el3[k].style.fontSize = fs; });
     });
     /* "So ₹50,000/₹5039 = 9 Shares" is two pieces, so the second can travel on alone (26.6vw wide, centred at −0.9vw) */
     el3.c3a.style.fontSize = el3.c3b.style.fontSize = 3 * vw + 'px';
-    var wa = el3.c3a.offsetWidth, wb = el3.c3b.offsetWidth, k3 = 26.6 * MS * vw / (wa + wb);
+    var wa = tw(el3.c3a), wb = tw(el3.c3b), k3 = 26.6 * MS * vw / (wa + wb);
     el3.c3a.style.fontSize = el3.c3b.style.fontSize = 3 * vw * k3 + 'px';
     wa *= k3; wb *= k3;
     var left = -.9 * vw - (wa + wb) / 2;
@@ -2171,10 +2191,10 @@
   function aimA2(){
     var q = A2P;
     if (PORTRAIT) {
-      var Hv = vp.clientHeight, cw = el3.chg.offsetWidth * 1.093;
+      var Hv = vp.clientHeight, cw = tw(el3.chg) * 1.093;
       var tx = (innerWidth / 2 + fx(-1.0) + cw / 2 + 8 - FR.x) / FR.w * 1440;
       var tyy = (Hv / 2 + FC + fy(CHG_Y) - FR.y) / FR.h * 810;
-      var sx = (innerWidth / 2 + el3.n4a.offsetWidth / 2 + 4 - FR.x) / FR.w * 1440;   /* tail */
+      var sx = (innerWidth / 2 + tw(el3.n4a) / 2 + 4 - FR.x) / FR.w * 1440;   /* tail */
       var sy = (Hv / 2 + FC + fy((15.9 + 22.1) / 2) - FR.y) / FR.h * 810;
       var P0 = A2P[0], v = [A2P[3][0] - P0[0], A2P[3][1] - P0[1]], w = [tx - sx, tyy - sy];
       var d = v[0] * v[0] + v[1] * v[1], a = (w[0] * v[0] + w[1] * v[1]) / d, b = (w[1] * v[0] - w[0] * v[1]) / d;
@@ -2241,7 +2261,7 @@
     var c = cv.getContext('2d');
     c.translate(P, P); c.scale(R, R);
     c.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-    c.textBaseline = 'alphabetic'; c.fillText(el.textContent, 0, base);
+    c.textBaseline = 'alphabetic'; c.fillText(el.textContent, parseFloat(cs.paddingLeft) || 0, base);
     var A = c.getImageData(0, 0, cw, ch).data, M = new Uint8Array(cw * ch), ink = 0;
     for (var i = 0; i < cw * ch; i++) if (A[i * 4 + 3] > 110) { M[i] = 1; ink++; }
 
@@ -2439,7 +2459,7 @@
      .785–.88 "When model thinks …" and its arrow up to the charges                      (p25–26)
      .91–.93 all clears · .93–.96 "We simply move on with the trade"                      (p27–28) */
   function draw3(t){
-    place(cagT, 0, TOP_Y, 1);
+    place(cagT, 0, TOP_Y3, 1);
     brit.style.transform = 'translate(-50%,-50%) translate(0,' + (FC + fy(K([[.35,0],[.39,-24.2]], t))).toFixed(1) + 'px) scale(' + BS + ')';
     brit.style.opacity = 1;
 
@@ -2531,7 +2551,7 @@
     thumb.style.transform = 'translateY(' + thumbTravel * frac + 'px)';
 
     var out = 1 - wr(u, .90, .96);
-    place(cagT, 0, K([[.44,TOP_Y],[.56,0]], u), out);
+    place(cagT, 0, K([[.04,TOP_Y3],[.10,TOP_Y2],[.44,TOP_Y2],[.56,0]], u), out);
     var dx = K([[.60,-260],[.86,591.1]], u);
     $('cag-cv4p').setAttribute('transform', 'translate(' + dx.toFixed(1) + ',38)');
     cv4.style.opacity = u >= .60 ? out : 0;
@@ -2552,7 +2572,7 @@
     cv4.style.opacity = 0;
   }
   function draw2(r){
-    place(cagT, 0, kf([[.05,0],[.17,TOP_Y]], r), 1);
+    place(cagT, 0, kf([[.05,0],[.17,TOP_Y2],[.80,TOP_Y2],[.90,TOP_Y3]], r), 1);
     gap.style.opacity = 0;
     place(card, 0, kf([[.05,100],[.17,CARD_Y]], r), r > .05 ? kf([[.80,1],[.88,0]], r) : 0);
     var frac = kf([[.20,0],[.58,1]], r);
@@ -2610,7 +2630,7 @@
     if (reduced) {
       curve.style.opacity = 0; place(gap, 0, 0, 0);
       place(nlpT, 0, 0, q0(qShown) ? 1 : 0);
-      place(cagT, 0, qShown > 1 ? TOP_Y : 0, q0(qShown) ? 0 : 1);
+      place(cagT, 0, qShown > 2 && qShown < 3 ? TOP_Y3 : qShown > 1 ? TOP_Y2 : 0, q0(qShown) ? 0 : 1);
       place(card, 0, CARD_Y, qShown > 1 && qShown < 1.62 ? 1 : 0);
       rowsEl.style.transform = qShown > 1.4 ? 'translateY(' + -listMax + 'px)' : '';
       thumb.style.transform = qShown > 1.4 ? 'translateY(' + thumbTravel + 'px)' : '';
