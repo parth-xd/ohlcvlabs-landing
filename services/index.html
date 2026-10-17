@@ -10,6 +10,8 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Cost Aware Gap notes are in Caveat (as RaOne's); Kalam supplies only the ₹ sign -->
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&text=%E2%82%B9&display=swap" rel="stylesheet">
     <!-- RaOne font cycle: subset to the five letters it shows (text=RaOne), so each face is a few hundred bytes -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&family=Bebas+Neue&family=Space+Mono:wght@700&family=Pacifico&family=Abril+Fatface&family=Rubik+Mono+One&family=Cormorant+Garamond:ital,wght@1,600&family=Permanent+Marker&family=Major+Mono+Display&family=Lobster&family=UnifrakturMaguntia&family=Monoton&family=Coming+Soon&text=RaOne&display=block" rel="stylesheet">
     <title>OHLCV</title>
@@ -496,6 +498,59 @@
             .raone-pill { font-size: clamp(18px, 4.6vw, 46px); }
             .raone-seal { width: clamp(120px, 34vw, 200px); height: clamp(120px, 34vw, 200px); }
         }
+        /* ── Cost Aware Gap: continues from NLP's last frame ─────── */
+        /* overlaps NLP's last screen, like .nlp-stage does XGB's, so its first frame replaces NLP's last */
+        .cag-stage { position: relative; height: 3600vh; margin-top: -100vh; }
+        .cag-vp {
+            position: sticky; top: 0;
+            height: 100vh; height: 100dvh;
+            overflow: hidden; background: var(--ground);
+        }
+        .cag-vp > * {
+            position: absolute; left: 50%; top: 50%;
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+        /* NLP's exit S continued downward (1 viewBox unit = .1vw across, .1vh down, as .nlp-curve) */
+        .cag-curve { left: 0; top: 0; width: 100%; height: 250%; z-index: 1; }
+        /* the break: a ground-coloured block over the line where "Cost Aware Gap" will sit */
+        /* soft ends like the line entering NLP's title: same fade-in/fade-out gradient as .nlp-t's box */
+        .cag-gap { width: 14vw; height: 11vh; z-index: 2;
+            background: linear-gradient(to bottom, rgba(241,232,219,0) 0, var(--ground) 16%, var(--ground) 84%, rgba(241,232,219,0) 100%); }
+        /* the watchlist (same look as the XGB card): a fixed window the stock list scrolls through */
+        .cag-card { width: 37vw; max-width: none; height: 70vh; box-sizing: border-box; display: flex; flex-direction: column; z-index: 3; }
+        .cag-list { flex: 1; position: relative; overflow: hidden; }
+        /* PDF rows: 4.4vh tall, 1.6vh apart */
+        .cag-rows .wl-row, .cag-brit { padding-top: 1.3vh; padding-bottom: 1.3vh; }
+        .cag-rows .wl-row { margin-bottom: 1.6vh; }
+        /* a Chrome-style overlay scrollbar, in ink, in the card's right margin beside the list (placed in JS) */
+        .cag-sb { position: absolute; width: clamp(5px, .42vw, 8px); border-radius: 99px; background: rgba(24,22,20,.08); }
+        .cag-sb-thumb { position: absolute; left: 0; right: 0; top: 0; border-radius: 99px; background: var(--ink); }
+        /* BRITANNIA lifted out of the list: a copy of its row that grows and rises to the centre */
+        .cag-brit { box-sizing: border-box; z-index: 4; transform-origin: 50% 50%; }
+        /* handwritten notes around BRITANNIA (PDF pages 17–28); font-size is fitted in JS to the storyboard's line widths */
+        .cag-hw { font-family: 'Caveat', 'Kalam', cursive; font-size: 3vw; line-height: 1.25;
+            color: var(--ink); white-space: nowrap; z-index: 5; }
+        .cag-hw.pu { color: #1e1246; }    /* the storyboard's purple ink */
+        .cag-hw.b { font-weight: 700; }
+        /* arrows and the scribble, in the storyboard's own coordinates (1440×810 pt page = the viewport) */
+        .cag-ink { left: 0; top: 0; width: 100%; height: 100%; overflow: visible; z-index: 6; }
+        /* strokes scale with the page (no non-scaling-stroke: it measures dashes in screen pixels, so the
+           draw-on lengths would no longer match the path); widths are the storyboard's, in page pt */
+        .cag-ink path { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .cag-ink .head { fill: var(--ink); }
+        .cag-ink .scr { stroke: #1e1246; stroke-width: 1.6; }
+        /* phones: a watchlist you can read (the storyboard's 37%-wide card is ~140px on a phone); the lifted
+           BRITANNIA copy must keep the rows' type, or it would visibly change size as it leaves its row */
+        @media (max-width: 860px) {
+            .cag-card { width: 84vw; }
+            .cag-rows .wl-row, .cag-brit { font-size: clamp(11px, 3.2vw, 15px); }
+        }
+        .cag-cv4 { left: 0; top: 0; width: 100%; height: 100%; overflow: visible; z-index: 1; }
+        /* "Cost Aware Gap" has no masking panel behind it (its hard sides showed as a box where a line met
+           them); lines are broken by the feathered gap block instead, which only ever ends them softly */
+        #cag-t { background: none; }
+        .cag-cv4 path { fill: none; stroke: var(--ink); stroke-width: 3.75; stroke-linecap: round; }   /* the storyboard's weight */
     </style>
 </head>
 <body>
@@ -704,6 +759,69 @@
                 <div class="sent-badge" id="sent-4"><span class="sent-tri"></span>+0.0779</div>
                 <div class="sent-badge" id="sent-5"><span class="sent-tri"></span>+0.0779</div>
                 <div class="sent-badge" id="sent-6"><span class="sent-tri"></span>+0.0779</div>
+            </div>
+        </section>
+
+        <!-- Cost Aware Gap: scroll-driven, picks up from NLP's last frame -->
+        <section class="cag-stage" id="cag-stage">
+            <div class="cag-vp" id="cag-vp">
+                <svg class="cag-curve" id="cag-curve" viewBox="0 0 1000 2500" preserveAspectRatio="none">
+                    <!-- drawn bottom→top; the part above y=1000 is exactly NLP's #nlp-line, below it the same S repeats -->
+                    <path id="cag-line" d="M500,2500 C558.7,2358.5 558.7,2308.1 500,2166.7 C441.3,2025.1 441.3,1974.7 500,1833.3 C558.7,1691.8 558.7,1641.4 500,1500 C441.3,1358.5 441.3,1308.1 500,1166.7 C529.3,1095.9 544,1048 544,1000 C544,952 529.3,904.1 500,833.3 C441.3,691.9 441.3,641.5 500,500 C558.7,358.5 558.7,308.1 500,166.7 C470.7,95.9 456,48 456,0"
+                          fill="none" stroke="#181614" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <!-- the closing S (PDF pages 40–42): one line sliding in from the left; it sits under the gap
+                     block and the title, so the soft break can open around the title as it arrives -->
+                <svg class="cag-cv4" id="cag-cv4" viewBox="0 0 1440 810" preserveAspectRatio="none" aria-hidden="true"><path id="cag-cv4p" d=""/></svg>
+                <div class="cag-gap" id="cag-gap"></div>
+                <div class="nlp-t" id="cag-nlp-t"><em>Natural language processing</em></div>
+                <div class="nlp-t" id="cag-t"><em>Cost Aware Gap</em></div>
+                <div class="wl-card cag-card" id="cag-card">
+                    <div class="wl-hdr"><span class="wl-t">Watchlist</span></div>
+                    <div class="wl-hr"></div>
+                    <div class="cag-sb" id="cag-sb" aria-hidden="true"><div class="cag-sb-thumb" id="cag-sb-thumb"></div></div>
+                    <div class="cag-list" id="cag-list"><div class="cag-rows" id="cag-rows">
+                        <div class="wl-row">AXISBANK</div>
+                        <div class="wl-row">BAJAJ-AUTO</div>
+                        <div class="wl-row">BAJFINANCE</div>
+                        <div class="wl-row">BANKBARODA</div>
+                        <div class="wl-row">BERGEPAINT</div>
+                        <div class="wl-row">BHARTIARTL</div>
+                        <div class="wl-row">BHEL</div>
+                        <div class="wl-row">BPCL</div>
+                        <div class="wl-row">CIPLA</div>
+                        <div class="wl-row">COALINDIA</div>
+                        <div class="wl-row">DABUR</div>
+                        <div class="wl-row">DIVISLAB</div>
+                        <div class="wl-row">DRREDDY</div>
+                        <div class="wl-row">EICHERMOT</div>
+                        <div class="wl-row">GEMAROMA</div>
+                        <div class="wl-row">BRITANNIA</div>
+                    </div></div>
+                </div>
+                <div class="wl-row cag-brit" id="cag-brit">BRITANNIA</div>
+                <div class="cag-hw" id="cag-n1a">let’s say the Model</div>
+                <div class="cag-hw" id="cag-n1b">wants to buy this</div>
+                <div class="cag-hw" id="cag-n2a">the next step isn’t</div>
+                <div class="cag-hw" id="cag-n2b">just placing the order</div>
+                <div class="cag-hw" id="cag-n3a">it’s to figure out if we’ll even be</div>
+                <div class="cag-hw" id="cag-n3b">profitable at the deployed capital</div>
+                <div class="cag-hw b" id="cag-c1">Capital Deployed - &gt; 50,000₹</div>
+                <div class="cag-hw" id="cag-c2">and Britannia is trading at ₹5039</div>
+                <div class="cag-hw pu" id="cag-c3a">So ₹50,000/</div>
+                <div class="cag-hw pu" id="cag-c3b">₹5039 = 9 Shares</div>
+                <div class="cag-hw" id="cag-c4a">then we calc the cost we’ll bear if we move</div>
+                <div class="cag-hw" id="cag-c4b">on with this trade</div>
+                <div class="cag-hw pu" id="cag-chg">Charges : ₹164.75</div>
+                <div class="cag-hw" id="cag-n4a">When model thinks we can cover this</div>
+                <div class="cag-hw" id="cag-n4b">cost with the expected profit</div>
+                <div class="cag-hw" id="cag-n5">We simply move on with the trade</div>
+                <svg class="cag-ink" id="cag-ink" viewBox="0 0 1440 810" preserveAspectRatio="none" aria-hidden="true">
+                    <g id="cag-a1g"><path id="cag-a1" d=""/><path class="head" id="cag-a1h" d=""/></g>
+                    <g id="cag-a2g"><path id="cag-a2" d=""/><path class="head" id="cag-a2h" d=""/></g>
+                    <g id="cag-scrg"><path class="scr" id="cag-scr" d=""/></g>
+                    <g id="cag-morph"></g>
+                </svg>
             </div>
         </section>
     </main>
@@ -1668,6 +1786,7 @@
     if (Math.abs(pTarget - pShown) < 2e-5) pShown = pTarget;
     scrubPending = pShown !== pTarget;
     var p = pShown;
+    window.__nlpShown = p;   /* Cost Aware Gap mirrors this until NLP's eased frame catches up with the scroll */
     var tp = Math.min(1, p / .12);   /* the XGB→NLP road's own 0→1 clock */
     /* until pinned it would slide up over the still-pinned XGB viewport */
     nlpVp.style.visibility = rect.top > 0 ? 'hidden' : '';
@@ -1691,7 +1810,7 @@
     }
 
     /* exit curve only (the entry uses the road below) */
-    curve.style.opacity = kf([[0,0],[.92,0],[.96,.5],[1,.5]], p);
+    curve.style.opacity = kf([[0,0],[.92,0],[.96,1]], p);
     cLine.style.strokeDashoffset = cLen * (p<.90 ? 1 : kf([[.94,1],[1,.3]], p));
 
     /* ── Phase 1 (tp): the road ──
@@ -1730,7 +1849,7 @@
       1, tp < .70 ? 0 : kf([[.70,0],[.76,1]], tp));
     /* the closing fade dims only the lettering — the ground-coloured box stays solid so the exit
        line still passes behind the title with a gap, as the entry road does */
-    var endFade = kf([[.90,1],[.96,1],[1,.5]], p);
+    var endFade = 1;   /* no closing fade: Cost Aware Gap continues from this frame */
     nlpT.style.color = endFade < 1 ? 'rgba(' + NLP_INK + ',' + endFade + ')' : '';
 
     /* ── Phase 3: question mark ── */
@@ -1823,6 +1942,628 @@
   measureHw(); measureQ(); rasteriseNews(); placeScoreSlots();
   /* web fonts change line widths and the title's width */
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+  update();
+})();
+</script>
+<script>
+/* ── Cost Aware Gap scroll-driven animation ─────────────── */
+(function () {
+  var stage = document.getElementById('cag-stage');
+  if (!stage) return;
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var vp     = document.getElementById('cag-vp');
+  var curve  = document.getElementById('cag-curve');
+  var line   = document.getElementById('cag-line');
+  var gap    = document.getElementById('cag-gap');
+  var nlpT   = document.getElementById('cag-nlp-t');
+  var cagT   = document.getElementById('cag-t');
+  var card   = document.getElementById('cag-card');
+  var list   = document.getElementById('cag-list');
+  var rowsEl = document.getElementById('cag-rows');
+  var brit   = document.getElementById('cag-brit');
+  var lastRow = rowsEl.lastElementChild;
+  var sb     = document.getElementById('cag-sb');
+  var thumb  = document.getElementById('cag-sb-thumb');
+
+  /* the list scrolls until BRITANNIA (last) sits at the bottom of the window; the lifted copy starts
+     exactly over that row. Sizes come from layout, so measure (and re-measure on resize / fonts) */
+  var listMax = 0, britY = 0, britW = 0, thumbTravel = 0;
+  function measure(){
+    frame();
+    /* scrollbar: beside the list window, centred in the card's right padding; thumb sized like a real one */
+    var pad = parseFloat(getComputedStyle(card).paddingRight) || 0;
+    sb.style.top = list.offsetTop + 'px';
+    sb.style.height = list.clientHeight + 'px';
+    sb.style.right = (pad - sb.offsetWidth) / 2 + 'px';
+    var thumbH = Math.max(24, list.clientHeight * list.clientHeight / Math.max(1, rowsEl.offsetHeight));
+    thumb.style.height = thumbH + 'px';
+    thumbTravel = list.clientHeight - thumbH;
+    /* the last row's bottom margin collapses out of rowsEl, so its height already ends at that row */
+    listMax = Math.max(0, rowsEl.offsetHeight - list.clientHeight);
+    britW = lastRow.offsetWidth;
+    brit.style.width = britW + 'px';
+    BS = Math.min(BRIT_S, .9 * innerWidth / britW);   /* the lifted row grows ×2.27 (storyboard), but stays on screen */
+    var rowMid = list.offsetTop + lastRow.offsetTop - listMax + lastRow.offsetHeight / 2;
+    britY = (rowMid - card.offsetHeight / 2) / (innerHeight / 100);   /* vh from the card's centre */
+  }
+
+  /* NLP ends with its exit line drawn to 70% from the bottom (dashoffset .3 of its length). Start from exactly that, so the handoff can't be seen. */
+  var total = line.getTotalLength();
+  var nlpLen = document.getElementById('nlp-line').getTotalLength(), hidden0 = .3 * nlpLen;
+  line.style.strokeDasharray = total;
+  /* the line is drawn from its bottom (y=2500) up, so the length along it falls as y rises: sample it
+     once so the exit can hide everything below a given height */
+  var LY = [];
+  for (var k = 0; k <= 400; k++) { var lk = total * k / 400; LY.push([lk, line.getPointAtLength(lk).y]); }
+  function lenAtY(y){
+    if (y >= LY[0][1]) return 0;
+    for (var k = 1; k < LY.length; k++) if (LY[k][1] <= y) {
+      var a = LY[k - 1], b = LY[k]; return a[0] + (b[0] - a[0]) * (a[1] - y) / (a[1] - b[1]);
+    }
+    return total;
+  }
+
+  /* the S crosses the centre line every 333.3 units (33.3vh); the one at y=1166.7 is where the
+     new title lands, 66.7vh below the NLP title — so everything rises 66.7vh in all */
+  var RISE1 = 43, RISE = 66.67;
+
+  function lerp(a,b,t){return a+(b-a)*t}
+  function ease(t){return t<.5?2*t*t:-1+(4-2*t)*t}
+  function kf(f,p){
+    if(p<=f[0][0])return f[0][1];var L=f[f.length-1];if(p>=L[0])return L[1];
+    for(var i=0;i<f.length-1;i++)if(p<=f[i+1][0]){var t=(p-f[i][0])/(f[i+1][0]-f[i][0]);return lerp(f[i][1],f[i+1][1],ease(t))}return L[1];
+  }
+  function place(el,x,y,o){
+    el.style.transform='translate(-50%,-50%) translate('+x+'vw,'+y+'vh)';
+    el.style.opacity=o;
+  }
+
+  /* .00–.35 title and line rise together (title to the top); the line finishes drawing in by .12
+     .35–.50 the line breaks below, "Cost Aware Gap" slides in from the right into the break
+     .50–.75 everything rises on until the new title is centred and the NLP one has gone
+     .77–1.0 the line flows up and out: it keeps rising while its tail retracts up through the title
+             and off the top, leaving "Cost Aware Gap" alone in the middle */
+  /* part 2 (r), after the line has gone, as PDF pages 7–16:
+     .00–.05 a beat with the title alone in the middle
+     .05–.17 the title rises to the top and the watchlist rises in from below
+     .20–.58 the list scrolls to its end (BRITANNIA last), its scrollbar thumb travelling with it
+     .62–.70 BRITANNIA lifts out of the list and grows · .70–.84 it rises to the centre
+     .80–.88 the card fades, leaving the title and BRITANNIA */
+  var CARD_Y = 4.75, TOP_Y = -40, BRIT_S = 2.27;
+
+  /* the notes, arrows and wool are laid out on the storyboard's 16:9 page. On a wide screen that page is
+     the viewport, as designed. A portrait screen would squeeze it (tiny notes, stretched arrows), so there
+     the page is a 16:9 box as wide as the longest note allows (its widest line ≈ 90% of the screen),
+     centred — everything on it keeps the storyboard's proportions */
+  var FR = { x: 0, y: 0, w: 1, h: 1 }, PORTRAIT = false, BS = BRIT_S, ARROW_W = 3, THREAD_W = 1.6;
+  /* the sum (capital → price → shares → charges) is set small in the storyboard; on a phone that's ~10px, so
+     there it is 1.5× (MS) — its lines spread to match about the block's centre, moved down (MSY) to clear
+     the chip — and "₹5039 = 9 Shares" / the charges are placed from the chip's real height */
+  var MS = 1, MSY = 0, C3B_Y = -15.2, CHG_Y = -3.3, MATH = { c1: 1, c2: 1, c4a: 1, c4b: 1, chg: 1 };
+  function my(y){ return MSY + .35 + (y - .35) * MS; }
+  function frame(){
+    var W = innerWidth, H = innerHeight, ink = document.getElementById('cag-ink');
+    PORTRAIT = W / H < 1.2;
+    MS = PORTRAIT ? 1.5 : 1; MSY = PORTRAIT ? 6 : 0;
+    if (PORTRAIT) { var fw = Math.min(W * 1.64, H * 16 / 9); FR = { w: fw, h: fw * 9 / 16, x: (W - fw) / 2, y: (H - fw * 9 / 16) / 2 }; }
+    else FR = { x: 0, y: 0, w: W, h: H };
+    ink.style.left = PORTRAIT ? FR.x + 'px' : ''; ink.style.top = PORTRAIT ? FR.y + 'px' : '';
+    ink.style.width = PORTRAIT ? FR.w + 'px' : ''; ink.style.height = PORTRAIT ? FR.h + 'px' : '';
+    /* strokes are in page pt; on the smaller portrait page keep them a readable pixel width */
+    ARROW_W = PORTRAIT ? 2.4 * 1440 / FR.w : 3; THREAD_W = PORTRAIT ? 1.4 * 1440 / FR.w : 1.6;
+    [a1, a2, a1h, a2h].forEach(function(e){ e.style.strokeWidth = ARROW_W; });
+    scr.style.strokeWidth = THREAD_W;
+  }
+  function fx(p){ return p * FR.w / 100; }   /* storyboard % → px from the screen centre */
+  function fy(p){ return p * FR.h / 100; }
+
+  /* ── part 3 (t): the cost check around BRITANNIA, PDF pages 17–28. Positions are the storyboard's
+     text-line centres (vw / vh from the screen centre), read from the PDF's text layer ── */
+  function $(id){ return document.getElementById(id); }
+  var NOTE = {
+    n1a:[0,-23.9,30.7], n1b:[0,-16.8,28.1], n2a:[0,16.6,29.9], n2b:[0,23.7,35.3],
+    n3a:[0,-23.9,52.1], n3b:[0,-16.8,55.0],
+    c1:[0,-9.6,36.1], c2:[0,-3.7,34.5], c4a:[0,6.6,36.5], c4b:[0,10.3,15.2],
+    chg:[-1.0,17.5,15.0], n4a:[0,15.9,53.1], n4b:[0,22.1,41.8], n5:[-.5,-.1,48.5]
+  };
+  var el3 = {};
+  ['n1a','n1b','n2a','n2b','n3a','n3b','c1','c2','c3a','c3b','c4a','c4b','chg','n4a','n4b','n5']
+    .forEach(function(k){ el3[k] = $('cag-' + k); });
+  /* lines of one paragraph share a size: fit it to the storyboard's widths (median over the lines) */
+  var GROUPS = [['n1a','n1b'],['n2a','n2b'],['n3a','n3b'],['c1'],['c2'],['c4a','c4b'],['chg'],['n4a','n4b'],['n5']];
+  var c3aX = 0, c3bX = 0;
+  function fitNotes(){
+    var vw = FR.w / 100;   /* storyboard-page %, not viewport */
+    GROUPS.forEach(function(g){
+      var r = g.map(function(k){ el3[k].style.fontSize = 3 * vw + 'px'; return NOTE[k][2] * (MATH[k] ? MS : 1) * vw / el3[k].offsetWidth; })
+               .sort(function(a,b){ return a - b; });
+      var fs = 3 * vw * r[Math.floor(r.length / 2)] + 'px';
+      g.forEach(function(k){ el3[k].style.fontSize = fs; });
+    });
+    /* "So ₹50,000/₹5039 = 9 Shares" is two pieces, so the second can travel on alone (26.6vw wide, centred at −0.9vw) */
+    el3.c3a.style.fontSize = el3.c3b.style.fontSize = 3 * vw + 'px';
+    var wa = el3.c3a.offsetWidth, wb = el3.c3b.offsetWidth, k3 = 26.6 * MS * vw / (wa + wb);
+    el3.c3a.style.fontSize = el3.c3b.style.fontSize = 3 * vw * k3 + 'px';
+    wa *= k3; wb *= k3;
+    var left = -.9 * vw - (wa + wb) / 2;
+    c3aX = (left + wa / 2) / vw; c3bX = (left + wa + wb / 2) / vw;
+    if (PORTRAIT) {          /* below the chip as it really is, then the charges below that */
+      var hv = FR.h / 100, chipB = fy(-24.2) + brit.offsetHeight * BS / 2;
+      C3B_Y = (chipB + el3.c3b.offsetHeight / 2 + 4) / hv;
+      CHG_Y = Math.max(-3.3, (C3B_Y * hv + el3.c3b.offsetHeight / 2 + el3.chg.offsetHeight * 1.093 / 2 + 6) / hv);
+    } else { C3B_Y = -15.2; CHG_Y = -3.3; }
+    /* re-trace the wool's text only when the page size changed (a phone's toolbar fires resize on every
+       show/hide, and only changes the height, which a portrait page doesn't depend on) or fonts arrived */
+    var key = FR.w.toFixed(1) + 'x' + FR.h.toFixed(1);
+    if (key !== morphKey && typeof buildMorph === 'function') { morphKey = key; buildMorph(); }
+  }
+  var morphKey = '';
+
+  /* arrows: the storyboard's own Béziers, mapped from each arrow's local frame onto the 1440×810 page */
+  function bez(m, pts){
+    var q = pts.map(function(p){ return [m[0]*p[0] + m[2]*p[1] + m[4], m[1]*p[0] + m[3]*p[1] + m[5]]; });
+    return 'M' + q[0] + 'C' + q[1] + ' ' + q[2] + ' ' + q[3];
+  }
+  var a1 = $('cag-a1'), a1h = $('cag-a1h'), a1g = $('cag-a1g'), a2 = $('cag-a2'), a2h = $('cag-a2h'), a2g = $('cag-a2g');
+  a1.setAttribute('d', bez([0.652044, 0.370591, -0.370591, 0.652044, 994.292188, 155.528141],
+    [[1.381677,130.728916],[181.006719,-40.243386],[274.384707,-40.907756],[281.511112,128.738379]]));
+  a2.setAttribute('d', bez([-0.642406, -0.387058, 0.387058, -0.642406, 1143.851325, 561.635272],
+    [[1.968724,1.693784],[31.526145,171.886707],[181.011282,172.227078],[450.424135,2.714899]]));
+  var a1L = a1.getTotalLength(), a2L = a2.getTotalLength();
+  /* draw an arrow up to fraction f; its head rides on the tip, pointing along the line */
+  function arrow(path, head, L, f){
+    path.style.strokeDasharray = L + ' ' + L;
+    path.style.strokeDashoffset = L * (1 - f);
+    if (f <= 0) { head.setAttribute('d', ''); return; }
+    var t = path.getPointAtLength(f * L), b = path.getPointAtLength(Math.max(0, f * L - 4));
+    var dx = t.x - b.x, dy = t.y - b.y, n = Math.hypot(dx, dy) || 1; dx /= n; dy /= n;
+    var bx = t.x - dx * 8, by = t.y - dy * 8;
+    head.setAttribute('d', 'M' + t.x + ',' + t.y + 'L' + (bx - dy * 4.2) + ',' + (by + dx * 4.2) +
+      'L' + (bx + dy * 4.2) + ',' + (by - dx * 4.2) + 'Z');
+  }
+
+  /* the scribble: a tangle that draws itself while the cost is "worked out" (seeded, so every load is the same) */
+  /* the ball sits just below where the charges get written, so the slack hangs down to it */
+  var scr = $('cag-scr'), scrg = $('cag-scrg'), SCX = 700, SCY = 632;
+  (function(){
+    var seed = 7; function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    /* a hand scribbling a ball: the pen keeps looping the same way round, but each loop's centre wanders,
+       and its size, roundness and tilt drift — so loops cross the middle and pile up unevenly, like a
+       tangle of wool rather than a neat coil. All within a circle of radius SCR_R, no loose tails */
+    var pts = [], th = 0, SCR_R = 48, ph = [rnd() * 6.3, rnd() * 6.3, rnd() * 6.3, rnd() * 6.3, rnd() * 6.3];
+    for (var k = 0; k < 230; k++) {
+      th += .42 + rnd() * .22;
+      var cx = SCR_R * .42 * Math.sin(th * .137 + ph[0]) * Math.cos(th * .051 + ph[1]),
+          cy = SCR_R * .42 * Math.sin(th * .113 + ph[2]),
+          rr = SCR_R * (.42 + .2 * Math.sin(th * .171 + ph[3])),
+          ab = .62 + .3 * Math.sin(th * .083 + ph[4]),
+          tl = th * .061,
+          ex = Math.cos(th) * rr, ey = Math.sin(th) * rr * ab;
+      pts.push([SCX + (cx + ex * Math.cos(tl) - ey * Math.sin(tl)) * 1.15 + (rnd() - .5) * 2,   /* a little wider than tall, as the storyboard's */
+                SCY + cy + ex * Math.sin(tl) + ey * Math.cos(tl) + (rnd() - .5) * 2]);
+    }
+    var d = 'M' + pts[0];
+    for (var i = 0; i < pts.length - 1; i++) {       /* Catmull-Rom through the points */
+      var p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+      d += 'C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ',' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) + ' ' +
+           (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ',' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) + ' ' + p2;
+    }
+    scr.setAttribute('d', d);
+  })();
+  var scrL = scr.getTotalLength();
+
+  /* the wool writes the charges: the real text is rendered to a canvas (same font, size, place) and
+     thinned to its centre lines — the path a pen takes — which become the route of one continuous
+     thread. The ball's free end follows that route, so the words are written out of the unwinding ball */
+  var morph = $('cag-morph'), MORPH = [], GLYPH_W = 1.6;
+  function buildMorph(){
+    var el = el3.chg, cs = getComputedStyle(el), W = el.offsetWidth, H = el.offsetHeight;
+    if (!W || !H) return;
+    /* baseline: a zero-size inline-block sits on it */
+    var bl = document.createElement('span');
+    bl.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+    el.appendChild(bl); var base = bl.offsetTop; el.removeChild(bl);
+    var R = 3, P = 2, cw = Math.ceil(W * R) + 2 * P, ch = Math.ceil(H * R) + 2 * P;
+    var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+    var c = cv.getContext('2d');
+    c.translate(P, P); c.scale(R, R);
+    c.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    c.textBaseline = 'alphabetic'; c.fillText(el.textContent, 0, base);
+    var A = c.getImageData(0, 0, cw, ch).data, M = new Uint8Array(cw * ch), ink = 0;
+    for (var i = 0; i < cw * ch; i++) if (A[i * 4 + 3] > 110) { M[i] = 1; ink++; }
+
+    /* Zhang–Suen thinning → 1px centre lines */
+    function at(x, y){ return x < 0 || y < 0 || x >= cw || y >= ch ? 0 : M[y * cw + x]; }
+    for (var changed = true, pass = 0; changed && pass < 60; pass++) {
+      changed = false;
+      for (var step = 0; step < 2; step++) {
+        var kill = [];
+        for (var y = 1; y < ch - 1; y++) for (var x = 1; x < cw - 1; x++) {
+          if (!M[y * cw + x]) continue;
+          var p2 = at(x, y-1), p3 = at(x+1, y-1), p4 = at(x+1, y), p5 = at(x+1, y+1),
+              p6 = at(x, y+1), p7 = at(x-1, y+1), p8 = at(x-1, y), p9 = at(x-1, y-1);
+          var B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+          if (B < 2 || B > 6) continue;
+          var Ac = (!p2 && p3) + (!p3 && p4) + (!p4 && p5) + (!p5 && p6) + (!p6 && p7) + (!p7 && p8) + (!p8 && p9) + (!p9 && p2);
+          if (Ac !== 1) continue;
+          if (step === 0 ? (p2 * p4 * p6 || p4 * p6 * p8) : (p2 * p4 * p8 || p2 * p6 * p8)) continue;
+          kill.push(y * cw + x);
+        }
+        for (var q = 0; q < kill.length; q++) M[kill[q]] = 0;
+        if (kill.length) changed = true;
+      }
+    }
+    /* the strokes are as wide, on average, as ink area ÷ centre-line length */
+    var skel = 0; for (i = 0; i < cw * ch; i++) skel += M[i];
+    GLYPH_W = Math.max(THREAD_W, ink / Math.max(1, skel) / R * 1440 / FR.w);
+
+    /* trace the centre lines into strokes: neighbours are 4-adjacent, or diagonal only where no
+       4-neighbour already joins them (so a staircase isn't read as a junction) */
+    function nb(x, y){
+      var out = [], d4 = [[1,0],[-1,0],[0,1],[0,-1]], dd = [[1,1],[1,-1],[-1,1],[-1,-1]];
+      d4.forEach(function(d){ if (at(x + d[0], y + d[1])) out.push([x + d[0], y + d[1]]); });
+      dd.forEach(function(d){ if (at(x + d[0], y + d[1]) && !at(x + d[0], y) && !at(x, y + d[1])) out.push([x + d[0], y + d[1]]); });
+      return out;
+    }
+    var used = {}, strokes = [];
+    function ek(a, b){ var u = a[1] * cw + a[0], v = b[1] * cw + b[0]; return u < v ? u + '_' + v : v + '_' + u; }
+    function walk(s, n){
+      var path = [s, n], prev = s, cur = n; used[ek(s, n)] = 1;
+      for (var guard = 0; guard < 20000; guard++) {
+        var ns = nb(cur[0], cur[1]);
+        if (ns.length !== 2) break;                               /* end or junction */
+        var nx = ns[0][0] === prev[0] && ns[0][1] === prev[1] ? ns[1] : ns[0];
+        if (used[ek(cur, nx)]) break;                             /* closed a loop */
+        used[ek(cur, nx)] = 1; path.push(nx); prev = cur; cur = nx;
+      }
+      return path;
+    }
+    var nodes = [];
+    for (y = 0; y < ch; y++) for (x = 0; x < cw; x++) if (M[y * cw + x] && nb(x, y).length !== 2) nodes.push([x, y]);
+    /* a dot (":", ".") thins to a lone pixel: keep it as a zero-length stroke, which a round cap draws as a dot */
+    nodes.forEach(function(s){ if (!nb(s[0], s[1]).length) strokes.push([s, s]); });
+    nodes.forEach(function(s){ nb(s[0], s[1]).forEach(function(n){ if (!used[ek(s, n)]) strokes.push(walk(s, n)); }); });
+    for (y = 0; y < ch; y++) for (x = 0; x < cw; x++) {                   /* pure loops (o, 0 …) */
+      if (!M[y * cw + x]) continue;
+      nb(x, y).forEach(function(n){ if (!used[ek([x, y], n)]) strokes.push(walk([x, y], n)); });
+    }
+    /* drop thinning spurs; smooth the pixel staircase; map to page pt */
+    var bx0 = innerWidth / 2 + fx(-1.0) - W / 2, by0 = innerHeight / 2 + fy(17.5) - H / 2;   /* where note() puts it */
+    /* short pieces hanging off a junction are thinning spurs; short pieces on their own are dots */
+    function deg(p){ return nb(p[0], p[1]).length; }
+    strokes = strokes.filter(function(s){
+      return s.length >= 5 || (deg(s[0]) <= 1 && deg(s[s.length - 1]) <= 1);
+    }).map(function(s){
+      for (var it = 0; it < 3; it++) s = s.map(function(p, k){
+        if (k === 0 || k === s.length - 1) return p;
+        return [(s[k-1][0] + p[0] * 2 + s[k+1][0]) / 4, (s[k-1][1] + p[1] * 2 + s[k+1][1]) / 4];
+      });
+      return s.map(function(p){
+        return [(bx0 + (p[0] + .5 - P) / R - FR.x) / FR.w * 1440, (by0 + (p[1] + .5 - P) / R - FR.y) / FR.h * 810];
+      });
+    });
+    if (!strokes.length) { MORPH = []; return; }
+    strokes.sort(function(a, b){
+      return Math.min.apply(null, a.map(function(p){ return p[0]; })) - Math.min.apply(null, b.map(function(p){ return p[0]; }));
+    });
+
+    function resample(pts, n){
+      var cum = [0];
+      for (var j = 1; j < pts.length; j++) cum.push(cum[j - 1] + Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]));
+      var out = [], tot = cum[cum.length - 1], j2 = 1;
+      for (var m = 0; m < n; m++) {
+        var d = tot * m / Math.max(1, n - 1);
+        while (j2 < cum.length - 1 && cum[j2] < d) j2++;
+        var f = (d - cum[j2 - 1]) / ((cum[j2] - cum[j2 - 1]) || 1);
+        out.push([pts[j2 - 1][0] + (pts[j2][0] - pts[j2 - 1][0]) * f, pts[j2 - 1][1] + (pts[j2][1] - pts[j2 - 1][1]) * f]);
+      }
+      return { pts: out, len: tot };
+    }
+    function plen(pts){ var L = 0; for (var j = 1; j < pts.length; j++) L += Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]); return L; }
+
+    /* one continuous thread through the text: strokes in reading order, each entered from the end nearest
+       where the thread already is, joined by a slack connector (a shallow sag, as loose wool lies) */
+    var seq = [], pos = null, s0 = 0;
+    function push(type, pts){
+      var n = Math.max(2, Math.round(plen(pts) / STEP) + 1), r = resample(pts, n);
+      seq.push({ type: type, pts: r.pts, s0: s0, s1: s0 + r.len }); s0 += r.len;
+    }
+    strokes.forEach(function(s){
+      if (pos && Math.hypot(s[s.length - 1][0] - pos[0], s[s.length - 1][1] - pos[1]) < Math.hypot(s[0][0] - pos[0], s[0][1] - pos[1])) s = s.slice().reverse();
+      if (pos) {
+        var a = pos, b = s[0], sag = Math.min(14, Math.hypot(b[0] - a[0], b[1] - a[1]) * .25), cpt = [];
+        for (var k = 0; k <= 12; k++) {
+          var u = k / 12, mx = a[0] + (b[0] - a[0]) * u, my = a[1] + (b[1] - a[1]) * u + sag * 4 * u * (1 - u);
+          cpt.push([mx, my]);
+        }
+        push('c', cpt);
+      }
+      push('s', s.length > 1 ? s : [s[0], s[0]]);
+      pos = s[s.length - 1];
+    });
+    TEXT_L = s0; TEXT_START = seq[0].pts[0];
+    while (morph.firstChild) morph.removeChild(morph.firstChild);
+    var NS = 'http://www.w3.org/2000/svg';
+    seq.forEach(function(it){
+      it.el = document.createElementNS(NS, 'path'); it.el.setAttribute('class', 'scr'); morph.appendChild(it.el);
+    });
+    loose = document.createElementNS(NS, 'path'); loose.setAttribute('class', 'scr'); morph.appendChild(loose);
+    loose.style.strokeWidth = THREAD_W;
+    MORPH = seq;
+  }
+  var TEXT_L = 0, TEXT_START = [0, 0], loose = null, STEP = 1.1;   /* thread sample spacing, page pt */
+
+  /* u: 0 → .1 the free end leaves the ball and is carried to the first letter;
+         .1 → 1 it writes the text as one line, the slack running back to the ball, which unwinds
+         (shrinks from its last-drawn end) in step; the last bit of slack is drawn in as it finishes.
+     Strokes thicken to the font's weight once the writing has passed them; connectors stay a thread. */
+  function drawMorph(u){
+    if (!MORPH.length) return;
+    function sm(x){ x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+    var uT = sm(u / .1), uw = Math.max(0, Math.min(1, (u - .1) / .9)), w = uw * TEXT_L;
+    var cb = Math.min(1, .04 * uT + .96 * uw);                     /* share of the ball unwound */
+    scr.style.strokeDasharray = Math.max(0, scrL * (1 - cb)) + ' ' + scrL;
+    scr.style.strokeDashoffset = 0;
+    scrg.style.opacity = cb < .995 ? 1 : 0;                         /* a zero-length dash would leave a dot */
+    var be = scr.getPointAtLength(scrL * (1 - cb)), ball = [be.x, be.y];
+
+    var tip = null;
+    MORPH.forEach(function(it){
+      var d = '', on = u >= .1 && w > it.s0;
+      if (on) {
+        var upto = Math.min(it.pts.length - 1, Math.floor((w - it.s0) / STEP)), j;
+        for (j = 0; j <= upto; j++) d += (j ? 'L' : 'M') + it.pts[j][0].toFixed(1) + ',' + it.pts[j][1].toFixed(1);
+        var f = (w - it.s0) / STEP - upto;
+        if (upto < it.pts.length - 1) {
+          var p = it.pts[upto], q = it.pts[upto + 1];
+          tip = [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
+          d += 'L' + tip[0].toFixed(1) + ',' + tip[1].toFixed(1);
+        } else tip = it.pts[it.pts.length - 1];
+        if (upto === 0 && it.pts.length === 2 && it.pts[0][0] === it.pts[1][0]) d += 'L' + it.pts[0][0] + ',' + it.pts[0][1];
+      }
+      it.el.setAttribute('d', d);
+      var k = sm((w - it.s1) / (it.type === 's' ? 18 : 30));
+      if (it.type === 's') it.el.style.strokeWidth = THREAD_W + (GLYPH_W - THREAD_W) * k;   /* inks up once written past */
+      else { it.el.style.strokeWidth = THREAD_W; it.el.style.opacity = 1 - k; }             /* joins settle away behind the tip */
+    });
+    if (u < .1) tip = [ball[0] + (TEXT_START[0] - ball[0]) * uT, ball[1] + (TEXT_START[1] - ball[1]) * uT];
+    if (!tip) tip = TEXT_START;
+
+    /* the slack from the writing tip back to the ball; as the ball runs out it is drawn into the tip */
+    var pull = sm((uw - .88) / .12), e = [ball[0] + (tip[0] - ball[0]) * pull, ball[1] + (tip[1] - ball[1]) * pull];
+    var dist = Math.hypot(e[0] - tip[0], e[1] - tip[1]);
+    if (dist < .5) loose.setAttribute('d', '');
+    else {
+      var mx = (tip[0] + e[0]) / 2, my = (tip[1] + e[1]) / 2 + Math.min(22, dist * .3);
+      loose.setAttribute('d', 'M' + tip[0].toFixed(1) + ',' + tip[1].toFixed(1) + 'Q' + mx.toFixed(1) + ',' + my.toFixed(1) + ' ' + e[0].toFixed(1) + ',' + e[1].toFixed(1));
+    }
+  }
+
+  /* a handwritten line: revealed left → right behind a soft pen front, like NLP's handwriting */
+  var FEATHER = 8;
+  function note(el, x, y, w, o){
+    var on = w > 0 && o > 0;
+    el.style.transform = 'translate(-50%,-50%) translate(' + fx(x).toFixed(1) + 'px,' + fy(y).toFixed(1) + 'px)';
+    el.style.opacity = on ? o : 0;
+    var m = !on || w >= 1 ? 'none'
+      : 'linear-gradient(90deg,#000 ' + (w * (100 + FEATHER) - FEATHER) + '%,transparent ' + (w * (100 + FEATHER)) + '%)';
+    el.style.webkitMaskImage = el.style.maskImage = m;
+  }
+  function wr(t, a, b){ return reduced ? (t >= a ? 1 : 0) : Math.max(0, Math.min(1, (t - a) / (b - a))); }
+  function K(f, t){                    /* keyframes; reduced motion jumps to each key instead of easing */
+    if (!reduced) return kf(f, t);
+    var v = f[0][1]; for (var i = 0; i < f.length; i++) if (t >= f[i][0]) v = f[i][1]; return v;
+  }
+
+  /* beats (t):
+     .02–.11 "let's say the Model / wants to buy this", then the arrow onto BRITANNIA   (p17)
+     .12–.18 "the next step isn't / just placing the order"                             (p18)
+     .21–.23 those clear · .23–.31 "it's to figure out … deployed capital"               (p19)
+     .34–.36 that clears, BRITANNIA rises · .39–.52 the sum, line by line                (p20)
+     .55–.58 the sum clears, "₹5039 = 9 Shares" tucks under BRITANNIA                    (p21)
+     .57–.65 a scribbled ball · .655–.74 it unwinds into the charges as handwriting      (p21–23)
+     .74–.752 the charges firm up (bold) · .757–.785 rise                                (p24–25)
+     .785–.88 "When model thinks …" and its arrow up to the charges                      (p25–26)
+     .91–.93 all clears · .93–.96 "We simply move on with the trade"                      (p27–28) */
+  function draw3(t){
+    place(cagT, 0, TOP_Y, 1);
+    brit.style.transform = 'translate(-50%,-50%) translate(0,' + fy(K([[.35,0],[.39,-24.2]], t)).toFixed(1) + 'px) scale(' + BS + ')';
+    brit.style.opacity = 1;
+
+    var f1 = 1 - wr(t, .21, .23);
+    note(el3.n1a, 0, -23.9, wr(t, .02, .05), f1);
+    note(el3.n1b, 0, -16.8, wr(t, .05, .08), f1);
+    a1g.style.opacity = f1; arrow(a1, a1h, a1L, wr(t, .08, .11));
+    note(el3.n2a, 0, 16.6, wr(t, .12, .15), f1);
+    note(el3.n2b, 0, 23.7, wr(t, .15, .18), f1);
+
+    var f3 = 1 - wr(t, .34, .36);
+    note(el3.n3a, 0, -23.9, wr(t, .23, .27), f3);
+    note(el3.n3b, 0, -16.8, wr(t, .27, .31), f3);
+
+    var fs = 1 - wr(t, .55, .57);                       /* the sum clears */
+    note(el3.c1, 0, my(-9.6), wr(t, .39, .42), fs);
+    note(el3.c2, 0, my(-3.7), wr(t, .42, .45), fs);
+    note(el3.c3a, c3aX, my(1.5), wr(t, .45, .47), fs);
+    var mv = K([[.55,0],[.58,1]], t);
+    note(el3.c3b, lerp(c3bX, -1.0, mv), lerp(my(1.5), C3B_Y, mv), wr(t, .465, .48), 1 - wr(t, .91, .93));
+    note(el3.c4a, 0, my(6.6), wr(t, .48, .50), fs);
+    note(el3.c4b, 0, my(10.3), wr(t, .50, .52), fs);
+
+    /* wool: the pen scribbles a ball (.57–.65); its free end then comes loose and writes the charges as
+       one continuous thread while the ball unwinds (.655–.725); then the real text takes over (.725–.74) */
+    var sd = wr(t, .57, .65), mo = reduced ? 0 : wr(t, .655, .725);
+    if (t >= .655 && t < .74 && !reduced) { drawMorph(mo); morph.style.opacity = 1 - wr(t, .73, .74); }
+    else {
+      scr.style.strokeDasharray = scrL + ' ' + scrL;
+      scr.style.strokeDashoffset = scrL * (1 - sd);
+      scrg.style.opacity = sd > 0 && t < .655 ? 1 : 0;
+      morph.style.opacity = 0;
+    }
+
+    var pop = K([[.74,0],[.752,1]], t);
+    var cy = K([[.74,17.5],[.752,13.7],[.757,13.7],[.785,CHG_Y]], t);
+    note(el3.chg, -1.0, cy, t >= .725 ? 1 : 0, wr(t, .725, .737) * (1 - wr(t, .91, .93)));
+    el3.chg.style.transform += ' scale(' + (1 + .093 * pop) + ')';
+    el3.chg.style.webkitTextStroke = (pop * .035).toFixed(4) + 'em #1e1246';   /* firms up to the bold weight */
+
+    var f4 = 1 - wr(t, .91, .93);
+    note(el3.n4a, 0, 15.9, wr(t, .785, .81), f4);
+    note(el3.n4b, 0, 22.1, wr(t, .81, .835), f4);
+    a2g.style.opacity = f4; arrow(a2, a2h, a2L, wr(t, .835, .88));
+
+    note(el3.n5, -.5, -.1, wr(t, .93, .96), 1);
+  }
+  /* ── part 4 (u): the story runs back and the section closes, PDF pages 29–43 ──
+     .00–.06 the closing line clears and BRITANNIA returns to the centre                (p29)
+     .07–.10 the watchlist is back, at its end · .09–.17 BRITANNIA drops to its row,
+             .15–.20 and shrinks back into it                                           (p30–33)
+     .22–.42 the list scrolls back to the top                                           (p34–37)
+     .44–.60 the card falls away as the title settles in the centre                      (p38–39)
+     .60–.86 an unbroken S slides in from the left; as it nears the centre (.76–.86)
+             a soft break opens around the title                                        (p40–42)
+     .90–.96 all clears                                                                 (p43) */
+  var cv4 = $('cag-cv4'), CV4X = 0, CV4Y = 0;   /* where the S crosses the title's line (page-40 pt) */
+  /* the storyboard draws this S as two arcs with a gap; here they are one line — the upper arc (reversed,
+     so the path runs top → bottom), a short bridge that leaves and arrives along each arc's own tangent,
+     then the lower arc — and the gap is opened later by the soft gap block. Page-40 placement; +38pt in y
+     because the storyboard's titles sit 4.7vh above the screen centre, where this page's title rests */
+  (function(){
+    function mp(m, pts){ return pts.map(function(p){ return [m[0]*p[0] + m[2]*p[1] + m[4], m[1]*p[0] + m[3]*p[1] + m[5]]; }); }
+    var U = mp([0.00329875, -0.749993, 0.749993, 0.00329875, 39.143211, 321.607593],
+      [[1.547666,88.344772],[146.42064,-26.116459],[306.635759,-26.112804],[482.203395,88.345274]]);
+    var L = mp([0.0905517, 0.744513, -0.744513, 0.0905517, 209.110791, 396.513691],
+      [[1.341234,88.34132],[181.278564,-26.114865],[380.286301,-26.113567],[598.354105,88.343956]]);
+    /* the storyboard's lower arc starts ~28pt left of where the upper arc is heading (its gap hides that);
+       drawn unbroken it would show as a jog, so the arcs close half that each (~1vw) and meet in line */
+    var du = [U[0][0] - U[1][0], U[0][1] - U[1][1]];
+    var shift = (U[0][0] + du[0] * (L[0][1] - U[0][1]) / du[1] - L[0][0]) / 2;
+    U = U.map(function(p){ return [p[0] - shift, p[1]]; }); L = L.map(function(p){ return [p[0] + shift, p[1]]; });
+    var gap0 = Math.hypot(L[0][0] - U[0][0], L[0][1] - U[0][1]) / 3;
+    CV4X = (U[0][0] + L[0][0]) / 2; CV4Y = (U[0][1] + L[0][1]) / 2;
+    function along(a, b, len){ var dx = a[0] - b[0], dy = a[1] - b[1], n = Math.hypot(dx, dy) || 1; return [a[0] + dx / n * len, a[1] + dy / n * len]; }
+    var B1 = along(U[0], U[1], gap0), B2 = along(L[0], L[1], gap0);
+    $('cag-cv4p').setAttribute('d', 'M' + U[3] + 'C' + U[2] + ' ' + U[1] + ' ' + U[0] +
+      'C' + B1 + ' ' + B2 + ' ' + L[0] + 'C' + L[1] + ' ' + L[2] + ' ' + L[3]);
+  })();
+  function draw4(u){
+    note(el3.n5, -.5, -.1, 1, 1 - wr(u, 0, .04));
+    var by = K([[0,fy(-24.2)],[.06,0],[.09,0],[.17,(CARD_Y + britY) * innerHeight / 100]], u), bs = K([[.15,BS],[.20,1]], u);
+    brit.style.transform = 'translate(-50%,-50%) translate(0,' + by.toFixed(1) + 'px) scale(' + bs + ')';
+    brit.style.opacity = u < .20 ? 1 : 0;
+
+    place(card, 0, CARD_Y + K([[.44,0],[.60,110]], u), K([[.07,0],[.10,1]], u));
+    var frac = K([[.22,1],[.42,0]], u);
+    rowsEl.style.transform = 'translateY(' + -listMax * frac + 'px)';
+    thumb.style.transform = 'translateY(' + thumbTravel * frac + 'px)';
+
+    var out = 1 - wr(u, .90, .96);
+    place(cagT, 0, K([[.44,TOP_Y],[.56,0]], u), out);
+    var dx = K([[.60,-260],[.86,591.1]], u);
+    $('cag-cv4p').setAttribute('transform', 'translate(' + dx.toFixed(1) + ',38)');
+    cv4.style.opacity = u >= .60 ? out : 0;
+    /* the break: the same feathered gap block as NLP → Cost Aware Gap. It rides on the point where the S
+       crosses the title's line and grows open before that point reaches the lettering, so the line is never
+       seen running through the title and is only ever ended by the gap's soft edges */
+    var cx = (CV4X + dx) / 14.4 - 50, cyv = (CV4Y + 38) / 8.1 - 50;
+    var halfW = cagT.offsetWidth / 2 / (innerWidth / 100);
+    var open = u < .60 ? 0 : Math.max(0, Math.min(1, (cx + halfW + 10) / 8));
+    open = open * open * (3 - 2 * open);
+    gap.style.transform = 'translate(-50%,-50%) translate(' + cx.toFixed(2) + 'vw,' + cyv.toFixed(2) + 'vh) scaleY(' + open + ')';
+    gap.style.opacity = open > 0 ? 1 : 0;
+  }
+
+  function hide3(){
+    for (var k in el3) { el3[k].style.opacity = 0; }
+    a1g.style.opacity = a2g.style.opacity = scrg.style.opacity = morph.style.opacity = 0;
+    cv4.style.opacity = 0;
+  }
+  function draw2(r){
+    place(cagT, 0, kf([[.05,0],[.17,TOP_Y]], r), 1);
+    gap.style.opacity = 0;
+    place(card, 0, kf([[.05,100],[.17,CARD_Y]], r), r > .05 ? kf([[.80,1],[.88,0]], r) : 0);
+    var frac = kf([[.20,0],[.58,1]], r);
+    rowsEl.style.transform = 'translateY(' + -listMax * frac + 'px)';
+    thumb.style.transform = 'translateY(' + thumbTravel * frac + 'px)';
+    var by = kf([[.70,CARD_Y + britY],[.84,0]], r), bs = kf([[.62,1],[.70,1 + (BS - 1) * .55],[.76,BS]], r);
+    brit.style.transform = 'translate(-50%,-50%) translate(0,' + by + 'vh) scale(' + bs + ')';
+    brit.style.opacity = r < .62 ? 0 : 1;
+  }
+
+  function draw(q){
+    var rise = kf([[0,0],[.35,RISE1],[.50,RISE1],[.75,RISE]], q);
+    var slide = kf([[.77,0],[1,33.33]], q);                  /* the line alone keeps going up */
+    curve.style.transform = 'translateY(' + -(rise + slide) + 'vh)';
+    curve.style.opacity = 1;
+    /* at the handoff NLP's eased frame can still be a moment behind the scroll; until it lands, show
+       its line exactly as NLP has it, or the line's tip jumps when this viewport takes over */
+    var pN = window.__nlpShown;
+    var lag = pN != null && pN < 1 ? nlpLen * kf([[.94,1],[1,.3]], pN) - hidden0 : 0;
+    var hiddenTop = kf([[0,hidden0],[.12,0]], q) + lag;   /* same pace NLP was drawing at */
+    /* the tail (bottom end) climbs from the screen's bottom edge to just past its top; hide the line below it */
+    var tail = kf([[.77,100],[1,-2]], q);
+    var a = q <= .77 ? 0 : lenAtY(10 * (tail + rise + slide)), b = total - hiddenTop;
+    line.style.strokeDasharray = Math.max(0, b - a) + ' ' + total;
+    line.style.strokeDashoffset = -a;
+    if (b - a <= 0) curve.style.opacity = 0;   /* a zero-length dash would still draw a round-cap dot */
+
+    place(nlpT, 0, -rise, 1);
+
+    var landY = 66.67 - rise;            /* the crossing the new title sits on, from screen centre */
+    /* the break opens gradually: the gap grows from nothing at the crossing, so the line's two ends
+       draw back from each other instead of a piece vanishing in one frame */
+    var open = kf([[.28,0],[.40,1]], q);
+    gap.style.transform = 'translate(-50%,-50%) translate(0,' + landY + 'vh) scaleY(' + open + ')';
+    gap.style.opacity = open > 0 ? 1 : 0;
+    place(cagT, kf([[.38,42],[.50,0]], q), landY, kf([[0,0],[.38,0],[.42,1]], q));
+  }
+
+  var SCRUB_TAU = .28, qShown = null, lastFrame = 0, ticking = false;
+  function update(){
+    var rect = stage.getBoundingClientRect();
+    var range = stage.offsetHeight - innerHeight;
+    /* scroll budget: part 1 (q) three screens, part 2 (r) eight, part 3 (t) fourteen, part 4 (u) the rest */
+    var s1 = 3 * innerHeight, s2 = 8 * innerHeight, s3 = 14 * innerHeight, sc = Math.max(0, -rect.top);
+    var qT = Math.min(1, sc / s1) + Math.max(0, Math.min(1, (sc - s1) / s2))
+           + Math.max(0, Math.min(1, (sc - s1 - s2) / s3))
+           + Math.max(0, Math.min(1, (sc - s1 - s2 - s3) / (range - s1 - s2 - s3)));
+    /* until pinned it would slide up over the still-pinned NLP viewport */
+    vp.style.visibility = rect.top > 0 ? 'hidden' : '';
+    var now = performance.now(), dt = Math.min(.1, (now - lastFrame) / 1000);
+    lastFrame = now;
+    if (qShown === null || reduced) qShown = qT;
+    else qShown += (qT - qShown) * (1 - Math.exp(-dt / SCRUB_TAU));
+    if (Math.abs(qT - qShown) < 2e-5) qShown = qT;
+    if (reduced) {
+      curve.style.opacity = 0; place(gap, 0, 0, 0);
+      place(nlpT, 0, 0, q0(qShown) ? 1 : 0);
+      place(cagT, 0, qShown > 1 ? TOP_Y : 0, q0(qShown) ? 0 : 1);
+      place(card, 0, CARD_Y, qShown > 1 && qShown < 1.62 ? 1 : 0);
+      rowsEl.style.transform = qShown > 1.4 ? 'translateY(' + -listMax + 'px)' : '';
+      thumb.style.transform = qShown > 1.4 ? 'translateY(' + thumbTravel + 'px)' : '';
+      brit.style.transform = 'translate(-50%,-50%) scale(' + BS + ')';
+      brit.style.opacity = qShown >= 1.62 ? 1 : 0;
+      if (qShown > 2) { place(card, 0, CARD_Y, 0); draw3(Math.min(1, qShown - 2)); } else hide3();
+      if (qShown > 3) draw4(qShown - 3);
+      return false;
+    }
+    draw(Math.min(1, qShown));
+    if (qShown > 1) draw2(Math.min(1, qShown - 1));
+    else { card.style.opacity = 0; brit.style.opacity = 0; }
+    if (qShown > 2) draw3(Math.min(1, qShown - 2)); else hide3();
+    if (qShown > 3) draw4(qShown - 3);
+    /* keep drawing while NLP is still settling underneath */
+    return qShown !== qT || (rect.top <= 0 && window.__nlpShown < 1);
+  }
+  function q0(q){ return q < .4; }
+  function tick(){ if (update()) requestAnimationFrame(tick); else ticking = false; }
+  function onScroll(){ if (!ticking) { ticking = true; lastFrame = performance.now(); requestAnimationFrame(tick); } }
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', function(){ measure(); fitNotes(); onScroll(); });
+  measure(); fitNotes();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measure(); morphKey = ''; fitNotes(); onScroll(); });
+  /* Caveat arrives after first paint; re-fit the notes once it has */
+  if (document.fonts && document.fonts.load) document.fonts.load('40px "Caveat"').then(function(){ morphKey = ''; fitNotes(); onScroll(); });
   update();
 })();
 </script>
