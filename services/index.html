@@ -2004,8 +2004,10 @@
     card.style.height = (bot - top) + 'px';
     CARD_Y = ((top + bot) / 2 - half) / VH;
   }
+  var lastHv = 0;
   function measure(){
-    VH = vp.clientHeight / 100;
+    lastHv = vp.clientHeight;
+    VH = lastHv / 100;
     layout();
     frame();
     /* scrollbar: beside the list window, centred in the card's right padding; thumb sized like a real one */
@@ -2587,6 +2589,7 @@
     line.style.strokeDasharray = Math.max(0, b - a) + ' ' + total;
     line.style.strokeDashoffset = -a;
     if (b - a <= 0) curve.style.opacity = 0;   /* a zero-length dash would still draw a round-cap dot */
+    if (q > .77 && tail <= -1) curve.style.opacity = 0;   /* gone off the top: switched off, not just out of view */
 
     place(nlpT, 0, -rise, 1);
 
@@ -2601,6 +2604,10 @@
 
   var SCRUB_TAU = .28, qShown = null, lastFrame = 0, ticking = false;
   function update(){
+    /* iPhone Safari changes the visible height (100dvh) as its toolbar comes and goes, not always with a
+       resize event: a stale height left the exit line ~100px low, peeking in under the top bar. So the
+       real height is checked every frame and the layout redone the moment it changes */
+    if (Math.abs(vp.clientHeight - lastHv) > .5) { measure(); fitNotes(); }
     var rect = stage.getBoundingClientRect();
     var range = stage.offsetHeight - innerHeight;
     /* scroll budget: part 1 (q) three screens, part 2 (r) eight, part 3 (t) fourteen, part 4 (u) the rest */
