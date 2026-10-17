@@ -1255,11 +1255,14 @@
     if (autoPlaying) return;
     autoPlaying = true;
     var from = scrollY;
-    var to = stage.offsetTop + stage.offsetHeight - innerHeight;
+    /* plays the whole story — XGBoost, then NLP and Cost Aware Gap — to the end of the last stage */
+    var last = document.getElementById('cag-stage') || document.getElementById('nlp-stage') || stage;
+    var to = last.getBoundingClientRect().top + scrollY + last.offsetHeight - innerHeight;
     var dist = to - from;
     if (dist <= 0) { autoPlaying = false; return; }
     /* steady pace (~7 s per screen) with short eased ends, so the middle acts can be read */
-    var dur = Math.max(6000, dist / innerHeight * 7000), A = .06;
+    var dur = Math.max(6000, dist / innerHeight * 7000);
+    var A = Math.min(.06, 2300 / dur);   /* eased ends ~2.3s at most, as on the XGBoost-only run (a share of a 6-min run crawled for 20s) */
     var t0 = performance.now();
     document.documentElement.style.scrollBehavior = 'auto';
     function step(now) {
