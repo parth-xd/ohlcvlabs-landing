@@ -1968,7 +1968,32 @@
   /* the list scrolls until BRITANNIA (last) sits at the bottom of the window; the lifted copy starts
      exactly over that row. Sizes come from layout, so measure (and re-measure on resize / fonts) */
   var listMax = 0, britY = 0, britW = 0, thumbTravel = 0;
+  /* vertical positions are in units of 1% of this section's real height (VH, px). Not CSS vh: on iPhone
+     Safari vh is the full screen while the sticky viewport is the visible height (100dvh), so with the
+     toolbar showing, vh-placed things drift off the lines and boxes drawn in the viewport */
+  var VH = innerHeight / 100;
+  /* title at the top and the watchlist card: the storyboard's places (−40, and a 70-tall card at +4.75),
+     except that the title stays below the fixed top bar's links where they would overlap it (short screens,
+     a phone with Safari's bars) and the card always fits between the title and the bottom edge */
+  function layout(){
+    var Hv = vp.clientHeight, half = Hv / 2, tH = cagT.offsetHeight, tW = cagT.offsetWidth, W = innerWidth;
+    var safe = 0;
+    document.querySelectorAll('.topbar a').forEach(function(a){
+      var r = a.getBoundingClientRect();
+      if (r.right > (W - tW) / 2 && r.left < (W + tW) / 2) safe = Math.max(safe, r.bottom);
+    });
+    /* compact screens: below the bar's fading backdrop too, or it washes out the title's top */
+    if (W / Hv < 1.2 || Hv < 600) safe = Math.max(safe, document.querySelector('.topbar').getBoundingClientRect().bottom - 6);
+    var ty = Math.max(-40 * VH, safe ? safe + 6 + tH / 2 - half : -1e9);
+    TOP_Y = ty / VH;
+    var top = Math.max(half + (4.75 - 35) * VH, half + ty + tH / 2 + 12);
+    var bot = Math.min(half + (4.75 + 35) * VH, Hv - 12);
+    card.style.height = (bot - top) + 'px';
+    CARD_Y = ((top + bot) / 2 - half) / VH;
+  }
   function measure(){
+    VH = vp.clientHeight / 100;
+    layout();
     frame();
     /* scrollbar: beside the list window, centred in the card's right padding; thumb sized like a real one */
     var pad = parseFloat(getComputedStyle(card).paddingRight) || 0;
@@ -1984,7 +2009,7 @@
     brit.style.width = britW + 'px';
     BS = Math.min(BRIT_S, .9 * innerWidth / britW);   /* the lifted row grows ×2.27 (storyboard), but stays on screen */
     var rowMid = list.offsetTop + lastRow.offsetTop - listMax + lastRow.offsetHeight / 2;
-    britY = (rowMid - card.offsetHeight / 2) / (innerHeight / 100);   /* vh from the card's centre */
+    britY = (rowMid - card.offsetHeight / 2) / VH;   /* from the card's centre, in VH */
   }
 
   /* NLP ends with its exit line drawn to 70% from the bottom (dashoffset .3 of its length). Start from exactly that, so the handoff can't be seen. */
@@ -2014,7 +2039,7 @@
     for(var i=0;i<f.length-1;i++)if(p<=f[i+1][0]){var t=(p-f[i][0])/(f[i+1][0]-f[i][0]);return lerp(f[i][1],f[i+1][1],ease(t))}return L[1];
   }
   function place(el,x,y,o){
-    el.style.transform='translate(-50%,-50%) translate('+x+'vw,'+y+'vh)';
+    el.style.transform='translate(-50%,-50%) translate('+x+'vw,'+(y * VH).toFixed(1)+'px)';
     el.style.opacity=o;
   }
 
@@ -2035,22 +2060,29 @@
      the viewport, as designed. A portrait screen would squeeze it (tiny notes, stretched arrows), so there
      the page is a 16:9 box as wide as the longest note allows (its widest line ≈ 90% of the screen),
      centred — everything on it keeps the storyboard's proportions */
-  var FR = { x: 0, y: 0, w: 1, h: 1 }, PORTRAIT = false, BS = BRIT_S, ARROW_W = 3, THREAD_W = 1.6;
+  var FR = { x: 0, y: 0, w: 1, h: 1 }, FC = 0, PORTRAIT = false, BS = BRIT_S, ARROW_W = 3, THREAD_W = 1.6;
   /* the sum (capital → price → shares → charges) is set small in the storyboard; on a phone that's ~10px, so
      there it is 1.5× (MS) — its lines spread to match about the block's centre, moved down (MSY) to clear
      the chip — and "₹5039 = 9 Shares" / the charges are placed from the chip's real height */
   var MS = 1, MSY = 0, C3B_Y = -15.2, CHG_Y = -3.3, MATH = { c1: 1, c2: 1, c4a: 1, c4b: 1, chg: 1 };
   function my(y){ return MSY + .35 + (y - .35) * MS; }
   function frame(){
-    var W = innerWidth, H = innerHeight, ink = document.getElementById('cag-ink');
-    PORTRAIT = W / H < 1.2;
+    var W = innerWidth, H = vp.clientHeight, ink = document.getElementById('cag-ink');
+    /* compact: a portrait screen, or one too short for the full-screen page (a phone on its side) */
+    PORTRAIT = W / H < 1.2 || H < 600;
     MS = PORTRAIT ? 1.5 : 1; MSY = PORTRAIT ? 6 : 0;
-    if (PORTRAIT) { var fw = Math.min(W * 1.64, H * 16 / 9); FR = { w: fw, h: fw * 9 / 16, x: (W - fw) / 2, y: (H - fw * 9 / 16) / 2 }; }
-    else FR = { x: 0, y: 0, w: W, h: H };
+    if (PORTRAIT) {
+      /* the page's title row (−40.2%) sits on the title, so the notes hang right under it as in the
+         storyboard (FC: the page centre, px from the screen centre); it shrinks if it would run off the bottom */
+      var fw = W / H < 1.2 ? W * 1.64 : W, fh = fw * 9 / 16, ty = TOP_Y * VH;
+      fh = Math.min(fh, (H / 2 - 8 - ty) / .902); fw = fh * 16 / 9;
+      FC = ty + .402 * fh;
+      FR = { w: fw, h: fh, x: (W - fw) / 2, y: H / 2 + FC - fh / 2 };
+    } else { FC = 0; FR = { x: 0, y: 0, w: W, h: H }; }
     ink.style.left = PORTRAIT ? FR.x + 'px' : ''; ink.style.top = PORTRAIT ? FR.y + 'px' : '';
     ink.style.width = PORTRAIT ? FR.w + 'px' : ''; ink.style.height = PORTRAIT ? FR.h + 'px' : '';
     /* strokes are in page pt; on the smaller portrait page keep them a readable pixel width */
-    ARROW_W = PORTRAIT ? 2.4 * 1440 / FR.w : 3; THREAD_W = PORTRAIT ? 1.4 * 1440 / FR.w : 1.6;
+    ARROW_W = PORTRAIT ? 2.4 * 1440 / FR.w : 3; THREAD_W = PORTRAIT ? 1.0 * 1440 / FR.w : 1.6;   /* fine wool, so a small ball still reads as a tangle */
     [a1, a2, a1h, a2h].forEach(function(e){ e.style.strokeWidth = ARROW_W; });
     scr.style.strokeWidth = THREAD_W;
   }
@@ -2092,6 +2124,15 @@
       C3B_Y = (chipB + el3.c3b.offsetHeight / 2 + 4) / hv;
       CHG_Y = Math.max(-3.3, (C3B_Y * hv + el3.c3b.offsetHeight / 2 + el3.chg.offsetHeight * 1.093 / 2 + 6) / hv);
     } else { C3B_Y = -15.2; CHG_Y = -3.3; }
+    aimA2();
+    /* two-line notes keep the storyboard's spacing (~0.8 of the type size: tight, but drawn for a squatter
+       face); on compact screens each pair opens about its own centre to 1.08×, so Caveat's loops never touch */
+    [['n1a','n1b',-23.9,-16.8],['n2a','n2b',16.6,23.7],['n3a','n3b',-23.9,-16.8],
+     ['c4a','c4b',my(6.6),my(10.3)],['n4a','n4b',15.9,22.1]].forEach(function(pr){
+      var dist = (pr[3] - pr[2]) * FR.h / 100, need = PORTRAIT ? 1.08 * parseFloat(el3[pr[0]].style.fontSize) : 0;
+      var sp = Math.max(0, (need - dist) / 2) / (FR.h / 100);
+      el3[pr[0]]._dy = -sp; el3[pr[1]]._dy = sp;
+    });
     /* re-trace the wool's text only when the page size changed (a phone's toolbar fires resize on every
        show/hide, and only changes the height, which a portrait page doesn't depend on) or fonts arrived */
     var key = FR.w.toFixed(1) + 'x' + FR.h.toFixed(1);
@@ -2110,6 +2151,28 @@
   a2.setAttribute('d', bez([-0.642406, -0.387058, 0.387058, -0.642406, 1143.851325, 561.635272],
     [[1.968724,1.693784],[31.526145,171.886707],[181.011282,172.227078],[450.424135,2.714899]]));
   var a1L = a1.getTotalLength(), a2L = a2.getTotalLength();
+  /* on compact screens the charges are bigger and lower than the storyboard's, so the second arrow keeps
+     its shape but is re-hung: its tail at the end of "…cover this" (as drawn), its tip just past the charges */
+  var A2P = (function(){
+    var m = [-0.642406, -0.387058, 0.387058, -0.642406, 1143.851325, 561.635272];
+    return [[1.968724,1.693784],[31.526145,171.886707],[181.011282,172.227078],[450.424135,2.714899]]
+      .map(function(p){ return [m[0]*p[0] + m[2]*p[1] + m[4], m[1]*p[0] + m[3]*p[1] + m[5]]; });
+  })();
+  function aimA2(){
+    var q = A2P;
+    if (PORTRAIT) {
+      var Hv = vp.clientHeight, cw = el3.chg.offsetWidth * 1.093;
+      var tx = (innerWidth / 2 + fx(-1.0) + cw / 2 + 8 - FR.x) / FR.w * 1440;
+      var tyy = (Hv / 2 + FC + fy(CHG_Y) - FR.y) / FR.h * 810;
+      var sx = (innerWidth / 2 + el3.n4a.offsetWidth / 2 + 4 - FR.x) / FR.w * 1440;   /* tail */
+      var sy = (Hv / 2 + FC + fy((15.9 + 22.1) / 2) - FR.y) / FR.h * 810;
+      var P0 = A2P[0], v = [A2P[3][0] - P0[0], A2P[3][1] - P0[1]], w = [tx - sx, tyy - sy];
+      var d = v[0] * v[0] + v[1] * v[1], a = (w[0] * v[0] + w[1] * v[1]) / d, b = (w[1] * v[0] - w[0] * v[1]) / d;
+      q = A2P.map(function(p){ var x = p[0] - P0[0], y = p[1] - P0[1]; return [sx + a * x - b * y, sy + b * x + a * y]; });
+    }
+    a2.setAttribute('d', 'M' + q[0] + 'C' + q[1] + ' ' + q[2] + ' ' + q[3]);
+    a2L = a2.getTotalLength();
+  }
   /* draw an arrow up to fraction f; its head rides on the tip, pointing along the line */
   function arrow(path, head, L, f){
     path.style.strokeDasharray = L + ' ' + L;
@@ -2228,7 +2291,7 @@
       nb(x, y).forEach(function(n){ if (!used[ek([x, y], n)]) strokes.push(walk([x, y], n)); });
     }
     /* drop thinning spurs; smooth the pixel staircase; map to page pt */
-    var bx0 = innerWidth / 2 + fx(-1.0) - W / 2, by0 = innerHeight / 2 + fy(17.5) - H / 2;   /* where note() puts it */
+    var bx0 = innerWidth / 2 + fx(-1.0) - W / 2, by0 = vp.clientHeight / 2 + FC + fy(17.5) - H / 2;   /* where note() puts it */
     /* short pieces hanging off a junction are thinning spurs; short pieces on their own are dots */
     function deg(p){ return nb(p[0], p[1]).length; }
     strokes = strokes.filter(function(s){
@@ -2343,7 +2406,7 @@
   var FEATHER = 8;
   function note(el, x, y, w, o){
     var on = w > 0 && o > 0;
-    el.style.transform = 'translate(-50%,-50%) translate(' + fx(x).toFixed(1) + 'px,' + fy(y).toFixed(1) + 'px)';
+    el.style.transform = 'translate(-50%,-50%) translate(' + fx(x).toFixed(1) + 'px,' + (FC + fy(y + (el._dy || 0))).toFixed(1) + 'px)';
     el.style.opacity = on ? o : 0;
     var m = !on || w >= 1 ? 'none'
       : 'linear-gradient(90deg,#000 ' + (w * (100 + FEATHER) - FEATHER) + '%,transparent ' + (w * (100 + FEATHER)) + '%)';
@@ -2367,7 +2430,7 @@
      .91–.93 all clears · .93–.96 "We simply move on with the trade"                      (p27–28) */
   function draw3(t){
     place(cagT, 0, TOP_Y, 1);
-    brit.style.transform = 'translate(-50%,-50%) translate(0,' + fy(K([[.35,0],[.39,-24.2]], t)).toFixed(1) + 'px) scale(' + BS + ')';
+    brit.style.transform = 'translate(-50%,-50%) translate(0,' + (FC + fy(K([[.35,0],[.39,-24.2]], t))).toFixed(1) + 'px) scale(' + BS + ')';
     brit.style.opacity = 1;
 
     var f1 = 1 - wr(t, .21, .23);
@@ -2448,11 +2511,11 @@
   })();
   function draw4(u){
     note(el3.n5, -.5, -.1, 1, 1 - wr(u, 0, .04));
-    var by = K([[0,fy(-24.2)],[.06,0],[.09,0],[.17,(CARD_Y + britY) * innerHeight / 100]], u), bs = K([[.15,BS],[.20,1]], u);
+    var by = K([[0,FC + fy(-24.2)],[.06,FC],[.09,FC],[.17,(CARD_Y + britY) * VH]], u), bs = K([[.15,BS],[.20,1]], u);
     brit.style.transform = 'translate(-50%,-50%) translate(0,' + by.toFixed(1) + 'px) scale(' + bs + ')';
     brit.style.opacity = u < .20 ? 1 : 0;
 
-    place(card, 0, CARD_Y + K([[.44,0],[.60,110]], u), K([[.07,0],[.10,1]], u));
+    place(card, 0, CARD_Y + K([[.44,0],[.60,110]], u), u < .60 ? K([[.07,0],[.10,1]], u) : 0);
     var frac = K([[.22,1],[.42,0]], u);
     rowsEl.style.transform = 'translateY(' + -listMax * frac + 'px)';
     thumb.style.transform = 'translateY(' + thumbTravel * frac + 'px)';
@@ -2469,7 +2532,7 @@
     var halfW = cagT.offsetWidth / 2 / (innerWidth / 100);
     var open = u < .60 ? 0 : Math.max(0, Math.min(1, (cx + halfW + 10) / 8));
     open = open * open * (3 - 2 * open);
-    gap.style.transform = 'translate(-50%,-50%) translate(' + cx.toFixed(2) + 'vw,' + cyv.toFixed(2) + 'vh) scaleY(' + open + ')';
+    gap.style.transform = 'translate(-50%,-50%) translate(' + cx.toFixed(2) + 'vw,' + (cyv * VH).toFixed(1) + 'px) scaleY(' + open + ')';
     gap.style.opacity = open > 0 ? 1 : 0;
   }
 
@@ -2485,15 +2548,15 @@
     var frac = kf([[.20,0],[.58,1]], r);
     rowsEl.style.transform = 'translateY(' + -listMax * frac + 'px)';
     thumb.style.transform = 'translateY(' + thumbTravel * frac + 'px)';
-    var by = kf([[.70,CARD_Y + britY],[.84,0]], r), bs = kf([[.62,1],[.70,1 + (BS - 1) * .55],[.76,BS]], r);
-    brit.style.transform = 'translate(-50%,-50%) translate(0,' + by + 'vh) scale(' + bs + ')';
+    var by = kf([[.70,CARD_Y + britY],[.84,FC / VH]], r), bs = kf([[.62,1],[.70,1 + (BS - 1) * .55],[.76,BS]], r);
+    brit.style.transform = 'translate(-50%,-50%) translate(0,' + (by * VH).toFixed(1) + 'px) scale(' + bs + ')';
     brit.style.opacity = r < .62 ? 0 : 1;
   }
 
   function draw(q){
     var rise = kf([[0,0],[.35,RISE1],[.50,RISE1],[.75,RISE]], q);
     var slide = kf([[.77,0],[1,33.33]], q);                  /* the line alone keeps going up */
-    curve.style.transform = 'translateY(' + -(rise + slide) + 'vh)';
+    curve.style.transform = 'translateY(' + (-(rise + slide) * VH).toFixed(1) + 'px)';
     curve.style.opacity = 1;
     /* at the handoff NLP's eased frame can still be a moment behind the scroll; until it lands, show
        its line exactly as NLP has it, or the line's tip jumps when this viewport takes over */
@@ -2513,7 +2576,7 @@
     /* the break opens gradually: the gap grows from nothing at the crossing, so the line's two ends
        draw back from each other instead of a piece vanishing in one frame */
     var open = kf([[.28,0],[.40,1]], q);
-    gap.style.transform = 'translate(-50%,-50%) translate(0,' + landY + 'vh) scaleY(' + open + ')';
+    gap.style.transform = 'translate(-50%,-50%) translate(0,' + (landY * VH).toFixed(1) + 'px) scaleY(' + open + ')';
     gap.style.opacity = open > 0 ? 1 : 0;
     place(cagT, kf([[.38,42],[.50,0]], q), landY, kf([[0,0],[.38,0],[.42,1]], q));
   }
@@ -2541,7 +2604,7 @@
       place(card, 0, CARD_Y, qShown > 1 && qShown < 1.62 ? 1 : 0);
       rowsEl.style.transform = qShown > 1.4 ? 'translateY(' + -listMax + 'px)' : '';
       thumb.style.transform = qShown > 1.4 ? 'translateY(' + thumbTravel + 'px)' : '';
-      brit.style.transform = 'translate(-50%,-50%) scale(' + BS + ')';
+      brit.style.transform = 'translate(-50%,-50%) translate(0,' + FC.toFixed(1) + 'px) scale(' + BS + ')';
       brit.style.opacity = qShown >= 1.62 ? 1 : 0;
       if (qShown > 2) { place(card, 0, CARD_Y, 0); draw3(Math.min(1, qShown - 2)); } else hide3();
       if (qShown > 3) draw4(qShown - 3);
