@@ -1260,8 +1260,12 @@
     var to = last.getBoundingClientRect().top + scrollY + last.offsetHeight - innerHeight;
     var dist = to - from;
     if (dist <= 0) { autoPlaying = false; return; }
-    /* steady pace (~7 s per screen) with short eased ends, so the middle acts can be read */
-    var dur = Math.max(6000, dist / innerHeight * 7000);
+    /* steady pace (~7 s per screen) with short eased ends, so the middle acts can be read — except Cost
+       Aware Gap, which plays at ~4.5 s per screen (it is two-thirds of the run and dragged at 7) */
+    var cag = document.getElementById('cag-stage');
+    var split = cag ? Math.min(to, Math.max(from, cag.getBoundingClientRect().top + scrollY)) : to;
+    var T1 = (split - from) / innerHeight * 7000, T2 = (to - split) / innerHeight * 4500;
+    var dur = Math.max(6000, T1 + T2);
     var A = Math.min(.06, 2300 / dur);   /* eased ends ~2.3s at most, as on the XGBoost-only run (a share of a 6-min run crawled for 20s) */
     var t0 = performance.now();
     document.documentElement.style.scrollBehavior = 'auto';
@@ -1271,7 +1275,9 @@
       var e = t < A ? t * t / (2 * A * (1 - A))
             : t > 1 - A ? 1 - (1 - t) * (1 - t) / (2 * A * (1 - A))
             : (t - A / 2) / (1 - A);
-      scrollTo(0, from + dist * e);
+      /* e is the eased share of the run's time; turn time into distance at each part's own pace */
+      var tau = e * (T1 + T2);
+      scrollTo(0, tau <= T1 ? from + (split - from) * (T1 ? tau / T1 : 1) : split + (to - split) * (tau - T1) / (T2 || 1));
       if (t < 1) autoRAF = requestAnimationFrame(step);
       else stopAuto();
     }
