@@ -409,7 +409,56 @@ DEMO_SHIM = r"""<script>
       return out;
     };
   }
-  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); grossCards(); grossFirstPnL(); });
+  // Members-only sections, demo only. The real content still loads and shows
+  // through, softly blurred; a quiet card says it is exclusive. No pitch and
+  // no button: what each section does is enough. Wording from the app's own
+  // tab descriptions.
+  var EXCLUSIVE = {
+    'fno-backtest': ['Backtesting', 'Test the models against years of real market data, net of every charge, before a rupee is at risk.'],
+    'intraday': ['Intraday Trading', 'The MIS intraday desk: same-day trades with 4x leverage, entry rules and automatic exits.'],
+    'paper': ['Paper Trading', 'Every signal traded live on real prices with simulated money, every charge counted.'],
+  };
+  var LOCK_SVG = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+  function membersOnly() {
+    var css = document.createElement('style');
+    css.textContent = ''
+      + '.demo-locked{position:relative;min-height:72vh}'
+      + '.demo-locked>:not(.demo-lock){filter:blur(7px);opacity:.5;pointer-events:none;user-select:none;-webkit-user-select:none}'
+      + '.demo-lock{position:absolute;inset:0;z-index:5;display:flex;justify-content:center;align-items:flex-start;padding:min(14vh,120px) 16px 0}'
+      + '.demo-lock-card{max-width:420px;width:100%;text-align:center;background:var(--surface,#fff);border:.5px solid var(--border,#d2d2d7);'
+      + 'border-radius:18px;padding:32px 28px 26px;box-shadow:0 18px 50px rgba(0,0,0,.12)}'
+      + '.demo-lock-ic{width:44px;height:44px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;'
+      + 'background:var(--text,#1d1d1f);color:var(--bg,#fbfbfd);font-size:20px}'
+      + '.demo-lock-k{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#6e6e73)}'
+      + '.demo-lock-h{margin:6px 0 10px;font-size:24px;font-weight:700;letter-spacing:-.02em;color:var(--text,#1d1d1f)}'
+      + '.demo-lock-p{margin:0;font-size:14px;line-height:1.5;color:var(--text,#1d1d1f)}'
+      + '.demo-lock-f{margin-top:18px;font-size:12px;color:var(--muted,#6e6e73)}'
+      // The app hides any svg inside a tab on desktop (those are the phone
+      // bar's icons), so the tab's lock is drawn by CSS instead.
+      + '.tab[data-demo-locked]::after{content:"";display:inline-block;width:.8em;height:.8em;margin-left:.4em;vertical-align:-.05em;'
+      + 'background:currentColor;opacity:.55;-webkit-mask:var(--demo-lock) center/contain no-repeat;mask:var(--demo-lock) center/contain no-repeat}'
+      + ':root{--demo-lock:url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2.4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'4.5\' y=\'10.5\' width=\'15\' height=\'10\' rx=\'2.5\'/><path d=\'M8 10.5V7a4 4 0 0 1 8 0v3.5\'/></svg>') + '")}';
+    document.head.appendChild(css);
+    Object.keys(EXCLUSIVE).forEach(function (id) {
+      var panel = document.getElementById(id);
+      if (!panel) return;
+      panel.classList.add('demo-locked');
+      var lock = document.createElement('div');
+      lock.className = 'demo-lock';
+      lock.innerHTML = '<div class="demo-lock-card" role="note">'
+        + '<div class="demo-lock-ic">' + LOCK_SVG + '</div>'
+        + '<div class="demo-lock-k">' + EXCLUSIVE[id][0] + '</div>'
+        + '<div class="demo-lock-h">Exclusive to members.</div>'
+        + '<p class="demo-lock-p">' + EXCLUSIVE[id][1] + '</p>'
+        + '<div class="demo-lock-f">You\u2019re viewing the public preview.</div></div>';
+      panel.insertBefore(lock, panel.firstChild);
+      document.querySelectorAll('.tab[data-tab="' + id + '"]').forEach(function (t) {
+        t.setAttribute('data-demo-locked', '');
+        t.title = EXCLUSIVE[id][0] + ' \u2014 exclusive to members';
+      });
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); grossCards(); grossFirstPnL(); membersOnly(); });
 })();
 </script>"""
 
