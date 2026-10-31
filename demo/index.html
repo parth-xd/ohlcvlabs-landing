@@ -272,7 +272,22 @@
       });
     });
   }
-  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); grossCards(); grossFirstPnL(); membersOnly(); });
+  // Phone layout fix for the journal's trade reports, demo only. On phones
+  // the report is one grid column, but a 1fr column may grow to its longest
+  // unbreakable line, so the boxes stretched past the screen (528px on 390)
+  // and were clipped. Capping the column and letting text and pills wrap
+  // keeps every report inside the screen. (The same bug is in the app.)
+  function phoneFixes() {
+    var css = document.createElement('style');
+    css.textContent = '@media (max-width:768px){'
+      + '.journal-split{grid-template-columns:minmax(0,1fr)!important}'
+      + '.journal-box{min-width:0;max-width:100%;overflow-wrap:anywhere}'
+      + '.journal-box [style*="grid-template-columns:auto 1fr"]{grid-template-columns:auto minmax(0,1fr)!important}'
+      + '.journal-box .indicator-row{flex-wrap:wrap;row-gap:6px}'
+      + '.journal-detail{padding:0 12px 14px}}';
+    document.head.appendChild(css);
+  }
+  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); grossCards(); grossFirstPnL(); membersOnly(); phoneFixes(); });
 })();
 </script>
 <meta charset="UTF-8" />
