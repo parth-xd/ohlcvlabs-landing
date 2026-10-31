@@ -176,7 +176,9 @@ def main():
     page, n = re.subn(r"<head[^>]*>", lambda m: m.group(0) + "\n" + shim, app, count=1)
     if not n:
         sys.exit("build_demo: no <head> in the app page")
-    page = page.replace("<title>", '<meta name="robots" content="noindex">\n<title>', 1)
+    # Indexable: a description and canonical for search, in place of the
+    # app's bare "OHLCV" title.
+    page = page.replace("<title>OHLCV</title>", '<meta name="description" content="Live product demo of the OHLCV trading research dashboard: watchlist analysis, predictions, news sentiment and a paper-trading journal, on a recorded snapshot.">\n<link rel="canonical" href="https://ohlcvlabs.studio/demo/">\n<title>Product demo — OHLCV Labs</title>', 1)
     with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fh:
         fh.write(page)
 
