@@ -1,0 +1,1 @@
+{"active_model":"Raone","features":["relevance_gate","price_action_with_magnitude","clause_handling","multi_stock_attribution","fundamental_vs_price","validated_against_price_moves","learned_name_sense_check"],"finbert_available":false,"has_finbert":false,"model":"Raone","name_sense_profile":{"built_at":"2026-10-04T10:08:27","companies":68}}
