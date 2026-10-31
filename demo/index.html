@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f1e8db">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <title>Product demo · OHLCV Labs</title>
+    <!-- Placeholder until the product demo is built; the home page's PLAY
+         links here, so the real demo replaces this file at the same address. -->
+    <style>
+        :root { --ground: #f1e8db; --ink: #0a0a0a; --mute: #1e1d20; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: var(--ground); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+        }
+        .page {
+            --gutter: clamp(22px, 8.5vw, 190px);
+            position: relative;
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 0 var(--gutter);
+        }
+        .nav {
+            position: absolute; top: clamp(18px, 3.4vh, 40px); left: var(--gutter); right: var(--gutter);
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: clamp(11px, .92vw, 16px); font-weight: 500;
+            letter-spacing: .11em; text-transform: uppercase;
+        }
+        .nav a { color: var(--ink); text-decoration: none; padding: 10px 2px; transition: opacity .25s ease; }
+        .nav a:hover, .nav a:focus-visible { opacity: .45; }
+        .label {
+            font-size: clamp(11px, .92vw, 16px); font-weight: 600;
+            letter-spacing: .14em; text-transform: uppercase;
+            display: inline-flex; align-items: center; gap: .8em;
+        }
+        .label::before {
+            content: ''; width: .6em; height: .6em; border-radius: 50%;
+            background: var(--ink); animation: pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+        h1 {
+            margin-top: clamp(14px, 2vh, 26px);
+            font-size: clamp(38px, 7.4vw, 152px);
+            font-weight: 800; letter-spacing: -.035em; line-height: .95;
+        }
+        p {
+            margin-top: clamp(12px, 1.8vh, 24px); max-width: 34em;
+            font-size: clamp(14px, 1.3vw, 24px); font-weight: 700; color: var(--mute);
+        }
+        .back {
+            margin-top: clamp(26px, 4vh, 48px); align-self: flex-start;
+            display: inline-flex; align-items: center; gap: .7em;
+            font-size: clamp(11px, .8vw, 14px); font-weight: 600;
+            letter-spacing: .14em; text-transform: uppercase;
+            padding: clamp(9px, .75vw, 13px) clamp(16px, 1.4vw, 24px);
+            border: 1.5px solid var(--ink); border-radius: 100px;
+            background: var(--ink); color: var(--ground); text-decoration: none;
+            transition: background .2s, color .2s;
+        }
+        .back:hover, .back:focus-visible { background: none; color: var(--ink); }
+        @media (prefers-reduced-motion: reduce) { .label::before { animation: none; } }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <nav class="nav">
+            <a href="/" title="Back to the OHLCV Labs home page">OHLCV</a>
+            <a href="/our-approach/">Our Approach</a>
+        </nav>
+        <main>
+            <span class="label">Product demo</span>
+            <h1>Still in progress.</h1>
+            <p>A working demo of the OHLCV dashboard is on its way.</p>
+        </main>
+        <a class="back" href="/">← Back to home</a>
+    </div>
+</body>
+</html>
