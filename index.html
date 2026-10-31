@@ -250,10 +250,19 @@
             position: absolute; left: 12px; top: 12px; right: 12px; bottom: 12px;
             border-radius: 52px; overflow: hidden; background: #121115;
         }
+        /* Dynamic Island: a black pill at the top of the screen in iPhone
+           proportions (~126 of 393pt wide, 37pt tall, 11pt down), with the
+           front camera's lens at its right end. */
         .ph-cam {
-            position: absolute; left: 50%; top: 28px;
-            width: 26px; height: 26px; margin-left: -13px;
-            border-radius: 50%; background: #000; box-shadow: inset 0 0 0 4px #17171b;
+            position: absolute; left: 50%; top: 23px;
+            width: 130px; height: 38px; margin-left: -65px;
+            border-radius: 19px; background: #000;
+        }
+        .ph-cam::after {
+            content: ''; position: absolute; right: 12px; top: 50%;
+            width: 14px; height: 14px; margin-top: -7px; border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, #1d2333 0%, #0a0c12 55%, #000 100%);
+            box-shadow: 0 0 0 2px #0d0d10;
         }
         .ph-cams {
             position: absolute; left: 26px; top: 26px; width: 172px; height: 172px;
