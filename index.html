@@ -4,12 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f1e8db">
-    <meta name="description" content="OHLCV Labs — proprietary trading algorithms built on quantitative research and machine learning.">
+    <meta name="description" content="OHLCV Labs — proprietary trading algorithms built on quantitative research and machine learning. Try the live product demo of the OHLCV dashboard.">
     <link rel="canonical" href="https://ohlcvlabs.studio/">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <title>OHLCV Labs</title>
+    <!-- What search engines and AI assistants read about the product: what it
+         is and where the live demo is. Not shown on the page. The demo itself
+         stays out of search (noindex); this is how it is found. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://ohlcvlabs.studio/#org",
+          "name": "OHLCV Labs",
+          "url": "https://ohlcvlabs.studio/",
+          "logo": "https://ohlcvlabs.studio/apple-touch-icon.png",
+          "description": "Proprietary trading algorithms built on quantitative research and machine learning."
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "OHLCV",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web",
+          "description": "A trading research dashboard for Indian equities: machine-learning signals, news sentiment scoring, a research leaderboard, a trade journal and P&L with every brokerage and statutory charge counted. A live product demo runs on a recorded snapshot of the dashboard.",
+          "url": "https://ohlcvlabs.studio/demo/",
+          "publisher": { "@id": "https://ohlcvlabs.studio/#org" }
+        }
+      ]
+    }
+    </script>
     <style>
         :root {
             --ground: #f1e8db;
