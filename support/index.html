@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f1e8db">
+    <meta name="description" content="Help with the OHLCV Labs website and product demo, and how to reach us.">
+    <link rel="canonical" href="https://ohlcvlabs.studio/support/">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <title>Help &amp; Support · OHLCV Labs</title>
+    <style>
+        :root { --ground: #f1e8db; --ink: #0a0a0a; --mute: #1e1d20; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: var(--ground); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: var(--ink); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+        }
+        .page { --gutter: clamp(22px, 8.5vw, 190px); padding: 0 var(--gutter); }
+        .nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-top: clamp(18px, 3.4vh, 40px);
+            font-size: clamp(11px, .92vw, 16px); font-weight: 500;
+            letter-spacing: .11em; text-transform: uppercase;
+        }
+        .nav a { color: var(--ink); text-decoration: none; padding: 10px 2px; transition: opacity .25s ease; }
+        .nav a:hover, .nav a:focus-visible { opacity: .45; }
+        .nav .right { display: flex; gap: clamp(14px, 1.6vw, 26px); }
+        header.hero { padding: clamp(70px, 14vh, 160px) 0 clamp(36px, 6vh, 70px); }
+        .label { font-size: clamp(11px, .92vw, 15px); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+        h1 { margin-top: clamp(12px, 1.8vh, 22px); font-size: clamp(40px, 7vw, 132px); font-weight: 800; letter-spacing: -.035em; line-height: .95; }
+        .lede { margin-top: clamp(16px, 2.4vh, 28px); max-width: 30em; font-size: clamp(16px, 1.5vw, 26px); font-weight: 700; line-height: 1.3; color: var(--mute); }
+        main.body { max-width: 46rem; padding-bottom: clamp(60px, 10vh, 120px); }
+        main.body section { padding: clamp(26px, 4vh, 40px) 0; border-top: 1.5px solid var(--ink); }
+        main.body h2 { font-size: clamp(20px, 1.9vw, 30px); font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+        main.body p, main.body li { margin-top: 12px; font-size: clamp(15px, 1.08vw, 18px); line-height: 1.6; color: var(--mute); }
+        main.body ul { padding-left: 1.1em; }
+        main.body li { margin-top: 8px; }
+        main.body a { color: var(--ink); text-underline-offset: 3px; }
+        .mail { display: inline-block; margin-top: 18px; padding: 12px 22px; border: 1.5px solid var(--ink); border-radius: 100px;
+                 font-size: 14px; font-weight: 600; letter-spacing: .06em; text-decoration: none; background: var(--ink); color: var(--ground) !important;
+                 transition: background .2s, color .2s; }
+        .mail:hover, .mail:focus-visible { background: none; color: var(--ink) !important; }
+        .updated { margin-top: 18px; font-size: 13px; color: var(--mute); opacity: .75; }
+
+        /* ── Site footer: the login page's footer (the wordmark that eases
+           wider on hover, the IST clock) with the site's links above it. ── */
+        .site-foot {
+            --gutter: clamp(22px, 8.5vw, 190px);
+            padding: clamp(36px, 6vh, 64px) var(--gutter) clamp(18px, 3vh, 28px);
+            border-top: 1.5px solid var(--ink);
+            background: var(--ground); color: var(--ink);
+            overflow: hidden;
+        }
+        .foot-links { display: flex; flex-wrap: wrap; gap: 10px clamp(22px, 3vw, 52px); }
+        .foot-links a {
+            font-size: clamp(11px, .92vw, 15px); font-weight: 500;
+            letter-spacing: .11em; text-transform: uppercase;
+            color: var(--ink); text-decoration: none; padding: 6px 0;
+            transition: opacity .25s ease;
+        }
+        .foot-links a:hover, .foot-links a:focus-visible { opacity: .45; }
+        .foot-row {
+            margin-top: clamp(40px, 8vh, 96px);
+            display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+        }
+        .foot-brand {
+            position: relative; left: -0.04em;
+            font-size: clamp(40px, 5.2vw, 68px); line-height: 0.84;
+            font-weight: 800; letter-spacing: -0.06em; text-transform: uppercase;
+            color: var(--ink); text-decoration: none; white-space: nowrap;
+            user-select: none; -webkit-user-select: none;
+            transform-origin: left center;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), letter-spacing 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .site-foot:hover .foot-brand {
+            transform: scaleX(1.01) translateY(-1px);
+            letter-spacing: -0.035em;
+        }
+        .foot-gap { display: inline-block; width: 0.28em; }
+        .foot-clock {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+            font-size: 9px; line-height: 1.5; text-transform: uppercase; letter-spacing: 1.6px;
+            color: var(--mute); font-variant-numeric: tabular-nums;
+        }
+        .foot-clock time { font-size: 13px; letter-spacing: 1px; color: var(--ink); }
+        .foot-legal { margin-top: clamp(16px, 2.4vh, 24px); max-width: 64em; font-size: 11px; line-height: 1.6; color: var(--mute); opacity: .75; }
+        @media (max-width: 480px) {
+            .foot-brand { font-size: clamp(36px, 11vw, 52px); }
+            .foot-links { display: grid; grid-template-columns: 1fr 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) { .foot-brand { transition: none; } }
+
+    </style>
+</head>
+<body>
+    <div class="page">
+        <nav class="nav">
+            <a href="/" title="Back to the OHLCV Labs home page">OHLCV</a>
+            <span class="right"><a href="/our-approach/">Our Approach</a><a href="/demo/">Demo</a></span>
+        </nav>
+        <header class="hero">
+            <span class="label">Help & Support</span>
+            <h1>How can we help?</h1>
+            <p class="lede">Answers to the questions people ask most, and a direct line to us for everything else.</p>
+        </header>
+        <main class="body">
+            <section>
+                <h2>Contact us</h2>
+                <p>Write to us about anything: the demo, the product, a correction or a partnership. We read every message.</p>
+                <a class="mail" href="mailto:parths@ohlcvlabs.studio">parths@ohlcvlabs.studio</a>
+            </section>
+            <section>
+                <h2>What is the product demo?</h2>
+                <p>It is our real dashboard running on a recorded snapshot, so you can click through every tab without an account. Press <strong>Play</strong> on the home page, or go to <a href="/demo/">ohlcvlabs.studio/demo</a>. The PIN types itself; any PIN works.</p>
+            </section>
+            <section>
+                <h2>Is the demo live? Does it trade?</h2>
+                <p>No. It is frozen on the date shown in its banner, and every trade in it is a simulated paper trade. Buttons that would place an order or change a setting answer “Demo — nothing was sent”: nothing leaves your browser.</p>
+            </section>
+            <section>
+                <h2>Why are some sections locked?</h2>
+                <p>Backtesting, Intraday Trading and Paper Trading are reserved for members. The public demo shows what they are; members can use them.</p>
+            </section>
+            <section>
+                <h2>Is any of this investment advice?</h2>
+                <p>No. OHLCV Labs is not registered with SEBI as an adviser or research analyst, and nothing on this site or in the demo is a recommendation. Our <a href="/public-policy/">Public Policy</a> explains why.</p>
+            </section>
+            <section>
+                <h2>Something not working?</h2>
+                <p>Tell us the page, your device and browser, and what you saw. A screenshot helps.</p>
+                <a class="mail" href="mailto:parths@ohlcvlabs.studio">parths@ohlcvlabs.studio</a>
+            </section>
+        </main>
+    </div>
+    <footer class="site-foot">
+    <nav class="foot-links" aria-label="Footer">
+        <a href="/public-policy/">Public Policy</a>
+        <a href="/about/">About Us</a>
+        <a href="/support/">Help &amp; Support</a>
+        <a href="/careers/">Careers</a>
+    </nav>
+    <div class="foot-row">
+        <a href="/" class="foot-brand" title="Back to the OHLCV Labs home page">OHLCV<span class="foot-gap"></span>Labs</a>
+        <div class="foot-clock"><time class="foot-time" datetime="">--:--:--</time><span>IST</span></div>
+    </div>
+    <p class="foot-legal">&copy; 2026 OHLCV Labs. Not registered with SEBI as an investment adviser or research analyst. Nothing on this site is investment advice or a recommendation to buy or sell any security.</p>
+</footer>
+<script>
+/* The footer clock shows Indian market time wherever the page is opened,
+   as on the login page. */
+(function () {
+    var fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    function tick() {
+        var now = new Date();
+        document.querySelectorAll('.foot-time').forEach(function (el) { el.textContent = fmt.format(now); el.setAttribute('datetime', now.toISOString()); });
+    }
+    tick(); setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
