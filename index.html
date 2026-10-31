@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f2e9e0">
+    <meta name="theme-color" content="#f1e8db">
     <meta name="description" content="OHLCV Labs — proprietary trading algorithms built on quantitative research and machine learning.">
     <link rel="canonical" href="https://ohlcvlabs.studio/">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -12,7 +12,7 @@
     <title>OHLCV Labs</title>
     <style>
         :root {
-            --ground: #f2e9e0;
+            --ground: #f1e8db;
             --ink:    #0a0a0a;
             --mute:   #1e1d20;
         }
@@ -118,9 +118,164 @@
             .nav, .tagline { transition: none; }
         }
 
+        /* ── Laptop sequence ──────────────────────────────────────────── */
+        /* Scrolling past the wordmark: the title rises out of the screen
+           while a laptop comes up, opens, and the app starts inside it.
+           The stage is tall; the view inside it stays pinned while the
+           script maps scroll position onto the storyboard's keyframes. */
+        .home-stage { position: relative; height: 520vh; }
+        .home-vp {
+            position: sticky; top: 0;
+            height: 100vh; height: 100dvh;
+            overflow: hidden;
+        }
+        .home-vp .page { position: absolute; inset: 0; will-change: transform; }
+
+        /* A real 3D laptop, drawn as line art: every face is a cream panel
+           with a hairline edge, placed in 3D, and the lid turns on its hinge.
+           .lap-pos is plain 2D (where it sits and how big); inside it the
+           scene supplies the perspective and the model the viewing angle.
+           Sizes and face placement are set by the script from one set of
+           dimensions, so the drawing and the hit-testing never disagree. */
+        .lap-pos {
+            position: absolute; left: 0; top: 0;
+            transform-origin: 0 0;
+            will-change: transform;
+            visibility: hidden;
+        }
+        .lap-scene {
+            position: absolute; left: 0; top: 0; width: 0; height: 0;
+            perspective: 2300px; perspective-origin: 0 0;
+        }
+        .lap-model, .lap-lid {
+            position: absolute; left: 0; top: 0; width: 0; height: 0;
+            transform-style: preserve-3d;
+        }
+        /* Black laptop. The edges are a shade lighter than the body, the
+           way light catches a chamfer, so its shape reads on the cream page. */
+        .lap-pos {
+            --body: #1c1b20;
+            --edge: #46454c;
+            --cap: #0b0b0d;
+            --legend: #6d6b73;
+            --backlight: #fff3df;
+        }
+        .lap-face {
+            position: absolute; left: 0; top: 0;
+            background: var(--body);
+            border: var(--lw, 2px) solid var(--edge);
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+        }
+        .lap-face[data-f="outer"] { background: linear-gradient(160deg, #2b2a30 0%, #1b1a1f 45%, #121115 100%); }
+        .lap-face[data-f="deck"]  { background: #222126; }
+        /* The slab edges (built by the script): a band of short segments that
+           runs straight along the sides and bends round each rounded corner.
+           Only top and bottom are outlined, so the band reads as one surface. */
+        .lap-face.lap-band { background: #29282e; border-width: var(--lw, 2px) 0; }
+        .lap-face[data-f="inner"] { background: #09090b; }
+        .lap-face[data-f="hinge"] { background: #0f0f12; }
+        .lap-face > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+        .lap-keys .k-cap { fill: var(--cap); }
+        .lap-keys .k-pad { fill: #26252b; stroke: var(--edge); }
+        .lap-keys text { fill: var(--legend); font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; font-weight: 500; }
+        .lap-grille { fill: #0c0c0e; }
+        /* Backlight: off while the lid is shut, fades up as it opens. */
+        .lap-keys .k-lit { opacity: 0; transition: opacity .9s cubic-bezier(.215,.61,.355,1); }
+        .lap-keys .k-lit text { fill: var(--backlight); }
+        .lap-keys .k-halo { fill: var(--backlight); opacity: .55; }
+        .lap-pos.lit .lap-keys .k-lit { opacity: 1; }
+        .lap-notch {
+            position: absolute; left: 50%; top: 0;
+            width: 74px; height: 18px; margin-left: -37px;
+            background: #000; border-radius: 0 0 9px 9px;
+        }
+        .lap-notch::after {
+            content: ''; position: absolute; left: 50%; top: 5px;
+            width: 7px; height: 7px; margin-left: -3.5px;
+            border-radius: 50%; border: 1.5px solid #4a4950;
+        }
+        /* Off until the app starts: dark glass, like a real screen. */
+        .lap-screen {
+            position: absolute;
+            overflow: hidden;
+            background: #121115;
+            border-radius: 6px;
+        }
+        .lap-win {
+            width: 1440px; height: 834px;
+            transform-origin: 0 0;
+            display: flex; flex-direction: column;
+            opacity: 0;
+            transition: opacity .35s ease;
+        }
+        .lap-win.on { opacity: 1; }
+        /* Browser window in dark mode. */
+        .lap-bar {
+            flex: 0 0 46px;
+            display: flex; align-items: center; gap: 18px;
+            padding: 0 18px;
+            background: #232227;
+            border-bottom: 1px solid #000;
+            font: 500 15px/1 -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            color: #e6e4df;
+        }
+        .lap-dots { display: flex; gap: 8px; }
+        .lap-dots i { width: 13px; height: 13px; border-radius: 50%; background: #ff5f57; }
+        .lap-dots i:nth-child(2) { background: #febc2e; }
+        .lap-dots i:nth-child(3) { background: #28c840; }
+        .lap-url {
+            flex: 1; max-width: 520px; margin: 0 auto;
+            height: 30px; border-radius: 8px;
+            background: #34333a;
+            display: flex; align-items: center; justify-content: center;
+            color: #d9d7d2; letter-spacing: .01em;
+        }
+        .lap-win iframe { flex: 1; width: 100%; border: 0; display: block; background: #111014; }
+
+        /* Once the app's intro has landed on the PIN screen, the PIN types
+           itself (inside the preview) and the screen becomes the way in. */
+        .lap-view { position: relative; flex: 1; display: flex; overflow: hidden; }
+        /* The whole blurred screen is a link into the demo; the visible
+           way in sits beside the laptop (.lap-cta). */
+        .lap-demo { position: absolute; inset: 0; pointer-events: none; }
+        .lap-win.ready .lap-demo { pointer-events: auto; }
+
+        /* Beside the laptop, on the page: the PLAY pill from the Our Approach
+           watchlist card (same lettering, same ink), filled black, with the
+           line to its right. Placed by the script against the laptop. */
+        .lap-cta {
+            position: absolute; left: 0; top: 0;
+            display: flex; align-items: center; gap: clamp(14px, 1.2vw, 22px);
+            color: var(--ink); text-decoration: none;
+            opacity: 0; pointer-events: none;
+            transform: translateY(10px);
+            transition: opacity .7s cubic-bezier(.215,.61,.355,1), transform .9s cubic-bezier(.215,.61,.355,1);
+            white-space: nowrap;
+        }
+        .lap-cta.ready { opacity: 1; pointer-events: auto; transform: none; }
+        .lap-play {
+            display: inline-flex; align-items: center; gap: .7em;
+            font-weight: 600; line-height: 1;
+            font-size: clamp(11px, .8vw, 14px);
+            letter-spacing: .14em; text-transform: uppercase;
+            padding: clamp(9px, .75vw, 13px) clamp(16px, 1.4vw, 24px);
+            border: 1.5px solid var(--ink); border-radius: 100px;
+            background: var(--ink); color: var(--ground);
+            transition: background .2s, color .2s;
+        }
+        .lap-play svg { width: .8em; height: .9em; flex: none; }
+        .lap-cta:hover .lap-play, .lap-cta:focus-visible .lap-play { background: none; color: var(--ink); }
+        .lap-cta-t {
+            font-size: clamp(14px, 1.15vw, 21px);
+            font-weight: 700; letter-spacing: -.005em;
+        }
+        .lap-cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; border-radius: 100px; }
+
     </style>
 </head>
 <body class="intro-running">
+  <div class="home-stage">
+   <div class="home-vp">
     <div class="page">
         <nav class="nav">
             <a href="/login/">Login</a>
@@ -133,6 +288,41 @@
             <p class="tagline">Proprietary trading algorithms</p>
         </main>
     </div>
+
+    <!-- The laptop, a 3D line-art model. Faces are placed by the script
+         below; the lid's inner face carries the app's real lock screen. -->
+    <div class="lap-pos">
+        <div class="lap-scene">
+            <div class="lap-model">
+                <div class="lap-face" data-f="deck" aria-hidden="true"></div>
+                <div class="lap-face" data-f="hinge" aria-hidden="true"></div>
+                <div class="lap-lid">
+                    <div class="lap-face" data-f="outer" aria-hidden="true"></div>
+                    <div class="lap-face" data-f="inner">
+                        <div class="lap-screen">
+                            <div class="lap-win">
+                                <div class="lap-bar" aria-hidden="true">
+                                    <span class="lap-dots"><i></i><i></i><i></i></span>
+                                    <span class="lap-url">ohlcvlabs.studio</span>
+                                </div>
+                                <div class="lap-view">
+                                    <iframe src="/app-preview/" title="The OHLCV app opening on its PIN screen (a preview — no PIN is checked)" tabindex="-1"></iframe>
+                                    <a class="lap-demo" href="/demo/" tabindex="-1" aria-hidden="true" title="Open a working demo of the OHLCV dashboard"></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lap-notch" aria-hidden="true"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="lap-cta" href="/demo/" title="Open a working demo of the OHLCV dashboard">
+        <span class="lap-play"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M1 1l8 5-8 5z" fill="currentColor"/></svg>Play</span>
+        <span class="lap-cta-t">Go for a product demo</span>
+    </a>
+   </div>
+  </div>
 
 <script>
 /* Intro: the wordmark's letters drop into the positions they keep; the nav
@@ -166,6 +356,274 @@ if (document.readyState === 'loading') {
 } else {
   runIntro();
 }
+
+/* Laptop sequence. Scroll is measured in screens (s): one screen of scroll
+   is s = 1. The laptop is a real 3D model — the lid turns on its hinge and
+   the viewing angle eases from above to nearly straight on — and the home
+   page storyboard (a 16:9 page) sets where it sits and how big it is:
+   x and widths as fractions of the page width, y of its height.
+     s 0    frame 1  the wordmark, as today
+     s .5   frame 2  the wordmark has risen 16%
+     s 1    frame 3  the closed laptop has come up from below
+     s 1.8  frame 4  the lid is opening
+     s 2.2  frame 5  the wordmark has left
+     s 3    frame 6  open, at its largest
+     s 3.4  frame 7  settled slightly smaller — where it rests
+   The app's intro plays once the lid is fully open and replays if the lid
+   is closed again by scrolling back up. */
+(function () {
+  const vp = document.querySelector('.home-vp');
+  const page = vp && vp.querySelector('.page');
+  const pos = vp && vp.querySelector('.lap-pos');
+  if (!vp || !page || !pos) return;
+  const model = pos.querySelector('.lap-model');
+  const lid = pos.querySelector('.lap-lid');
+  const screen = pos.querySelector('.lap-screen');
+  const win = pos.querySelector('.lap-win');
+  const frame = pos.querySelector('iframe');
+  const cta = vp.querySelector('.lap-cta');
+  const face = name => pos.querySelector('[data-f="' + name + '"]');
+
+  // ── The model, in model units (≈ px at scale 1). y points down, z toward
+  // the viewer; the origin is the centre of the keyboard deck.
+  const W = 1076, D = 660, T = 22;       // base: width, depth, thickness
+  const L = 660, LT = 9;                 // lid: length, thickness
+  const P = 2300;                        // perspective distance (matches the CSS)
+  const R = 28;                          // corner radius of deck and lid
+  const SCREEN = { x: 15, y: 14, w: W - 30, h: 606 };  // on the lid's inner face
+
+  function put(el, w, h, x, y, z, rot, radius) {
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.style.transform = 'translate3d(' + (x - w / 2) + 'px,' + (y - h / 2) + 'px,' + z + 'px) ' + (rot || '');
+    if (radius) el.style.borderRadius = radius;
+  }
+  // The edge of a rounded slab: straight segments along each side, and at
+  // each corner N short ones stepping round the curve, every one turned to
+  // face outward. Without the corners the flat top would poke out past its
+  // edge there like a fin.
+  function band(parent, w, d, cz, cy, h) {
+    const N = 5, add = (len, x, z, deg) => {
+      const el = document.createElement('div');
+      el.className = 'lap-face lap-band';
+      el.setAttribute('aria-hidden', 'true');
+      put(el, len + .6, h, x, cy, z, 'rotateY(' + deg + 'deg)');   // +.6 closes hairline seams
+      parent.insertBefore(el, parent.firstChild);
+    };
+    const hw = w / 2 - R, hd = d / 2 - R;
+    add(w - 2 * R, 0, cz + d / 2, 0);  add(w - 2 * R, 0, cz - d / 2, 180);
+    add(d - 2 * R, w / 2, cz, 90);     add(d - 2 * R, -w / 2, cz, -90);
+    const chord = 2 * R * Math.sin(Math.PI / (4 * N));
+    [[1, 1, 0], [1, -1, 90], [-1, -1, 180], [-1, 1, 270]].forEach(([sx, sz, from]) => {
+      for (let i = 0; i < N; i++) {
+        const deg = from + (i + .5) * 90 / N, a = deg * Math.PI / 180;
+        const rr = R * Math.cos(Math.PI / (4 * N));   // chord midpoints sit just inside the arc
+        add(chord, sx * hw + rr * Math.sin(a), cz + sz * hd + rr * Math.cos(a), deg);
+      }
+    });
+  }
+  // Base. The deck lies flat (rotateX 90 turns a face to look up), its top
+  // edge at the hinge.
+  put(face('deck'), W, D, 0, 0, 0, 'rotateX(90deg)', R + 'px');
+  band(model, W, D, 0, T / 2, T);
+  put(face('hinge'), W * .64, LT - 1, 0, -(LT - 1) / 2, -D / 2 + 2, '', '3px');
+  // Lid, in its own frame: hinge at the origin, lying closed along +z.
+  put(face('outer'), W, L, 0, -1 - LT, L / 2, 'rotateX(90deg)', R + 'px');
+  put(face('inner'), W, L, 0, -1, L / 2, 'rotateX(-90deg)', R + 'px');
+  band(lid, W, L, L / 2, -1 - LT / 2, LT);
+  Object.assign(screen.style, { left: SCREEN.x + 'px', top: SCREEN.y + 'px', width: SCREEN.w + 'px', height: SCREEN.h + 'px' });
+  win.style.transform = 'scale(' + (SCREEN.w / 1440) + ')';
+
+  // Keyboard, trackpad and speaker grilles, drawn on the deck. The deck's top
+  // edge is the hinge, so rows run from the back toward the trackpad. Keys
+  // are solid black caps with legends; the backlight is three layers on top
+  // (a glow round each cap, lit legends, their glow) faded in by `.lit`.
+  //
+  // The deck is seen at a shallow angle, which squashes its horizontal edges
+  // to well under a pixel — a plain border vanishes front and back. So the
+  // face edges are lw thick across and lw / SQUASH thick front-to-back, which
+  // lands as an even line once foreshortened. Redrawn when the size changes.
+  const DECK_SQUASH = .3, LID_SQUASH = .42;   // how much each face is foreshortened at rest
+  function drawDeck(lw) {
+    const ly = lw / DECK_SQUASH;
+    const KX = 132, KW = 812, U = KW / 14.5, G = 7;
+    const F = ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', ''];
+    // [width in key units, legend]; words sit bottom-left, single glyphs centre.
+    const rows = [
+      { h: 20, keys: F.map(l => [14.5 / 14, l]) },
+      { h: 46, keys: [..."`1234567890-=".split('').map(c => [1, c]), [1.5, 'delete']] },
+      { h: 46, keys: [[1.5, 'tab'], ..."QWERTYUIOP[]\\".split('').map(c => [1, c])] },
+      { h: 46, keys: [[1.75, 'caps lock'], ..."ASDFGHJKL;'".split('').map(c => [1, c]), [1.75, 'return']] },
+      { h: 46, keys: [[2.25, 'shift'], ...'ZXCVBNM,./'.split('').map(c => [1, c]), [2.25, 'shift']] },
+      { h: 46, keys: [[1, 'fn'], [1, 'control'], [1, 'option'], [1.25, 'command'], [5, ''], [1.25, 'command'], [1, 'option'], [3, 'arrows']] },
+    ];
+    const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const rect = (x, y, w, h, rx, c) => '<rect class="' + c + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + rx + '"/>';
+    let caps = '', halos = '', legends = '', y = 36;
+    function key(x, y, w, h, label) {
+      caps += rect(x, y, w, h, 5, 'k-cap');
+      halos += rect(x - 1.5, y - 1.5, w + 3, h + 3, 6, 'k-halo');
+      if (!label) return;
+      const word = label.length > 1;
+      const size = word ? (h < 30 ? 8 : 9) : 15;
+      const tx = word ? x + 6 : x + w / 2, ty = word ? y + h - 7 : y + h / 2 + size * .36;
+      legends += '<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" font-size="' + size + '"' + (word ? '' : ' text-anchor="middle"') + '>' + esc(label) + '</text>';
+    }
+    rows.forEach(r => {
+      let x = KX;
+      r.keys.forEach(([k, label]) => {
+        if (label === 'arrows') {        // ← ↑↓ →, the half-height cluster
+          const half = (r.h - G / 2) / 2, lo = y + half + G / 2;
+          key(x, lo, U - G, half, '◀');
+          key(x + U, y, U - G, half, '▲'); key(x + U, lo, U - G, half, '▼');
+          key(x + 2 * U, lo, U - G, half, '▶');
+          x += 3 * U;
+        } else { key(x, y, k * U - G, r.h, label); x += k * U; }
+      });
+      y += r.h + G;
+    });
+    // Arrow glyphs are drawn smaller than letters.
+    legends = legends.replace(/font-size="15"([^>]*>[◀▲▼▶])/g, 'font-size="9"$1');
+    const pad = '<rect class="k-pad" x="330" y="' + (y + 18) + '" width="416" height="' + (D - y - 60) + '" rx="12" style="stroke-width:' + lw + 'px"/>';
+    const grille = '<pattern id="lap-dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle class="lap-grille" cx="3.5" cy="3.5" r="1.3"/></pattern>'
+      + '<filter id="lap-glow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.2"/></filter>';
+    const sp = x => '<rect x="' + x + '" y="36" width="62" height="' + (y - 43) + '" fill="url(#lap-dots)"/>';
+    face('deck').innerHTML = '<svg class="lap-keys" viewBox="0 0 ' + W + ' ' + D + '" aria-hidden="true"><defs>' + grille + '</defs>'
+      + sp(52) + sp(W - 114) + pad
+      + '<g class="k-lit" filter="url(#lap-glow)">' + halos + '</g>'   // light spilling round each cap
+      + caps + legends
+      + '<g class="k-lit">' + legends + '</g>'                          // lit legends
+      + '<g class="k-lit" filter="url(#lap-glow)">' + legends + '</g>'  // and their glow
+      + '</svg>';
+    // The faces' own edges stay even once foreshortened.
+    face('deck').style.borderWidth = ly + 'px ' + lw + 'px';
+    face('outer').style.borderWidth = (lw / LID_SQUASH) + 'px ' + lw + 'px';
+  }
+
+  // ── Projection: the same maths the browser does, so the laptop's on-screen
+  // box is known without measuring the DOM.
+  const rad = d => d * Math.PI / 180;
+  const CORNERS = [];
+  [-W / 2, W / 2].forEach(x => [0, T].forEach(y => [-D / 2, D / 2].forEach(z => CORNERS.push([x, y, z, 0]))));
+  [-W / 2, W / 2].forEach(x => [-1, -1 - LT].forEach(y => [0, L].forEach(z => CORNERS.push([x, y, z, 1]))));
+  function bbox(theta, elev) {
+    const ct = Math.cos(rad(theta)), st = Math.sin(rad(theta));
+    const ce = Math.cos(rad(elev)), se = Math.sin(rad(elev));
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    CORNERS.forEach(([x, y, z, isLid]) => {
+      if (isLid) { const yy = y * ct - z * st, zz = y * st + z * ct - D / 2; y = yy; z = zz; }
+      const y2 = y * ce + z * se, z2 = -y * se + z * ce;   // rotateX(-elev)
+      const k = P / (P - z2), X = x * k, Y = y2 * k;
+      x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, Y); y1 = Math.max(y1, Y);
+    });
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: x1 - x0, h: y1 - y0 };
+  }
+
+  // ── Keyframes: [s, value]; between them the value eases.
+  const TITLE_Y = [[0, 0], [.5, -.163], [1, -.241], [1.8, -.421], [2.2, -.78]];
+  const LID = [[1, 0], [1.8, 10], [2.2, 16], [3, 106]];           // degrees open
+  const ELEV = [[1, 24], [1.8, 21], [3, 14]];                      // camera, degrees above
+  const BOX = [                                                    // cx, cy, width
+    [.5, [.499, 1.3, .504]], [1, [.499, .7395, .504]], [1.8, [.4975, .5235, .505]],
+    [2.2, [.4975, .52, .52]], [3, [.5005, .501, .603]], [3.4, [.5, .499, .496]]];
+  const PLAY_AT = 2.95, RESET_BELOW = 2.5;
+
+  const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  function at(keys, s) {
+    if (s <= keys[0][0]) return keys[0][1];
+    for (let i = 1; i < keys.length; i++) {
+      const [s0, v0] = keys[i - 1], [s1, v1] = keys[i];
+      if (s <= s1) {
+        const t = ease((s - s0) / (s1 - s0));
+        return Array.isArray(v0) ? v0.map((a, j) => a + (v1[j] - a) * t) : v0 + (v1 - v0) * t;
+      }
+    }
+    return keys[keys.length - 1][1];
+  }
+
+  let VW = 0, VH = 0, UW = 0, M = 1, lastLw = 0;
+  function measure() {
+    VW = vp.clientWidth; VH = vp.clientHeight;
+    UW = Math.min(VW, VH * 16 / 9);
+    // Portrait: the storyboard's laptop would be a sliver, so the open one
+    // fills most of the width instead and the rest scale with it.
+    M = VW < VH ? .94 / .603 : 1;
+    // Edges ~1.4px on screen at rest. Set once per size, not per frame:
+    // re-stroking every face on every frame is what would cost.
+    const rest = (.496 * UW * M) / bbox(106, 14).w;
+    // Thinner on phones: the keys are only a few pixels tall there, and
+    // desktop-weight edges fill them in.
+    const lw = (VW < 600 ? .8 : 1.4) / rest;
+    if (Math.abs(lw - lastLw) > .05) { lastLw = lw; pos.style.setProperty('--lw', lw.toFixed(2) + 'px'); drawDeck(lw); }
+  }
+
+  // The demo link sits to the right of the laptop, level with its screen;
+  // where there is no room beside it (phones), centred just below it.
+  function placeCta(right, top, bottom) {
+    const cw = cta.offsetWidth, ch = cta.offsetHeight, gap = Math.max(24, VW * .028);
+    let cx, cy;
+    if (VW - right - gap - cw >= 24) { cx = right + gap; cy = top + (bottom - top) * .36 - ch / 2; }
+    else { cx = (VW - cw) / 2; cy = bottom + 28; }
+    cta.style.left = cx.toFixed(1) + 'px';
+    cta.style.top = cy.toFixed(1) + 'px';
+  }
+
+  let playing = false;
+  function app(msg) {
+    try { frame.contentWindow.postMessage(msg, location.origin); } catch (e) {}
+  }
+
+  function render(s) {
+    page.style.transform = 'translateY(' + (at(TITLE_Y, s) * VH).toFixed(1) + 'px)';
+    const theta = at(LID, s), elev = at(ELEV, s), box = at(BOX, s);
+    model.style.transform = 'rotateX(' + (-elev).toFixed(3) + 'deg)';
+    lid.style.transform = 'translate3d(0,0,' + (-D / 2) + 'px) rotateX(' + theta.toFixed(3) + 'deg)';
+    // Fit the projected laptop to the storyboard's box for this moment.
+    const b = bbox(theta, elev);
+    const k = (box[2] * UW * M) / b.w;
+    const x = VW / 2 + (box[0] - .5) * UW * M - b.cx * k;
+    const y = box[1] * VH - b.cy * k;
+    pos.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')';
+    placeCta(x + (b.cx + b.w / 2) * k, y + (b.cy - b.h / 2) * k, y + (b.cy + b.h / 2) * k);
+    pos.style.visibility = s < .5 ? 'hidden' : 'visible';
+    // Backlight comes on as the lid rises, like a real one waking.
+    if (theta > 70) pos.classList.add('lit'); else if (theta < 45) pos.classList.remove('lit');
+
+    if (!playing && s >= PLAY_AT) { playing = true; win.classList.add('on'); app('ohlcv:play'); }
+    else if (playing && s < RESET_BELOW) { playing = false; win.classList.remove('on', 'ready'); cta.classList.remove('ready'); app('ohlcv:reset'); }
+  }
+
+  // Scroll is eased toward, not followed 1:1, so a wheel's steps glide.
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const TAU = reduce ? 0 : .12;
+  let shown = 0, target = 0, last = 0, raf = 0;
+  function tick(now) {
+    raf = 0;
+    if (vp.clientHeight !== VH || vp.clientWidth !== VW) measure();
+    const dt = last ? (now - last) / 1000 : 1 / 60;
+    last = now;
+    shown = TAU ? shown + (target - shown) * (1 - Math.exp(-dt / TAU)) : target;
+    if (Math.abs(target - shown) < .0005) shown = target;
+    render(shown);
+    if (shown !== target) raf = requestAnimationFrame(tick); else last = 0;
+  }
+  function onScroll() {
+    target = Math.max(0, window.scrollY / (VH || 1));
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  measure();
+  target = shown = Math.max(0, window.scrollY / VH);
+  render(shown);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => { measure(); render(shown); onScroll(); });
+  // The app's intro has landed on the PIN screen: blur it and offer the demo.
+  window.addEventListener('message', e => {
+    if (e.origin === location.origin && e.source === frame.contentWindow && e.data === 'ohlcv:intro-done' && playing) { win.classList.add('ready'); cta.classList.add('ready'); app('ohlcv:autotype'); }
+  });
+  // The frame may finish loading after the lid is already open.
+  frame.addEventListener('load', () => { if (playing) app('ohlcv:play'); });
+})();
 </script>
 </body>
 </html>
