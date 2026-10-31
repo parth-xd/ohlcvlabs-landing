@@ -169,7 +169,28 @@
     new MutationObserver(apply).observe(el, { childList: true, characterData: true, subtree: true });
     apply();
   }
-  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); });
+  // Trade Journal, demo only: each card shows the trade's gross P&L (before
+  // charges) instead of its net. The app draws the cards; this re-labels the
+  // amount from the same entry it drew, so card and trade always match.
+  // Stats, details and the P&L chart keep their real net figures.
+  function grossCards() {
+    if (typeof renderJournalEntries !== 'function') return;
+    var draw = renderJournalEntries;
+    window.renderJournalEntries = function (entries) {
+      var out = draw.apply(this, arguments);
+      var cards = document.querySelectorAll('.journal-entry');
+      (entries || []).forEach(function (e, i) {
+        var post = e && e.post_trade, el = cards[i] && cards[i].querySelector('.je-pnl');
+        if (!el || !post || post.gross_pnl == null) return;
+        var g = Number(post.gross_pnl);
+        el.innerHTML = '<span style="color:' + (g >= 0 ? 'var(--green)' : 'var(--red)') + '">' + formatMoney(g, 2) + '</span>';
+        el.title = 'Gross, before charges. Net ' + formatMoney(Number(post.net_pnl), 2)
+          + ' after ' + formatMoney(Number(post.total_charges || 0), 2) + ' in charges.';
+      });
+      return out;
+    };
+  }
+  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); grossCards(); });
 })();
 </script>
 <meta charset="UTF-8" />
