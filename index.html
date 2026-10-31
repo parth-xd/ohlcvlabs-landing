@@ -667,6 +667,9 @@ if (document.readyState === 'loading') {
     [.5, [.499, 1.3, .504]], [1, [.499, .7395, .504]], [1.8, [.4975, .5235, .505]],
     [2.2, [.4975, .52, .52]], [3, [.5005, .501, .603]], [3.4, [.5, .499, .496]]];
   const PLAY_AT = 2.95, RESET_BELOW = 2.5;
+  // The demo link arrives with the device: as the lid lifts (the phone
+  // stands up), not after the app's intro.
+  const CTA_AT = 2.6;
 
   const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   function at(keys, s) {
@@ -704,12 +707,17 @@ if (document.readyState === 'loading') {
   }
 
   // The demo link sits to the right of the laptop, level with its screen;
-  // where there is no room beside it (phones), centred just below it.
+  // where there is no room beside it (phones), centred just below it. The
+  // side is chosen from where the laptop comes to rest and kept while it
+  // opens — the laptop is wider mid-opening, and judging room frame by
+  // frame made the link jump from below it to beside it.
   function placeCta(right, top, bottom) {
     const cw = cta.offsetWidth, ch = cta.offsetHeight, gap = Math.max(24, VW * .028);
+    const restRight = VW / 2 + .248 * UW * M;          // the laptop's right edge at rest
     let cx, cy;
-    if (VW - right - gap - cw >= 24) { cx = right + gap; cy = top + (bottom - top) * .36 - ch / 2; }
-    else { cx = (VW - cw) / 2; cy = bottom + 28; }
+    if (!PHONE && VW - restRight - gap - cw >= 24) {
+      cx = Math.min(right + gap, VW - cw - 16); cy = top + (bottom - top) * .36 - ch / 2;
+    } else { cx = (VW - cw) / 2; cy = bottom + 28; }
     cta.style.left = cx.toFixed(1) + 'px';
     cta.style.top = cy.toFixed(1) + 'px';
   }
@@ -734,8 +742,9 @@ if (document.readyState === 'loading') {
     page.style.transform = 'translateY(' + (at(TITLE_Y, s) * VH).toFixed(1) + 'px)';
     pos.style.visibility = s < .5 ? 'hidden' : 'visible';
     if (PHONE) renderPhone(s); else renderLaptop(s);
+    cta.classList.toggle('ready', s >= CTA_AT);
     if (!playing && s >= PLAY_AT) { playing = true; win.classList.add('on'); app('ohlcv:play'); }
-    else if (playing && s < RESET_BELOW) { playing = false; win.classList.remove('on', 'ready'); cta.classList.remove('ready'); app('ohlcv:reset'); }
+    else if (playing && s < RESET_BELOW) { playing = false; win.classList.remove('on', 'ready'); app('ohlcv:reset'); }
   }
 
   function renderLaptop(s) {
@@ -781,9 +790,10 @@ if (document.readyState === 'loading') {
     if (isPhone() !== PHONE) { location.reload(); return; }
     measure(); render(shown); onScroll();
   });
-  // The app's intro has landed on the PIN screen: type the PIN, offer the demo.
+  // The app's intro has landed on the PIN screen: type the PIN, and the
+  // screen itself becomes a link into the demo.
   window.addEventListener('message', e => {
-    if (e.origin === location.origin && e.source === frame.contentWindow && e.data === 'ohlcv:intro-done' && playing) { win.classList.add('ready'); cta.classList.add('ready'); app('ohlcv:autotype'); }
+    if (e.origin === location.origin && e.source === frame.contentWindow && e.data === 'ohlcv:intro-done' && playing) { win.classList.add('ready'); app('ohlcv:autotype'); }
   });
   // The frame may finish loading after the lid is already open.
   frame.addEventListener('load', () => { if (playing) app('ohlcv:play'); });
