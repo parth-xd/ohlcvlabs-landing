@@ -286,7 +286,7 @@
         .lap-cta {
             position: absolute; left: 0; top: 0;
             display: flex; align-items: center; gap: clamp(14px, 1.2vw, 22px);
-            color: var(--ink); text-decoration: none;
+            color: var(--ink);
             opacity: 0; pointer-events: none;
             transform: translateY(10px);
             transition: opacity .7s cubic-bezier(.215,.61,.355,1), transform .9s cubic-bezier(.215,.61,.355,1);
@@ -301,15 +301,19 @@
             padding: clamp(9px, .75vw, 13px) clamp(16px, 1.4vw, 24px);
             border: 1.5px solid var(--ink); border-radius: 100px;
             background: var(--ink); color: var(--ground);
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
             transition: background .2s, color .2s;
         }
         .lap-play svg { width: .8em; height: .9em; flex: none; }
-        .lap-cta:hover .lap-play, .lap-cta:focus-visible .lap-play { background: none; color: var(--ink); }
+        /* Only the pill is the link (the line beside it is just text), and
+           it answers a tap itself instead of iOS's grey box. */
+        .lap-play:hover, .lap-play:focus-visible, .lap-play:active { background: none; color: var(--ink); }
         .lap-cta-t {
             font-size: clamp(14px, 1.15vw, 21px);
             font-weight: 700; letter-spacing: -.005em;
         }
-        .lap-cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; border-radius: 100px; }
+        .lap-play:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 
     </style>
 </head>
@@ -383,10 +387,10 @@
         </div>
     </div>
 
-    <a class="lap-cta" href="/demo/" title="Open a working demo of the OHLCV dashboard">
-        <span class="lap-play"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M1 1l8 5-8 5z" fill="currentColor"/></svg>Play</span>
+    <div class="lap-cta">
+        <a class="lap-play" href="/demo/" aria-label="Play — go for a product demo" title="Open a working demo of the OHLCV dashboard"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M1 1l8 5-8 5z" fill="currentColor"/></svg>Play</a>
         <span class="lap-cta-t">Go for a product demo</span>
-    </a>
+    </div>
    </div>
   </div>
 
