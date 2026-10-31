@@ -190,7 +190,40 @@
       return out;
     };
   }
-  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); grossCards(); });
+  // P&L tab, demo only, same idea as the journal cards: gross leads, net
+  // follows. The app computes and draws as normal; afterwards the gross line
+  // takes the primary (filled) style and net takes gross's dashed one, and
+  // the first two cards trade places. Each label moves with its number.
+  function grossFirstPnL() {
+    if (typeof refreshPnLChart !== 'function') return;
+    var refresh = refreshPnLChart;
+    window.refreshPnLChart = async function () {
+      var out = await refresh.apply(this, arguments);
+      try {
+        var c = typeof pnlChartInstance !== 'undefined' && pnlChartInstance;
+        // Every refresh (first draw or update) writes net into line 0 and
+        // gross into line 2, so the swap is made fresh each time.
+        if (c && c.data.datasets.length >= 3) {
+          var main = c.data.datasets[0], alt = c.data.datasets[2], tmp = main.data;
+          main.data = alt.data; alt.data = tmp;
+          main.label = 'Cumulative Gross P&L'; alt.label = 'Cumulative Net P&L';
+          var end = main.data[main.data.length - 1], up = end >= 0;
+          main.borderColor = main.pointBackgroundColor = up ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)';
+          main.backgroundColor = up ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
+          c.update('none');
+        }
+        var cur = document.getElementById('pnl-current'), gro = document.getElementById('pnl-gross');
+        if (cur && gro) {
+          ['textContent', 'title'].forEach(function (k) { var t = cur[k]; cur[k] = gro[k]; gro[k] = t; });
+          var col = cur.style.color; cur.style.color = gro.style.color; gro.style.color = col;
+          cur.nextElementSibling.textContent = 'Current (gross)';
+          gro.nextElementSibling.textContent = 'Net (after charges)';
+        }
+      } catch (e) {}
+      return out;
+    };
+  }
+  document.addEventListener('DOMContentLoaded', function () { autotype(); banner(); hideMoney(); costStory(); grossCards(); grossFirstPnL(); });
 })();
 </script>
 <meta charset="UTF-8" />
