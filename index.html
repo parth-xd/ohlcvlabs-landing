@@ -137,7 +137,7 @@
            scene supplies the perspective and the model the viewing angle.
            Sizes and face placement are set by the script from one set of
            dimensions, so the drawing and the hit-testing never disagree. */
-        .lap-pos {
+        .lap-pos, .ph-pos {
             position: absolute; left: 0; top: 0;
             transform-origin: 0 0;
             will-change: transform;
@@ -153,7 +153,7 @@
         }
         /* Black laptop. The edges are a shade lighter than the body, the
            way light catches a chamfer, so its shape reads on the cream page. */
-        .lap-pos {
+        .lap-pos, .ph-pos {
             --body: #1c1b20;
             --edge: #46454c;
             --cap: #0b0b0d;
@@ -240,6 +240,37 @@
         .lap-demo { position: absolute; inset: 0; pointer-events: none; }
         .lap-win.ready .lap-demo { pointer-events: auto; }
 
+        /* ── Phone (narrow portrait screens get this instead of the laptop) ──
+           A black phone: glass front with the app on it, a back with a camera
+           module, and the same rounded edge band as the laptop. */
+        .ph-front { background: #050506; }
+        .ph-back  { background: linear-gradient(155deg, #2c2b31 0%, #1a191e 50%, #111014 100%); }
+        .ph-btn   { background: #2e2d33; }
+        .ph-screen {
+            position: absolute; left: 12px; top: 12px; right: 12px; bottom: 12px;
+            border-radius: 52px; overflow: hidden; background: #121115;
+        }
+        .ph-cam {
+            position: absolute; left: 50%; top: 28px;
+            width: 26px; height: 26px; margin-left: -13px;
+            border-radius: 50%; background: #000; box-shadow: inset 0 0 0 4px #17171b;
+        }
+        .ph-cams {
+            position: absolute; left: 26px; top: 26px; width: 172px; height: 172px;
+            border-radius: 48px; background: #242328;
+            border: var(--lw, 2px) solid var(--edge);
+        }
+        .ph-cams i {
+            position: absolute; width: 64px; height: 64px; border-radius: 50%;
+            background: #060607; box-shadow: inset 0 0 0 7px #302f35, inset 0 0 0 11px #0b0b0d;
+        }
+        .ph-cams i:nth-child(1) { left: 16px; top: 16px; }
+        .ph-cams i:nth-child(2) { left: 16px; top: 88px; }
+        .ph-cams i:nth-child(3) { left: 88px; top: 52px; }
+        .lap-win.ph-win { width: 390px; height: 842px; }
+        .ph-bar { order: 2; flex: 0 0 52px; justify-content: center; border-bottom: 0; border-top: 1px solid #000; }
+        .ph-bar .lap-url { max-width: 300px; height: 32px; font-size: 14px; }
+
         /* Beside the laptop, on the page: the PLAY pill from the Our Approach
            watchlist card (same lettering, same ink), filled black, with the
            line to its right. Placed by the script against the laptop. */
@@ -306,7 +337,7 @@
                                     <span class="lap-url">ohlcvlabs.studio</span>
                                 </div>
                                 <div class="lap-view">
-                                    <iframe src="/app-preview/" title="The OHLCV app opening on its PIN screen (a preview — no PIN is checked)" tabindex="-1"></iframe>
+                                    <iframe data-src="/app-preview/" title="The OHLCV app opening on its PIN screen (a preview — no PIN is checked)" tabindex="-1"></iframe>
                                     <a class="lap-demo" href="/demo/" tabindex="-1" aria-hidden="true" title="Open a working demo of the OHLCV dashboard"></a>
                                 </div>
                             </div>
@@ -317,6 +348,32 @@
             </div>
         </div>
     </div>
+    <!-- The phone, shown instead of the laptop on narrow portrait screens.
+         Its faces and edge are placed by the script below. -->
+    <div class="ph-pos">
+        <div class="lap-scene" style="perspective: 1500px">
+            <div class="lap-model ph-model">
+                <div class="lap-model ph-body">
+                    <div class="lap-face ph-back" data-p="back" aria-hidden="true">
+                        <div class="ph-cams"><i></i><i></i><i></i></div>
+                    </div>
+                    <div class="lap-face ph-front" data-p="front">
+                        <div class="ph-screen">
+                            <div class="lap-win ph-win">
+                                <div class="lap-view">
+                                    <iframe data-src="/app-preview/" title="The OHLCV app opening on its PIN screen (a preview — no PIN is checked)" tabindex="-1"></iframe>
+                                    <a class="lap-demo" href="/demo/" tabindex="-1" aria-hidden="true" title="Open a working demo of the OHLCV dashboard"></a>
+                                </div>
+                                <div class="lap-bar ph-bar" aria-hidden="true"><span class="lap-url">ohlcvlabs.studio</span></div>
+                            </div>
+                        </div>
+                        <div class="ph-cam" aria-hidden="true"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <a class="lap-cta" href="/demo/" title="Open a working demo of the OHLCV dashboard">
         <span class="lap-play"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M1 1l8 5-8 5z" fill="currentColor"/></svg>Play</span>
         <span class="lap-cta-t">Go for a product demo</span>
@@ -374,15 +431,24 @@ if (document.readyState === 'loading') {
 (function () {
   const vp = document.querySelector('.home-vp');
   const page = vp && vp.querySelector('.page');
-  const pos = vp && vp.querySelector('.lap-pos');
-  if (!vp || !page || !pos) return;
-  const model = pos.querySelector('.lap-model');
-  const lid = pos.querySelector('.lap-lid');
-  const screen = pos.querySelector('.lap-screen');
+  const lapPos = vp && vp.querySelector('.lap-pos');
+  const phPos = vp && vp.querySelector('.ph-pos');
+  if (!vp || !page || !lapPos || !phPos) return;
+  // Narrow portrait screens (phones) get a phone; everything else the laptop.
+  // Decided by the screen's shape, not the device, and only one is built, so
+  // only one copy of the app ever loads.
+  const isPhone = () => innerWidth < innerHeight && innerWidth < 700;
+  const PHONE = isPhone();
+  (PHONE ? lapPos : phPos).remove();
+  const pos = PHONE ? phPos : lapPos;
   const win = pos.querySelector('.lap-win');
   const frame = pos.querySelector('iframe');
+  frame.src = frame.dataset.src;
   const cta = vp.querySelector('.lap-cta');
-  const face = name => pos.querySelector('[data-f="' + name + '"]');
+  const model = lapPos.querySelector('.lap-model');
+  const lid = lapPos.querySelector('.lap-lid');
+  const screen = lapPos.querySelector('.lap-screen');
+  const face = name => lapPos.querySelector('[data-f="' + name + '"]');
 
   // ── The model, in model units (≈ px at scale 1). y points down, z toward
   // the viewer; the origin is the centre of the keyboard deck.
@@ -422,17 +488,55 @@ if (document.readyState === 'loading') {
       }
     });
   }
-  // Base. The deck lies flat (rotateX 90 turns a face to look up), its top
-  // edge at the hinge.
-  put(face('deck'), W, D, 0, 0, 0, 'rotateX(90deg)', R + 'px');
-  band(model, W, D, 0, T / 2, T);
-  put(face('hinge'), W * .64, LT - 1, 0, -(LT - 1) / 2, -D / 2 + 2, '', '3px');
-  // Lid, in its own frame: hinge at the origin, lying closed along +z.
-  put(face('outer'), W, L, 0, -1 - LT, L / 2, 'rotateX(90deg)', R + 'px');
-  put(face('inner'), W, L, 0, -1, L / 2, 'rotateX(-90deg)', R + 'px');
-  band(lid, W, L, L / 2, -1 - LT / 2, LT);
-  Object.assign(screen.style, { left: SCREEN.x + 'px', top: SCREEN.y + 'px', width: SCREEN.w + 'px', height: SCREEN.h + 'px' });
-  win.style.transform = 'scale(' + (SCREEN.w / 1440) + ')';
+  if (!PHONE) {
+    // Base. The deck lies flat (rotateX 90 turns a face to look up), its top
+    // edge at the hinge.
+    put(face('deck'), W, D, 0, 0, 0, 'rotateX(90deg)', R + 'px');
+    band(model, W, D, 0, T / 2, T);
+    put(face('hinge'), W * .64, LT - 1, 0, -(LT - 1) / 2, -D / 2 + 2, '', '3px');
+    // Lid, in its own frame: hinge at the origin, lying closed along +z.
+    put(face('outer'), W, L, 0, -1 - LT, L / 2, 'rotateX(90deg)', R + 'px');
+    put(face('inner'), W, L, 0, -1, L / 2, 'rotateX(-90deg)', R + 'px');
+    band(lid, W, L, L / 2, -1 - LT / 2, LT);
+    Object.assign(screen.style, { left: SCREEN.x + 'px', top: SCREEN.y + 'px', width: SCREEN.w + 'px', height: SCREEN.h + 'px' });
+    win.style.transform = 'scale(' + (SCREEN.w / 1440) + ')';
+  }
+
+  // ── The phone, standing upright facing the viewer in its own frame: x
+  // across, y down its length, z out of the screen; origin at its centre.
+  const PW = 430, PH = 900, PT = 28, PR = 64, PP = 1500;   // PP matches its scene's perspective
+  const phModel = phPos.querySelector('.ph-model');
+  const phBody = phPos.querySelector('.ph-body');
+  if (PHONE) {
+    const pface = n => phPos.querySelector('[data-p="' + n + '"]');
+    put(pface('front'), PW, PH, 0, 0, PT / 2, '', PR + 'px');
+    put(pface('back'), PW, PH, 0, 0, -PT / 2, 'rotateY(180deg)', PR + 'px');
+    // The edge: like the laptop's band, but running round the phone's outline
+    // in its own plane. A strip turned by rotateX(90) faces up; rotateZ(φ)
+    // then turns it to face outward at angle φ (0 = up, 90 = right).
+    const N = 6, strip = (len, depth, x, y, deg, cls) => {
+      const el = document.createElement('div');
+      el.className = 'lap-face ' + (cls || 'lap-band');
+      el.setAttribute('aria-hidden', 'true');
+      put(el, len, depth, x, y, 0, 'rotateZ(' + deg + 'deg) rotateX(90deg)');
+      phBody.insertBefore(el, phBody.firstChild);
+    };
+    const hw = PW / 2 - PR, hh = PH / 2 - PR;
+    strip(PW - 2 * PR + .6, PT, 0, -PH / 2, 0);   strip(PW - 2 * PR + .6, PT, 0, PH / 2, 180);
+    strip(PH - 2 * PR + .6, PT, PW / 2, 0, 90);   strip(PH - 2 * PR + .6, PT, -PW / 2, 0, 270);
+    const chord = 2 * PR * Math.sin(Math.PI / (4 * N)), rr = PR * Math.cos(Math.PI / (4 * N));
+    [[1, -1, 0], [1, 1, 90], [-1, 1, 180], [-1, -1, 270]].forEach(([sx, sy, from]) => {
+      for (let i = 0; i < N; i++) {
+        const deg = from + (i + .5) * 90 / N, a = deg * Math.PI / 180;
+        strip(chord + .6, PT, sx * hw + rr * Math.sin(a), sy * hh - rr * Math.cos(a), deg);
+      }
+    });
+    // Buttons: power on the right, volume on the left, standing just proud.
+    strip(118, PT * .45, PW / 2 + 2.5, -PH * .17, 90, 'ph-btn');
+    strip(78, PT * .45, -PW / 2 - 2.5, -PH * .22, 270, 'ph-btn');
+    strip(78, PT * .45, -PW / 2 - 2.5, -PH * .12, 270, 'ph-btn');
+    win.style.transform = 'scale(' + ((PW - 24) / 390) + ')';
+  }
 
   // Keyboard, trackpad and speaker grilles, drawn on the deck. The deck's top
   // edge is the hinge, so rows run from the back toward the trackpad. Keys
@@ -519,6 +623,33 @@ if (document.readyState === 'loading') {
     return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: x1 - x0, h: y1 - y0 };
   }
 
+  // The phone's box: its 8 corners through the same rotations as the CSS
+  // (turn over about its length, stand up, the camera), then perspective.
+  const PCORNERS = [];
+  [-PW / 2, PW / 2].forEach(x => [-PH / 2, PH / 2].forEach(y => [-PT / 2, PT / 2].forEach(z => PCORNERS.push([x, y, z]))));
+  function phoneBox(flip, stand, elev) {
+    const cf = Math.cos(rad(flip)), sf = Math.sin(rad(flip));
+    const cs = Math.cos(rad(stand)), ss = Math.sin(rad(stand));
+    const ce = Math.cos(rad(elev)), se = Math.sin(rad(elev));
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    PCORNERS.forEach(([x, y, z]) => {
+      const x1_ = x * cf + z * sf, z1 = -x * sf + z * cf;          // rotateY(flip)
+      const y2 = y * cs - z1 * ss, z2 = y * ss + z1 * cs;            // rotateX(stand)
+      const y3 = y2 * ce + z2 * se, z3 = -y2 * se + z2 * ce;         // rotateX(-elev)
+      const k = PP / (PP - z3), X = x1_ * k, Y = y3 * k;
+      x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, Y); y1 = Math.max(y1, Y);
+    });
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: x1 - x0, h: y1 - y0 };
+  }
+  // Phone motion: it arrives lying face-down on the desk (stand 90, flip
+  // 180), turns over along its length, then stands up to face the viewer.
+  const P_FLIP = [[1, 180], [2.2, 0]];
+  const P_STAND = [[1.8, 90], [3, 0]];
+  const P_ELEV = [[1, 30], [2.2, 20], [3, 3]];
+  const P_BOX = [                       // cy, and the box it must fit: width, height
+    [.5, [1.35, .82, .32]], [1, [.72, .82, .30]], [1.8, [.62, .80, .42]],
+    [2.2, [.55, .80, .52]], [3, [.47, .86, .70]], [3.4, [.44, .80, .64]]];
+
   // ── Keyframes: [s, value]; between them the value eases.
   const TITLE_Y = [[0, 0], [.5, -.163], [1, -.241], [1.8, -.421], [2.2, -.78]];
   const LID = [[1, 0], [1.8, 10], [2.2, 16], [3, 106]];           // degrees open
@@ -544,6 +675,12 @@ if (document.readyState === 'loading') {
   let VW = 0, VH = 0, UW = 0, M = 1, lastLw = 0;
   function measure() {
     VW = vp.clientWidth; VH = vp.clientHeight;
+    if (PHONE) {
+      // Edges ~1px on screen once the phone has settled.
+      const b = phoneBox(0, 0, 3), k = Math.min(.80 * VW / b.w, .64 * VH / b.h);
+      pos.style.setProperty('--lw', (1 / k).toFixed(2) + 'px');
+      return;
+    }
     UW = Math.min(VW, VH * 16 / 9);
     // Portrait: the storyboard's laptop would be a sliver, so the open one
     // fills most of the width instead and the rest scale with it.
@@ -573,8 +710,26 @@ if (document.readyState === 'loading') {
     try { frame.contentWindow.postMessage(msg, location.origin); } catch (e) {}
   }
 
+  function renderPhone(s) {
+    const flip = at(P_FLIP, s), stand = at(P_STAND, s), elev = at(P_ELEV, s), box = at(P_BOX, s);
+    phModel.style.transform = 'rotateX(' + (-elev).toFixed(3) + 'deg)';
+    phBody.style.transform = 'rotateX(' + stand.toFixed(3) + 'deg) rotateY(' + flip.toFixed(3) + 'deg)';
+    const b = phoneBox(flip, stand, elev);
+    const k = Math.min(box[1] * VW / b.w, box[2] * VH / b.h);
+    const x = VW / 2 - b.cx * k, y = box[0] * VH - b.cy * k;
+    pos.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')';
+    placeCta(x + (b.cx + b.w / 2) * k, y + (b.cy - b.h / 2) * k, y + (b.cy + b.h / 2) * k);
+  }
+
   function render(s) {
     page.style.transform = 'translateY(' + (at(TITLE_Y, s) * VH).toFixed(1) + 'px)';
+    pos.style.visibility = s < .5 ? 'hidden' : 'visible';
+    if (PHONE) renderPhone(s); else renderLaptop(s);
+    if (!playing && s >= PLAY_AT) { playing = true; win.classList.add('on'); app('ohlcv:play'); }
+    else if (playing && s < RESET_BELOW) { playing = false; win.classList.remove('on', 'ready'); cta.classList.remove('ready'); app('ohlcv:reset'); }
+  }
+
+  function renderLaptop(s) {
     const theta = at(LID, s), elev = at(ELEV, s), box = at(BOX, s);
     model.style.transform = 'rotateX(' + (-elev).toFixed(3) + 'deg)';
     lid.style.transform = 'translate3d(0,0,' + (-D / 2) + 'px) rotateX(' + theta.toFixed(3) + 'deg)';
@@ -585,12 +740,8 @@ if (document.readyState === 'loading') {
     const y = box[1] * VH - b.cy * k;
     pos.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')';
     placeCta(x + (b.cx + b.w / 2) * k, y + (b.cy - b.h / 2) * k, y + (b.cy + b.h / 2) * k);
-    pos.style.visibility = s < .5 ? 'hidden' : 'visible';
     // Backlight comes on as the lid rises, like a real one waking.
     if (theta > 70) pos.classList.add('lit'); else if (theta < 45) pos.classList.remove('lit');
-
-    if (!playing && s >= PLAY_AT) { playing = true; win.classList.add('on'); app('ohlcv:play'); }
-    else if (playing && s < RESET_BELOW) { playing = false; win.classList.remove('on', 'ready'); cta.classList.remove('ready'); app('ohlcv:reset'); }
   }
 
   // Scroll is eased toward, not followed 1:1, so a wheel's steps glide.
@@ -616,8 +767,12 @@ if (document.readyState === 'loading') {
   target = shown = Math.max(0, window.scrollY / VH);
   render(shown);
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', () => { measure(); render(shown); onScroll(); });
-  // The app's intro has landed on the PIN screen: blur it and offer the demo.
+  window.addEventListener('resize', () => {
+    // Turned from portrait to landscape (or back): the other device fits now.
+    if (isPhone() !== PHONE) { location.reload(); return; }
+    measure(); render(shown); onScroll();
+  });
+  // The app's intro has landed on the PIN screen: type the PIN, offer the demo.
   window.addEventListener('message', e => {
     if (e.origin === location.origin && e.source === frame.contentWindow && e.data === 'ohlcv:intro-done' && playing) { win.classList.add('ready'); cta.classList.add('ready'); app('ohlcv:autotype'); }
   });
